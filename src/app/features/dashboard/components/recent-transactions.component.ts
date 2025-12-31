@@ -243,7 +243,7 @@ export class RecentTransactionsComponent {
 
   Math = Math;
   
-  // Obtener las últimas 15 transacciones usando computed
+  // Obtener las últimas 5 transacciones usando computed
   recentTransactions = computed(() => {
     const transactions = this.transactionService.transactions();
     return [...transactions]
@@ -252,7 +252,7 @@ export class RecentTransactionsComponent {
         const dateB = b.date || b.transaction_date || '';
         return new Date(dateB).getTime() - new Date(dateA).getTime();
       })
-      .slice(0, 15);
+      .slice(0, 5);
   });
 
   trackByTransactionId(index: number, transaction: any): string {

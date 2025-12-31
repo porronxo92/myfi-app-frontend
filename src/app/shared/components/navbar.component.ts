@@ -418,11 +418,6 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
 
     /* Media Queries */
     @media (max-width: 780px) {
-  handleLogoutMobile(): void {
-    this.closeMobileMenu();
-    this.showLogoutModal.set(true);
-  }
-
       .navbar-content {
         padding: 1rem;
       }
@@ -486,6 +481,11 @@ export class NavbarComponent {
   }
 
   handleLogout(): void {
+    this.showLogoutModal.set(true);
+  }
+
+  handleLogoutMobile(): void {
+    this.closeMobileMenu();
     this.showLogoutModal.set(true);
   }
 
