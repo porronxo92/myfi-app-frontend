@@ -18,9 +18,9 @@ import { SecurityConfigService } from './security-config.service';
   providedIn: 'root'
 })
 export class AuthService {
-  // NOTA: Ya NO usamos localStorage para tokens (migración a cookies HTTP-only)
-  // Solo guardamos el usuario en localStorage para datos no sensibles
   private readonly STORAGE_KEYS = {
+    ACCESS_TOKEN: 'access_token',
+    REFRESH_TOKEN: 'refresh_token',
     USER: 'user'
   };
 
@@ -53,14 +53,11 @@ export class AuthService {
   /**
    * LOGIN - Autenticar usuario
    * POST /api/users/login
-   * 
-   * IMPORTANTE: Con withCredentials: true, las cookies HTTP-only se reciben automáticamente
    */
   login(credentials: LoginRequest): Observable<TokenResponse> {
     return this.http.post<TokenResponse>(
       `${environment.apiUrl}/users/login`,
-      credentials,
-      { withCredentials: true }  // ← Permite recibir cookies HTTP-only del backend
+      credentials
     ).pipe(
       tap(response => this.handleAuthenticationSuccess(response)),
       catchError(this.handleError)
@@ -83,23 +80,23 @@ export class AuthService {
   /**
    * REFRESH TOKEN - Renovar access token
    * POST /api/users/refresh
-   * 
-   * IMPORTANTE: El refresh_token se envía automáticamente en la cookie HTTP-only
    */
   refreshToken(): Observable<TokenResponse> {
-    // Ya NO necesitamos obtener el refresh_token de localStorage
-    // Se envía automáticamente en la cookie con withCredentials: true
+    const refreshToken = this.getRefreshToken();
+    
+    if (!refreshToken) {
+      console.error('❌ No hay refresh token disponible');
+      this.logout();
+      return throwError(() => new Error('No refresh token'));
+    }
 
     return this.http.post<TokenResponse>(
       `${environment.apiUrl}/users/refresh`,
-      {},  // Body vacío, el token viene en cookie
-      { withCredentials: true }
+      { refresh_token: refreshToken }
     ).pipe(
       tap(response => {
-        // Actualizar solo usuario, los tokens vienen en cookies
-        this.setUser(response.user);
-        this.isAuthenticatedSignal.set(true);
-        console.log('✅ Token renovado automáticamente (cookies HTTP-only)');
+        this.handleAuthenticationSuccess(response);
+        console.log('✅ Token renovado automáticamente');
       }),
       catchError(error => {
         console.error('❌ Error renovando token, cerrando sesión');
@@ -111,11 +108,11 @@ export class AuthService {
 
   /**
    * LOGOUT - Cerrar sesión
-   * 
-   * Llama al backend para limpiar cookies HTTP-only
    */
   logout(): void {
-    // Limpiar localStorage (solo usuario, los tokens están en cookies)
+    // Limpiar localStorage
+    localStorage.removeItem(this.STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(this.STORAGE_KEYS.REFRESH_TOKEN);
     localStorage.removeItem(this.STORAGE_KEYS.USER);
 
     // Resetear signals
@@ -123,34 +120,30 @@ export class AuthService {
     this.isAuthenticatedSignal.set(false);
     this.updateAuthenticationState();
 
-    // Llamar al backend para limpiar cookies HTTP-only
-    this.http.post(
-      `${environment.apiUrl}/users/logout`, 
-      {}, 
-      { withCredentials: true }
-    ).subscribe({
-      next: () => {
-        console.log('👋 Sesión cerrada - Cookies HTTP-only eliminadas por el backend');
-      },
-      error: (error) => {
-        console.warn('⚠️ Error al limpiar cookies en backend (ignorando):', error);
-      }
-    });
-
     // Redirigir a login
     this.router.navigate(['/login']);
-    console.log('👋 Sesión cerrada localmente');
+    console.log('👋 Sesión cerrada - localStorage limpiado');
   }
 
   /**
    * VERIFICAR SI HAY SESIÓN ACTIVA
-   * 
-   * NOTA: Ya no podemos verificar tokens desde JavaScript (están en cookies HTTP-only)
-   * Confiamos en que el backend valide la cookie en cada petición
    */
   hasValidSession(): boolean {
-    // Verificar si hay usuario cargado (indica que hubo login)
-    return this.isAuthenticated();
+    return !!this.getAccessToken() && !!this.getRefreshToken();
+  }
+
+  /**
+   * Obtener access token de localStorage
+   */
+  getAccessToken(): string | null {
+    return localStorage.getItem(this.STORAGE_KEYS.ACCESS_TOKEN);
+  }
+
+  /**
+   * Obtener refresh token de localStorage
+   */
+  getRefreshToken(): string | null {
+    return localStorage.getItem(this.STORAGE_KEYS.REFRESH_TOKEN);
   }
 
   // ============================================
@@ -159,14 +152,13 @@ export class AuthService {
 
   /**
    * Manejar respuesta exitosa de login/registro
-   * 
-   * IMPORTANTE: Ya NO guardamos tokens en localStorage (están en cookies HTTP-only)
    */
   private handleAuthenticationSuccess(response: TokenResponse): void {
-    console.log('🔍 Respuesta del backend:', response);
-    console.log('🍪 Tokens recibidos en cookies HTTP-only (no accesibles desde JavaScript)');
+    // Guardar tokens en localStorage
+    localStorage.setItem(this.STORAGE_KEYS.ACCESS_TOKEN, response.access_token);
+    localStorage.setItem(this.STORAGE_KEYS.REFRESH_TOKEN, response.refresh_token);
     
-    // Solo guardar usuario en localStorage (datos no sensibles)
+    // Guardar usuario en localStorage
     this.setUser(response.user);
 
     // Actualizar signals
@@ -174,15 +166,10 @@ export class AuthService {
     this.isAuthenticatedSignal.set(true);
     this.updateAuthenticationState();
 
-    // Verificar que se guardó el usuario
-    console.log('💾 Verificando localStorage:');
-    console.log('  - user guardado:', !!localStorage.getItem(this.STORAGE_KEYS.USER));
-    console.log('  - tokens: En cookies HTTP-only (Secure, SameSite)');
-
     console.log('✅ Autenticación exitosa', {
       user: response.user.email,
       expires_in: `${response.expires_in / 60} minutos`,
-      storage: 'HTTP-only Cookies'
+      storage: 'localStorage'
     });
   }
 
@@ -216,17 +203,15 @@ export class AuthService {
 
   /**
    * Cargar datos de autenticación desde localStorage
-   * 
-   * NOTA: Solo cargamos el usuario, los tokens están en cookies HTTP-only
    */
   private loadFromStorage(): void {
     const user = this.getUserFromStorage();
+    const hasTokens = this.hasValidSession();
 
-    if (user) {
+    if (user && hasTokens) {
       this.userSignal.set(user);
       this.isAuthenticatedSignal.set(true);
       console.log('✅ Sesión restaurada desde localStorage:', user.email);
-      console.log('   Tokens: En cookies HTTP-only (no accesibles desde JavaScript)');
     } else {
       console.log('ℹ️ No hay sesión guardada en localStorage');
     }
