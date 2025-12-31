@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://tu-dominio.com/api',
-  apiBaseUrl: 'https://tu-dominio.com'
+  apiUrl: 'https://myfi-app-backend.onrender.com/api',
+  apiBaseUrl: 'https://myfi-app-backend.onrender.com'
 };
