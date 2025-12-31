@@ -80,6 +80,27 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
           </svg>
           <span>Inversión</span>
         </a>
+        
+        <div class="mobile-divider"></div>
+        
+        <!-- Usuario en móvil -->
+        <div class="user-info-mobile">
+          <div class="avatar">
+            {{ (user()?.full_name || user()?.email || 'U')[0].toUpperCase() }}
+          </div>
+          <div class="user-details">
+            <span class="user-name-mobile">{{ user()?.full_name || user()?.username || user()?.email }}</span>
+            <span class="user-email-mobile">{{ user()?.email }}</span>
+          </div>
+        </div>
+        
+        <!-- Logout en móvil -->
+        <a class="nav-link-mobile logout-link" (click)="handleLogoutMobile()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+          <span>Cerrar sesión</span>
+        </a>
       </div>
     </nav>
 
@@ -310,6 +331,72 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
       font-size: 0.9375rem;
     }
 
+    .nav-link-mobile.logout-link {
+      color: #ef4444;
+      margin-top: 0.5rem;
+    }
+
+    .nav-link-mobile.logout-link:hover {
+      background: #fef2f2;
+      color: #dc2626;
+      border-left-color: #ef4444;
+    }
+
+    /* Divider */
+    .mobile-divider {
+      height: 1px;
+      background: #e2e8f0;
+      margin: 1rem 0;
+    }
+
+    /* Usuario en móvil */
+    .user-info-mobile {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      background: #f8fafc;
+      border-left: 3px solid #3b82f6;
+    }
+
+    .user-info-mobile .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.875rem;
+      flex-shrink: 0;
+    }
+
+    .user-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 0;
+    }
+
+    .user-name-mobile {
+      color: #0f172a;
+      font-weight: 600;
+      font-size: 0.9375rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-email-mobile {
+      color: #64748b;
+      font-size: 0.8125rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     /* Overlay */
     .mobile-overlay {
       position: fixed;
@@ -331,6 +418,11 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
 
     /* Media Queries */
     @media (max-width: 780px) {
+  handleLogoutMobile(): void {
+    this.closeMobileMenu();
+    this.showLogoutModal.set(true);
+  }
+
       .navbar-content {
         padding: 1rem;
       }
