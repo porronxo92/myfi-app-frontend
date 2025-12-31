@@ -1,0 +1,328 @@
+/* Reset y estilos globales */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: "Tomorrow", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #0f172a;
+  background: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Mejorar renderizado de texto */
+body {
+  text-rendering: optimizeLegibility;
+}
+
+/* Scroll suave */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Utilidades */
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* ========================================
+   DARK MODE - ESTILOS GLOBALES
+   ======================================== */
+
+/* Variables de color para dark mode */
+body.dark-mode {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #e2e8f0;
+  --text-tertiary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --border-hover: #475569;
+  --accent-blue: #60a5fa;
+  --accent-blue-hover: #93c5fd;
+  --input-bg: #1e293b;
+  --button-bg: #3b82f6;
+  --button-hover: #60a5fa;
+}
+
+/* Aplicar estilos de dark mode globalmente */
+body.dark-mode {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Estilos para form-section en dark mode */
+body.dark-mode .form-section {
+  background: var(--bg-primary) !important;
+  transition: background 0.3s;
+}
+
+body.dark-mode .theme-toggle {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-tertiary);
+}
+
+body.dark-mode .theme-toggle:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-hover);
+  color: var(--accent-blue);
+}
+
+body.dark-mode .form-title {
+  color: var(--text-primary);
+}
+
+body.dark-mode .form-subtitle {
+  color: var(--text-muted);
+}
+
+body.dark-mode .form-label {
+  color: var(--text-secondary);
+}
+
+body.dark-mode .form-input {
+  background: var(--input-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+body.dark-mode .form-input::placeholder {
+  color: #64748b;
+}
+
+body.dark-mode .form-input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+body.dark-mode .form-input.input-error {
+  border-color: #ef4444;
+}
+
+body.dark-mode .form-input.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+body.dark-mode .password-toggle {
+  color: var(--text-muted);
+}
+
+body.dark-mode .password-toggle:hover {
+  color: var(--accent-blue);
+}
+
+body.dark-mode .password-hint {
+  color: var(--text-muted);
+}
+
+body.dark-mode .checkbox-text {
+  color: var(--text-tertiary);
+}
+
+body.dark-mode .forgot-link {
+  color: var(--accent-blue);
+}
+
+body.dark-mode .forgot-link:hover {
+  color: var(--accent-blue-hover);
+}
+
+body.dark-mode .signup-text,
+body.dark-mode .signin-text {
+  color: var(--text-muted);
+}
+
+body.dark-mode .signup-link,
+body.dark-mode .signin-link {
+  color: var(--accent-blue);
+}
+
+body.dark-mode .signup-link:hover,
+body.dark-mode .signin-link:hover {
+  color: var(--accent-blue-hover);
+}
+
+body.dark-mode .submit-button {
+  background: var(--button-bg);
+}
+
+body.dark-mode .submit-button:hover:not(:disabled) {
+  background: var(--button-hover);
+}
+
+/* Mensajes de error y éxito en dark mode */
+body.dark-mode .server-error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+body.dark-mode .success-message {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #86efac;
+}
+
+/* Scrollbar en dark mode */
+body.dark-mode ::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* ============================================
+   TOMORROW FONT - Google Fonts
+   ============================================ */
+.tomorrow-thin {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.tomorrow-extralight {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 200;
+  font-style: normal;
+}
+
+.tomorrow-light {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.tomorrow-regular {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.tomorrow-medium {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.tomorrow-semibold {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.tomorrow-bold {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.tomorrow-extrabold {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 800;
+  font-style: normal;
+}
+
+.tomorrow-black {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+}
+
+.tomorrow-thin-italic {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 100;
+  font-style: italic;
+}
+
+.tomorrow-extralight-italic {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 200;
+  font-style: italic;
+}
+
+.tomorrow-light-italic {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.tomorrow-regular-italic {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.tomorrow-medium-italic {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.tomorrow-semibold-italic {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.tomorrow-bold-italic {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.tomorrow-extrabold-italic {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 800;
+  font-style: italic;
+}
+
+.tomorrow-black-italic {
+  font-family: "Tomorrow", sans-serif;
+  font-weight: 900;
+  font-style: italic;
+}
+
