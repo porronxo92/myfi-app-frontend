@@ -234,15 +234,47 @@ import { FormsModule } from '@angular/forms';
                       </td>
                       <td class="date-cell">{{ formatDate(transaction.fecha) }}</td>
                       <td class="description-cell">
-                        <div class="description-main">{{ transaction.descripcion_nlp }}</div>
-                        <div class="description-original">{{ transaction.descripcion_original }}</div>
+                        <!-- Modo edición de descripción -->
+                        <div *ngIf="isEditingDescription(transaction); else viewDescription" class="description-edit">
+                          <input
+                            class="desc-input"
+                            type="text"
+                            [ngModel]="tempDescription()"
+                            (ngModelChange)="tempDescription.set($event)"
+                            (keydown.enter)="confirmDescriptionEdit()"
+                            (keydown.escape)="cancelDescriptionEdit()"
+                            placeholder="Editar descripción"
+                            autofocus
+                          />
+                          <div class="desc-actions">
+                            <button class="btn-link save" (click)="confirmDescriptionEdit()" title="Guardar">
+                              ✔ Guardar
+                            </button>
+                            <button class="btn-link cancel" (click)="cancelDescriptionEdit()" title="Cancelar">
+                              ✖ Cancelar
+                            </button>
+                          </div>
+                        </div>
+                        <ng-template #viewDescription>
+                          <div class="description-main">
+                            {{ transaction.descripcion_nlp }}
+                            <button class="btn-inline-edit" (click)="openDescriptionEditor(transaction)" title="Editar descripción">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M4 20h4l10.232-10.232a2.5 2.5 0 10-3.536-3.536L4 16v4z"/>
+                              </svg>
+                            </button>
+                          </div>
+                          <div class="description-original">{{ transaction.descripcion_original }}</div>
+                        </ng-template>
                       </td>
                       <td class="category-cell">
                         <span 
                           class="category-badge" 
-                          [class.editable]="transaction.categoria === 'Sin Categorizar'"
+                          [class.editable]="true"
+                          [class.uncategorized]="transaction.categoria === 'Sin Categorizar'"
                           [attr.data-category]="transaction.categoria"
-                          (click)="transaction.categoria === 'Sin Categorizar' && openCategoryEditor(transaction)"
+                          (click)="openCategoryEditor(transaction)"
+                          title="Editar categoría"
                         >
                           {{ transaction.categoria }}
                         </span>
@@ -893,12 +925,73 @@ import { FormsModule } from '@angular/forms';
       font-weight: 500;
       color: #0f172a;
       margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .description-original {
       font-size: 0.8125rem;
       color: #94a3b8;
     }
+
+    .btn-inline-edit {
+      margin-left: 0.25rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: transparent;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-inline-edit:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
+
+    .description-edit {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .desc-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9375rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .desc-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .desc-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn-link {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-link.save { color: #16a34a; }
+    .btn-link.cancel { color: #ef4444; }
 
     .category-badge {
       display: inline-block;
@@ -912,16 +1005,26 @@ import { FormsModule } from '@angular/forms';
 
     .category-badge.editable {
       cursor: pointer;
-      background: #fef3c7;
-      color: #92400e;
-      border: 1px dashed #f59e0b;
+      border: 1px solid transparent;
       transition: all 0.2s;
     }
 
     .category-badge.editable:hover {
+      background: #eef2ff; /* sutil para categorizadas */
+      border-color: #94a3b8;
+      transform: translateY(-1px);
+    }
+
+    /* Estilo especial para 'Sin Categorizar' */
+    .category-badge.uncategorized {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px dashed #f59e0b;
+    }
+
+    .category-badge.uncategorized:hover {
       background: #fde68a;
       border-color: #d97706;
-      transform: translateY(-1px);
     }
 
     .amount-cell {
@@ -1343,6 +1446,10 @@ export class UploadStatementComponent implements OnInit {
   availableCategories = signal<Category[]>([]);
   loadingCategories = signal(false);
   categoriesError = signal<string | null>(null);
+  
+  // Edición de descripción
+  editingDescription = signal<ProcessedTransaction | null>(null);
+  tempDescription = signal<string>('');
 
   // Computed signals
   transactions = computed(() => {
@@ -1631,6 +1738,54 @@ export class UploadStatementComponent implements OnInit {
     });
 
     this.closeCategoryModal();
+  }
+
+  // Editor de descripción inline
+  isEditingDescription(transaction: ProcessedTransaction): boolean {
+    const current = this.editingDescription();
+    return !!current &&
+      current.fecha === transaction.fecha &&
+      current.cantidad === transaction.cantidad &&
+      current.descripcion_nlp === transaction.descripcion_nlp;
+  }
+
+  openDescriptionEditor(transaction: ProcessedTransaction): void {
+    this.editingDescription.set(transaction);
+    this.tempDescription.set(transaction.descripcion_nlp || '');
+  }
+
+  cancelDescriptionEdit(): void {
+    this.editingDescription.set(null);
+    this.tempDescription.set('');
+  }
+
+  confirmDescriptionEdit(): void {
+    const editing = this.editingDescription();
+    const newDesc = (this.tempDescription() || '').trim();
+    if (!editing) return;
+
+    // Si no hay cambios, solo cerrar
+    if (newDesc === (editing.descripcion_nlp || '')) {
+      this.cancelDescriptionEdit();
+      return;
+    }
+
+    const response = this.uploadResponse();
+    if (!response) return;
+
+    // Actualizar descripción en la lista principal
+    const updated = response.data.transacciones.map(t =>
+      t.fecha === editing.fecha && t.cantidad === editing.cantidad && t.descripcion_nlp === editing.descripcion_nlp
+        ? { ...t, descripcion_nlp: newDesc }
+        : t
+    );
+
+    this.uploadResponse.set({
+      ...response,
+      data: { ...response.data, transacciones: updated }
+    });
+
+    this.cancelDescriptionEdit();
   }
 
   goBack(): void {
