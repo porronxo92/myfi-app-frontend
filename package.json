@@ -6,7 +6,7 @@
     "start": "ng serve --host 0.0.0.0 --port $PORT",
     "start:lan": "ng serve --host 0.0.0.0 --port 4200",
     "start:prod": "node server.js",
-    "build": "ng build",
+    "build": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
