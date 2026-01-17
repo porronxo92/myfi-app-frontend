@@ -41,12 +41,6 @@ export class AuthService {
     private router: Router,
     private securityConfig: SecurityConfigService
   ) {
-    // Log de trazabilidad de environment
-    console.log('🔍 [AUTH SERVICE] Inicializando con environment:');
-    console.log('  - environment.apiUrl:', environment.apiUrl);
-    console.log('  - environment.apiBaseUrl:', environment.apiBaseUrl);
-    console.log('  - environment.production:', environment.production);
-    
     // Log de configuración de seguridad al inicializar
     this.securityConfig.logSecurityContext();
     
@@ -61,12 +55,8 @@ export class AuthService {
    * POST /api/users/login
    */
   login(credentials: LoginRequest): Observable<TokenResponse> {
-    const loginUrl = `${environment.apiUrl}/users/login`;
-    console.log('🚀 [AUTH SERVICE] Enviando LOGIN a:', loginUrl);
-    console.log('  - Credentials email:', credentials.email);
-    
     return this.http.post<TokenResponse>(
-      loginUrl,
+      `${environment.apiUrl}/users/login`,
       credentials
     ).pipe(
       tap(response => this.handleAuthenticationSuccess(response)),
