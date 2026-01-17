@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+﻿import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
@@ -41,7 +41,7 @@ export class AuthService {
     private router: Router,
     private securityConfig: SecurityConfigService
   ) {
-    // Log de configuración de seguridad al inicializar
+    // Log de configuraciÃ³n de seguridad al inicializar
     this.securityConfig.logSecurityContext();
     
     // Cargar datos de localStorage al inicializar
@@ -85,7 +85,7 @@ export class AuthService {
     const refreshToken = this.getRefreshToken();
     
     if (!refreshToken) {
-      console.error('❌ No hay refresh token disponible');
+      console.error('âŒ No hay refresh token disponible');
       this.logout();
       return throwError(() => new Error('No refresh token'));
     }
@@ -96,10 +96,10 @@ export class AuthService {
     ).pipe(
       tap(response => {
         this.handleAuthenticationSuccess(response);
-        console.log('✅ Token renovado automáticamente');
+        console.log('âœ… Token renovado automÃ¡ticamente');
       }),
       catchError(error => {
-        console.error('❌ Error renovando token, cerrando sesión');
+        console.error('âŒ Error renovando token, cerrando sesiÃ³n');
         this.logout();
         return throwError(() => error);
       })
@@ -107,7 +107,7 @@ export class AuthService {
   }
 
   /**
-   * LOGOUT - Cerrar sesión
+   * LOGOUT - Cerrar sesiÃ³n
    */
   logout(): void {
     // Limpiar localStorage
@@ -122,11 +122,11 @@ export class AuthService {
 
     // Redirigir a login
     this.router.navigate(['/login']);
-    console.log('👋 Sesión cerrada - localStorage limpiado');
+    console.log('ðŸ‘‹ SesiÃ³n cerrada - localStorage limpiado');
   }
 
   /**
-   * VERIFICAR SI HAY SESIÓN ACTIVA
+   * VERIFICAR SI HAY SESIÃ“N ACTIVA
    */
   hasValidSession(): boolean {
     return !!this.getAccessToken() && !!this.getRefreshToken();
@@ -147,7 +147,7 @@ export class AuthService {
   }
 
   // ============================================
-  // MÉTODOS PRIVADOS
+  // MÃ‰TODOS PRIVADOS
   // ============================================
 
   /**
@@ -166,7 +166,7 @@ export class AuthService {
     this.isAuthenticatedSignal.set(true);
     this.updateAuthenticationState();
 
-    console.log('✅ Autenticación exitosa', {
+    console.log('âœ… AutenticaciÃ³n exitosa', {
       user: response.user.email,
       expires_in: `${response.expires_in / 60} minutos`,
       storage: 'localStorage'
@@ -195,14 +195,14 @@ export class AuthService {
   }
 
   /**
-   * Actualizar estado de autenticación (BehaviorSubject)
+   * Actualizar estado de autenticaciÃ³n (BehaviorSubject)
    */
   private updateAuthenticationState(): void {
     this.isAuthenticatedSubject.next(this.isAuthenticated());
   }
 
   /**
-   * Cargar datos de autenticación desde localStorage
+   * Cargar datos de autenticaciÃ³n desde localStorage
    */
   private loadFromStorage(): void {
     const user = this.getUserFromStorage();
@@ -211,9 +211,23 @@ export class AuthService {
     if (user && hasTokens) {
       this.userSignal.set(user);
       this.isAuthenticatedSignal.set(true);
-      console.log('✅ Sesión restaurada desde localStorage:', user.email);
+      console.log('âœ… SesiÃ³n restaurada desde localStorage:', user.email);
     } else {
-      console.log('ℹ️ No hay sesión guardada en localStorage');
+      console.log('â„¹ï¸ No hay sesiÃ³n guardada en localStorage');
+    }
+  }
+
+  /**
+   * Actualizar datos del usuario en el estado
+   * (Ãštil despuÃ©s de actualizar perfil)
+   */
+  updateUserProfile(updatedUser: Partial<User>): void {
+    const currentUser = this.userSignal();
+    if (currentUser) {
+      const mergedUser = { ...currentUser, ...updatedUser };
+      this.userSignal.set(mergedUser);
+      localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(mergedUser));
+      console.log('âœ… Usuario actualizado en AuthService:', mergedUser);
     }
   }
 
@@ -229,19 +243,19 @@ export class AuthService {
     } else {
       // Error del lado del servidor
       if (error.status === 401) {
-        errorMessage = 'Email o contraseña incorrectos';
+        errorMessage = 'Email o contraseÃ±a incorrectos';
       } else if (error.status === 422) {
-        errorMessage = error.error?.detail || 'Datos inválidos';
+        errorMessage = error.error?.detail || 'Datos invÃ¡lidos';
       } else if (error.status === 429) {
-        errorMessage = error.error?.detail || 'Demasiados intentos. Intenta más tarde';
+        errorMessage = error.error?.detail || 'Demasiados intentos. Intenta mÃ¡s tarde';
       } else if (error.status === 500) {
-        errorMessage = 'Error del servidor. Intenta más tarde';
+        errorMessage = 'Error del servidor. Intenta mÃ¡s tarde';
       } else {
         errorMessage = error.error?.detail || `Error ${error.status}: ${error.statusText}`;
       }
     }
 
-    console.error('❌ Error HTTP:', errorMessage, error);
+    console.error('âŒ Error HTTP:', errorMessage, error);
     return throwError(() => new Error(errorMessage));
   }
 }

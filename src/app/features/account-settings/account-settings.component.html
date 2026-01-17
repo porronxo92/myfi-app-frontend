@@ -1,0 +1,239 @@
+<div class="account-settings-container">
+  <div class="header">
+    <h1><i class="fas fa-user-cog"></i> Configuración de Cuenta</h1>
+    <p class="subtitle">Administra tu información personal y configuración de seguridad</p>
+  </div>
+
+  <!-- Mensajes de éxito/error -->
+  <div class="messages">
+    @if (successMessage()) {
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        {{ successMessage() }}
+      </div>
+    }
+    @if (errorMessage()) {
+      <div class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i>
+        {{ errorMessage() }}
+      </div>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <i class="fas fa-spinner fa-spin"></i> Cargando...
+    </div>
+  } @else if (userProfile()) {
+    <div class="content">
+      <!-- Foto de perfil -->
+      <div class="card profile-picture-card">
+        <div class="card-header">
+          <h2><i class="fas fa-camera"></i> Foto de Perfil</h2>
+        </div>
+        <div class="card-body">
+          <div class="profile-picture-section">
+            <div class="current-picture">
+              @if (previewUrl()) {
+                <img [src]="previewUrl()!" alt="Preview" class="avatar-large">
+              } @else if (userProfile()?.profile_picture) {
+                <img [src]="userProfile()!.profile_picture" alt="Foto de perfil" class="avatar-large">
+              } @else {
+                <div class="avatar-placeholder-large">
+                  <i class="fas fa-user"></i>
+                </div>
+              }
+            </div>
+            <div class="photo-form">
+              <div class="form-group">
+                <label for="profile_picture" class="file-label">
+                  <i class="fas fa-cloud-upload-alt"></i> Seleccionar imagen
+                </label>
+                <input
+                  type="file"
+                  id="profile_picture"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  (change)="onFileSelected($event)"
+                  class="file-input"
+                >
+                @if (selectedFile()) {
+                  <small class="file-name">{{ selectedFile()!.name }}</small>
+                }
+              </div>
+              <div class="button-group">
+                <button 
+                  type="button" 
+                  [disabled]="!selectedFile() || loading()" 
+                  (click)="uploadProfilePicture()"
+                  class="btn btn-primary">
+                  <i class="fas fa-upload"></i> Subir Foto
+                </button>
+                @if (userProfile()?.profile_picture) {
+                  <button 
+                    type="button" 
+                    [disabled]="loading()" 
+                    (click)="removeProfilePicture()"
+                    class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Eliminar
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información personal -->
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-user-edit"></i> Información Personal</h2>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+            <div class="form-group">
+              <label for="email">Correo Electrónico *</label>
+              <input
+                type="email"
+                id="email"
+                formControlName="email"
+                class="form-control"
+                required
+              >
+              @if (profileForm.get('email')?.invalid && profileForm.get('email')?.touched) {
+                <small class="error-text">Introduce un correo electrónico válido</small>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="username">Nombre de Usuario</label>
+              <input
+                type="text"
+                id="username"
+                formControlName="username"
+                class="form-control"
+                placeholder="usuario123"
+              >
+              @if (profileForm.get('username')?.invalid && profileForm.get('username')?.touched) {
+                <small class="error-text">Mínimo 3 caracteres, máximo 50</small>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="full_name">Nombre Completo</label>
+              <input
+                type="text"
+                id="full_name"
+                formControlName="full_name"
+                class="form-control"
+                placeholder="Juan Pérez"
+              >
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" [disabled]="profileForm.invalid || loading()" class="btn btn-primary">
+                <i class="fas fa-save"></i> Guardar Cambios
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Cambiar contraseña -->
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-lock"></i> Seguridad</h2>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+            <div class="form-group">
+              <label for="current_password">Contraseña Actual *</label>
+              <input
+                type="password"
+                id="current_password"
+                formControlName="current_password"
+                class="form-control"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="new_password">Nueva Contraseña *</label>
+              <input
+                type="password"
+                id="new_password"
+                formControlName="new_password"
+                class="form-control"
+                required
+              >
+              @if (passwordForm.get('new_password')?.invalid && passwordForm.get('new_password')?.touched) {
+                <small class="error-text">La contraseña debe tener al menos 8 caracteres</small>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="confirm_password">Confirmar Nueva Contraseña *</label>
+              <input
+                type="password"
+                id="confirm_password"
+                formControlName="confirm_password"
+                class="form-control"
+                required
+              >
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" [disabled]="passwordForm.invalid || loading()" class="btn btn-warning">
+                <i class="fas fa-key"></i> Cambiar Contraseña
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Información de cuenta -->
+      <div class="card info-card">
+        <div class="card-header">
+          <h2><i class="fas fa-info-circle"></i> Información de la Cuenta</h2>
+        </div>
+        <div class="card-body">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">ID de Usuario:</span>
+              <span class="info-value">{{ userProfile()!.id }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Estado:</span>
+              <span class="info-value">
+                @if (userProfile()!.is_active) {
+                  <span class="badge badge-success"><i class="fas fa-check"></i> Activo</span>
+                } @else {
+                  <span class="badge badge-danger"><i class="fas fa-times"></i> Inactivo</span>
+                }
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Tipo de Cuenta:</span>
+              <span class="info-value">
+                @if (userProfile()!.is_admin) {
+                  <span class="badge badge-admin"><i class="fas fa-crown"></i> Administrador</span>
+                } @else {
+                  <span class="badge badge-user"><i class="fas fa-user"></i> Usuario</span>
+                }
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Miembro desde:</span>
+              <span class="info-value">{{ userProfile()!.created_at | date:'dd/MM/yyyy' }}</span>
+            </div>
+            @if (userProfile()!.last_login) {
+              <div class="info-item">
+                <span class="info-label">Último acceso:</span>
+                <span class="info-value">{{ userProfile()!.last_login | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

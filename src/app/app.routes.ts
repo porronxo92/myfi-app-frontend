@@ -57,6 +57,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/budget/budget.component').then(m => m.BudgetComponent),
     canActivate: [authGuard]
   },
+  {
+    path: 'account-settings',
+    loadComponent: () => import('./features/account-settings/account-settings.component').then(m => m.AccountSettingsComponent),
+    canActivate: [authGuard]
+  },
 
   // Ruta 404 - cualquier ruta no encontrada
   {

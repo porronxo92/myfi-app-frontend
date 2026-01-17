@@ -8,6 +8,7 @@ export interface User {
   email: string;
   username: string | null;
   full_name: string | null;
+  profile_picture?: string | null;
   is_active: boolean;
   is_admin: boolean;
   last_login: string | null;

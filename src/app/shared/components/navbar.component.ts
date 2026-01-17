@@ -27,9 +27,13 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
 
         <!-- Usuario y Logout -->
         <div class="navbar-right">
-          <div class="user-info">
+          <div class="user-info" (click)="navigateTo('/account-settings')" title="Configuración de cuenta">
             <div class="avatar">
-              {{ (user()?.full_name || user()?.email || 'U')[0].toUpperCase() }}
+              @if (user()?.profile_picture) {
+                <img [src]="user()!.profile_picture" [alt]="user()?.full_name || 'Usuario'" class="avatar-img">
+              } @else {
+                {{ (user()?.full_name || user()?.email || 'U')[0].toUpperCase() }}
+              }
             </div>
             <span class="user-name">{{ user()?.full_name || user()?.username || user()?.email }}</span>
           </div>
@@ -80,13 +84,24 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
           </svg>
           <span>Inversión</span>
         </a>
+        <a class="nav-link-mobile" [class.active]="isActive('/account-settings')" (click)="navigateToMobile('/account-settings')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span>Configuración</span>
+        </a>
         
         <div class="mobile-divider"></div>
         
         <!-- Usuario en móvil -->
-        <div class="user-info-mobile">
+        <div class="user-info-mobile" (click)="navigateToMobile('/account-settings')">
           <div class="avatar">
-            {{ (user()?.full_name || user()?.email || 'U')[0].toUpperCase() }}
+            @if (user()?.profile_picture) {
+              <img [src]="user()!.profile_picture" [alt]="user()?.full_name || 'Usuario'" class="avatar-img">
+            } @else {
+              {{ (user()?.full_name || user()?.email || 'U')[0].toUpperCase() }}
+            }
           </div>
           <div class="user-details">
             <span class="user-name-mobile">{{ user()?.full_name || user()?.username || user()?.email }}</span>
@@ -192,6 +207,14 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+    }
+
+    .user-info:hover {
+      background-color: #f8fafc;
     }
 
     .avatar {
@@ -205,6 +228,14 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
       justify-content: center;
       font-weight: 600;
       font-size: 0.875rem;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .user-name {
@@ -357,6 +388,12 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
       padding: 1rem 1.5rem;
       background: #f8fafc;
       border-left: 3px solid #3b82f6;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .user-info-mobile:hover {
+      background: #e0f2fe;
     }
 
     .user-info-mobile .avatar {
@@ -370,7 +407,14 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
       justify-content: center;
       font-weight: 600;
       font-size: 0.875rem;
+      overflow: hidden;
       flex-shrink: 0;
+    }
+
+    .user-info-mobile .avatar .avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .user-details {
