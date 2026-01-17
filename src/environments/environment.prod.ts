@@ -1,3 +1,4 @@
+// Production environment configuration for Render deployment
 export const environment = {
   production: true,
   apiUrl: 'https://myfi-app-backend.onrender.com/api',
