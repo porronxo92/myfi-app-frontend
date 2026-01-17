@@ -466,7 +466,7 @@ import { FormsModule } from '@angular/forms';
   styles: [`
     .upload-layout {
       min-height: 100vh;
-      background: #f8fafc;
+      background: var(--bg-app, #f8fafc);
     }
 
     .main-content {

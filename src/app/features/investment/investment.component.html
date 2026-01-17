@@ -1,0 +1,510 @@
+<app-navbar></app-navbar>
+
+<div class="investment-page">
+  <div class="page-container">
+    
+    <!-- Header -->
+    <header class="page-header">
+      <div class="header-left">
+        <h1 class="page-title">
+          <span class="icon">📈</span>
+          Inversiones Bursátiles
+        </h1>
+        <p class="page-subtitle">Gestiona tu cartera de acciones en tiempo real</p>
+      </div>
+      <button class="btn-refresh" (click)="loadPositions()" [disabled]="loading()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Actualizar
+      </button>
+    </header>
+
+    <!-- Tabs for Active/Sold -->
+    <div class="tabs-container">
+      <button 
+        class="tab"
+        [class.active]="selectedTab() === 'active'"
+        (click)="changeTab('active')">
+        <i class="fas fa-chart-line"></i>
+        Posiciones Activas
+      </button>
+      <button 
+        class="tab"
+        [class.active]="selectedTab() === 'sold'"
+        (click)="changeTab('sold')">
+        <i class="fas fa-history"></i>
+        Historial de Ventas
+      </button>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <!-- Valor Total -->
+      <div class="kpi-card primary">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-content">
+          <span class="kpi-label">Valor Total</span>
+          <span class="kpi-value">{{ formatCurrency(summary().totalValue) }}</span>
+          <span class="kpi-subtext">
+            {{ summary().positionsCount }} posiciones
+          </span>
+        </div>
+      </div>
+
+      <!-- Rendimiento Histórico -->
+      <div class="kpi-card">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-content">
+          <span class="kpi-label">Rendimiento Histórico</span>
+          <span class="kpi-value" [ngClass]="getValueClass(summary().totalGainLoss)">
+            {{ formatCurrency(summary().totalGainLoss) }}
+          </span>
+          <span class="kpi-subtext" [ngClass]="getValueClass(summary().totalGainLossPercent)">
+            {{ formatPercent(summary().totalGainLossPercent) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Ganancia del Día -->
+      <div class="kpi-card">
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-content">
+          <span class="kpi-label">Ganancia del Día</span>
+          <span class="kpi-value" [ngClass]="getValueClass(summary().dayChange)">
+            {{ formatCurrency(summary().dayChange) }}
+          </span>
+          <span class="kpi-subtext" [ngClass]="getValueClass(summary().dayChangePercent)">
+            {{ formatPercent(summary().dayChangePercent) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de Activos -->
+    <div class="table-card">
+      <div class="table-header">
+        <h2 class="table-title">Mis Activos</h2>
+        <button class="btn-add-investment" (click)="showAddModal.set(true)" title="Agregar Inversión">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+        </button>
+      </div>
+
+      @if (loading()) {
+        <div class="table-loading">
+          <div class="spinner"></div>
+          <p>Cargando posiciones...</p>
+        </div>
+      } @else if (positions().length === 0) {
+        <div class="table-empty">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <p>No tienes inversiones aún</p>
+          <p class="empty-hint">Usa el botón superior para comenzar a invertir</p>
+        </div>
+      } @else {
+        <div class="table-wrapper">
+          <table class="positions-table compact">
+            <thead>
+              <tr>
+                <th (click)="sortBy('symbol')" class="sortable">
+                  Activo <span class="sort-icon">{{ getSortIcon('symbol') }}</span>
+                </th>
+                <th (click)="sortBy('currentPrice')" class="text-right sortable">
+                  Precio / Variación <span class="sort-icon">{{ getSortIcon('currentPrice') }}</span>
+                </th>
+                <th (click)="sortBy('shares')" class="text-right sortable">
+                  Posición <span class="sort-icon">{{ getSortIcon('shares') }}</span>
+                </th>
+                <th (click)="sortBy('totalValue')" class="text-right sortable">
+                  Valor <span class="sort-icon">{{ getSortIcon('totalValue') }}</span>
+                </th>
+                <th (click)="sortBy('totalGainLoss')" class="text-right sortable">
+                  P&G <span class="sort-icon">{{ getSortIcon('totalGainLoss') }}</span>
+                </th>
+                <th (click)="sortBy('weight')" class="text-right sortable">
+                  % Cartera <span class="sort-icon">{{ getSortIcon('weight') }}</span>
+                </th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (position of sortedPositions(); track position.id) {
+                <tr class="position-row">
+                  <!-- Activo: Logo + Ticker + Nombre -->
+                  <td class="asset-cell">
+                    <div class="asset-info">
+                      @if (getLogoUrl(position.symbol); as logoUrl) {
+                        <img [src]="logoUrl" [alt]="position.symbol" class="stock-logo" />
+                      } @else {
+                        <div class="stock-logo-placeholder">{{ position.symbol.charAt(0) }}</div>
+                      }
+                      <div class="asset-text">
+                        <div class="asset-ticker">{{ position.symbol }}</div>
+                        <div class="asset-name">{{ position.companyName }}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Precio Actual / Variación Diaria -->
+                  <td class="text-right">
+                    <div class="price-variation">
+                      <strong class="current-price">{{ formatCurrency(position.currentPrice) }}</strong>
+                      <span class="daily-change" [ngClass]="getValueClass(position.changePercent)">
+                        {{ getTrendIcon(position.changePercent) }} {{ formatPercent(position.changePercent) }}
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- Mi Posición (EDITABLE) -->
+                  <td class="text-right">
+                    @if (editingPosition() === position.id) {
+                      <!-- Modo Edición -->
+                      <div class="position-edit">
+                        <div class="edit-field">
+                          <input 
+                            type="number" 
+                            class="edit-input" 
+                            [(ngModel)]="editForm().shares"
+                            min="0.0001"
+                            step="0.01"
+                            placeholder="Acciones"
+                          />
+                          <span class="edit-label">acciones</span>
+                        </div>
+                        <div class="edit-field">
+                          <input 
+                            type="number" 
+                            class="edit-input" 
+                            [(ngModel)]="editForm().averagePrice"
+                            min="0.01"
+                            step="0.01"
+                            placeholder="Precio"
+                          />
+                          <span class="edit-label">precio medio</span>
+                        </div>
+                        <div class="edit-actions">
+                          <button class="btn-save" (click)="savePosition(position)" title="Guardar">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                          </button>
+                          <button class="btn-cancel" (click)="cancelEdit()" title="Cancelar">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    } @else {
+                      <!-- Modo Vista -->
+                      <div class="position-view" (click)="startEdit(position)">
+                        <strong class="position-shares">{{ position.shares | formatNumber:2 }}</strong>
+                        <span class="position-avg-price">&#64; {{ formatCurrency(position.averagePrice) }}</span>
+                        <svg class="edit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                      </div>
+                    }
+                  </td>
+
+                  <!-- Valor Actual -->
+                  <td class="text-right">
+                    <strong class="current-value">{{ formatCurrency(position.totalValue) }}</strong>
+                  </td>
+
+                  <!-- P&G No Realizadas -->
+                  <td class="text-right">
+                    <div class="unrealized-pnl" [ngClass]="getValueClass(position.totalGainLoss)">
+                      <strong class="pnl-amount">{{ formatCurrency(position.totalGainLoss) }}</strong>
+                      <span class="pnl-percent">{{ formatPercent(position.totalGainLossPercent) }}</span>
+                    </div>
+                  </td>
+
+                  <!-- % de la Cartera -->
+                  <td class="text-right">
+                    <strong class="weight-percent">{{ calculatePortfolioWeight(position) }}%</strong>
+                  </td>
+
+                  <!-- Acciones -->
+                  <td class="text-center">
+                    <div class="action-buttons">
+                      <button class="btn-sell" (click)="openSellModal(position)" title="Vender Posición">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <!-- Insights y Recomendaciones -->
+    @if (insights().length > 0) {
+      <div class="insights-section">
+        <h2 class="section-title">💡 Insights de Diversificación</h2>
+        <div class="insights-grid">
+          @for (insight of insights(); track $index) {
+            <div class="insight-card" [ngClass]="'insight-' + insight.type">
+              <div class="insight-icon">{{ insight.icon }}</div>
+              <div class="insight-content">
+                <strong class="insight-title">{{ insight.title }}</strong>
+                <p class="insight-message">{{ insight.message }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
+
+<!-- Modal: Agregar Inversión -->
+@if (showAddModal()) {
+  <div class="modal-overlay" (click)="closeAddModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Agregar Nueva Inversión</h3>
+        <button class="btn-close" (click)="closeAddModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        @if (!selectedStock()) {
+          <!-- Paso 1: Buscar Ticker -->
+          <div class="search-step">
+            <label class="form-label">Buscar Acción</label>
+            <div class="search-input-group">
+              <input
+                type="text"
+                class="form-input"
+                placeholder="Ingresa el ticker (ej: AAPL, TSLA, ONON)..."
+                [(ngModel)]="searchQuery"
+                (keyup.enter)="searchStock()"
+              />
+              <button 
+                class="btn-search" 
+                (click)="searchStock()"
+                [disabled]="searchLoading() || searchQuery().length < 1"
+              >
+                @if (searchLoading()) {
+                  <div class="spinner-small"></div>
+                } @else {
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                  Buscar
+                }
+              </button>
+            </div>
+            
+            <!-- Resultados de Búsqueda -->
+            @if (showSearchResults()) {
+              <div class="modal-search-results">
+                @if (searchResults().length === 0) {
+                  <div class="search-empty">No se encontraron resultados para "{{ searchQuery() }}"</div>
+                } @else {
+                  <p class="results-label">Selecciona una acción:</p>
+                  @for (result of searchResults(); track result.symbol) {
+                    <div class="search-result-item" (click)="selectStock(result)">
+                      <div class="result-main">
+                        <strong class="result-symbol">{{ result.symbol }}</strong>
+                        <span class="result-name">{{ result.name }}</span>
+                      </div>
+                      <div class="result-meta">
+                        <span class="result-region">{{ result.region }}</span>
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+            }
+            
+        
+          </div>
+        } @else {
+          <!-- Paso 2: Completar Datos de la Inversión -->
+          <div class="selected-stock">
+            <div class="stock-badge">
+              <strong>{{ selectedStock()!.symbol }}</strong>
+              <span>{{ selectedStock()!.name }}</span>
+            </div>
+            <button class="btn-change" (click)="clearSelection()" title="Cambiar acción">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label>Número de Acciones</label>
+            <input
+              type="number"
+              class="form-input"
+              min="1"
+              [(ngModel)]="newPosition().shares"
+              (ngModelChange)="updateNewPosition('shares', $event)"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Precio Promedio de Compra (USD)</label>
+            <input
+              type="number"
+              class="form-input"
+              step="0.01"
+              min="0"
+              [(ngModel)]="newPosition().averagePrice"
+              (ngModelChange)="updateNewPosition('averagePrice', $event)"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Fecha de Compra</label>
+            <input
+              type="date"
+              class="form-input"
+              [(ngModel)]="newPosition().purchaseDate"
+              (ngModelChange)="updateNewPosition('purchaseDate', $event)"
+            />
+          </div>
+
+          <div class="investment-summary">
+            <p>Inversión Total: <strong>{{ formatCurrency(newPosition().shares * newPosition().averagePrice) }}</strong></p>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeAddModal()">Cancelar</button>
+        <button 
+          class="btn-primary" 
+          (click)="addPosition()"
+          [disabled]="!selectedStock() || newPosition().shares <= 0 || newPosition().averagePrice <= 0"
+        >
+          Agregar Inversión
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Vender Posición -->
+@if (showSellModal()) {
+  <div class="modal-overlay" (click)="closeSellModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Vender Posición</h2>
+        <button class="btn-close" (click)="closeSellModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        @if (positionToSell(); as position) {
+          <div class="sell-summary">
+            <h3>{{ position.companyName }} ({{ position.symbol }})</h3>
+            <div class="sell-details">
+              <div class="detail-row">
+                <span class="label">Acciones:</span>
+                <span class="value">{{ position.shares }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Precio de Compra:</span>
+                <span class="value">{{ formatCurrency(position.averagePrice) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Precio Actual:</span>
+                <span class="value">{{ formatCurrency(position.currentPrice) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Inversión Total:</span>
+                <span class="value">{{ formatCurrency(position.shares * position.averagePrice) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <div class="form-group">
+            <label>Precio de Venta *</label>
+            <input
+              type="number"
+              class="form-input"
+              [(ngModel)]="sellForm().salePrice"
+              (ngModelChange)="updateSellForm('salePrice', $event)"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+            />
+            <small class="hint">Precio por acción al que vendes</small>
+          </div>
+
+          <div class="form-group">
+            <label>Fecha de Venta *</label>
+            <input
+              type="date"
+              class="form-input"
+              [(ngModel)]="sellForm().saleDate"
+              (ngModelChange)="updateSellForm('saleDate', $event)"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Notas (opcional)</label>
+            <textarea
+              class="form-textarea"
+              [(ngModel)]="sellForm().notes"
+              (ngModelChange)="updateSellForm('notes', $event)"
+              placeholder="Ej: Venta por objetivo alcanzado, stop loss, etc."
+              rows="3"
+            ></textarea>
+          </div>
+
+          @if (sellForm().salePrice > 0) {
+            <div class="profit-preview" [class.gain]="(sellForm().salePrice - position.averagePrice) > 0" [class.loss]="(sellForm().salePrice - position.averagePrice) < 0">
+              <h4>Resultado Proyectado:</h4>
+              <div class="profit-details">
+                <div class="detail-row">
+                  <span class="label">Precio Venta:</span>
+                  <span class="value">{{ formatCurrency(sellForm().salePrice) }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">Valor Total Venta:</span>
+                  <span class="value">{{ formatCurrency(position.shares * sellForm().salePrice) }}</span>
+                </div>
+                <div class="detail-row strong">
+                  <span class="label">Ganancia/Pérdida:</span>
+                  <span class="value" [class.gain]="(sellForm().salePrice - position.averagePrice) > 0" [class.loss]="(sellForm().salePrice - position.averagePrice) < 0">
+                    {{ formatCurrency(position.shares * (sellForm().salePrice - position.averagePrice)) }}
+                    ({{ formatPercent((sellForm().salePrice - position.averagePrice) / position.averagePrice) }})
+                  </span>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeSellModal()">Cancelar</button>
+        <button 
+          class="btn-danger" 
+          (click)="confirmSell()"
+          [disabled]="sellForm().salePrice <= 0"
+        >
+          Confirmar Venta
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Footer -->
+<app-footer></app-footer>

@@ -1,0 +1,184 @@
+<!-- Health Card: Análisis de Salud Financiera por IA -->
+<div class="health-card">
+  
+  <!-- Initial State: Botón para solicitar el reporte -->
+  <div *ngIf="!reportRequested() && !isLoading() && !error()" class="health-request">
+    <div class="request-content">
+      <div class="request-icon">🤖</div>
+      <h2>Análisis de Salud Financiera con IA</h2>
+      <p>Obtén un análisis completo de tus finanzas de <strong>{{ year }}</strong> generado por inteligencia artificial</p>
+      <button class="btn-request" (click)="requestHealthReport()">
+        <span class="btn-icon">✨</span>
+        Consigue tu Informe financiero de {{ year }}
+      </button>
+      <p class="request-note">
+        <span class="note-icon">💡</span>
+        El análisis incluye tu puntuación financiera, fortalezas, áreas de mejora y recomendaciones personalizadas
+      </p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="health-loading">
+    <div class="spinner"></div>
+    <p>Analizando tu salud financiera con IA...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error() && !isLoading()" class="health-error">
+    <div class="error-icon">⚠️</div>
+    <h3>Error al generar el informe</h3>
+    <p>{{ error() }}</p>
+    <button class="btn-retry" (click)="requestHealthReport()">Reintentar</button>
+  </div>
+
+  <!-- Success State -->
+  <div *ngIf="healthReport() && !isLoading() && !error()" class="health-content">
+    
+    <!-- Header with Score -->
+    <div class="health-header">
+      <div class="header-text">
+        <h2>
+          <span class="icon">🏥</span>
+          Análisis de Salud Financiera
+        </h2>
+        <p class="period">{{ healthReport()!.summary.period_analyzed }}</p>
+      </div>
+      <div class="score-badge" [style.background]="getScoreColor(healthReport()!.health_score) + '15'">
+        <div class="score-number" [style.color]="getScoreColor(healthReport()!.health_score)">
+          {{ healthReport()?.health_score }}
+        </div>
+        <div class="score-label" [style.color]="getScoreColor(healthReport()!.health_score)">
+          {{ getScoreLabel(healthReport()!.health_score) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Insight -->
+    <div class="insight-banner">
+      <span class="insight-icon">💡</span>
+      <p>{{ healthReport()!.summary.main_insight }}</p>
+    </div>
+
+    <!-- Strengths & Weaknesses Compact -->
+    <div class="sw-compact">
+      <div class="sw-col strengths">
+        <div class="sw-title">
+          <span class="icon">✅</span>
+          <span>Fortalezas</span>
+        </div>
+        <ul>
+          <li *ngFor="let strength of healthReport()?.strengths">
+            <span class="bullet">•</span>
+            {{ strength }}
+          </li>
+        </ul>
+      </div>
+      
+      <div class="sw-col weaknesses">
+        <div class="sw-title">
+          <span class="icon">⚠️</span>
+          <span>Áreas de Mejora</span>
+        </div>
+        <ul>
+          <li *ngFor="let weakness of healthReport()?.weaknesses">
+            <span class="bullet">•</span>
+            {{ weakness }}
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Alerts Compact -->
+    <div class="alerts-compact" *ngIf="healthReport()?.alerts && healthReport()!.alerts.length > 0">
+      <div class="section-title">
+        <span class="icon">🚨</span>
+        <span>Alertas Importantes</span>
+      </div>
+      <div class="alerts-list">
+        <div 
+          *ngFor="let alert of healthReport()?.alerts" 
+          class="alert-card"
+          [ngClass]="'alert-' + alert.type">
+          <div class="alert-header">
+            <span class="alert-icon">{{ getAlertIcon(alert.type) }}</span>
+            <strong>{{ alert.title }}</strong>
+          </div>
+          <p class="alert-msg">{{ alert.message }}</p>
+          <div class="alert-action">
+            <span class="action-icon">💡</span>
+            {{ alert.action }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendations Compact -->
+    <div class="recommendations-compact" *ngIf="healthReport()?.recommendations && healthReport()!.recommendations.length > 0">
+      <div class="section-title">
+        <span class="icon">🎯</span>
+        <span>Recomendaciones</span>
+      </div>
+      <div class="rec-list">
+        <div 
+          *ngFor="let rec of healthReport()?.recommendations" 
+          class="rec-card"
+          [ngClass]="'cat-' + rec.category">
+          <div class="rec-top">
+            <span class="rec-cat">{{ rec.category }}</span>
+            <span class="rec-save" *ngIf="rec.potential_saving > 0">
+              💰 €{{ rec.potential_saving | number:'1.0-0' }}/mes
+            </span>
+          </div>
+          <h4>{{ rec.title }}</h4>
+          <p>{{ rec.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Predictions Compact -->
+    <div class="predictions-compact" *ngIf="healthReport()?.predictions">
+      <div class="section-title">
+        <span class="icon">🔮</span>
+        <span>Proyecciones</span>
+      </div>
+      <div class="pred-grid">
+        <div class="pred-card">
+          <div class="pred-icon">💰</div>
+          <div class="pred-content">
+            <span class="pred-label">Balance Fin de Año</span>
+            <span class="pred-value">€{{ healthReport()!.predictions.end_of_year_balance | number:'1.0-0' }}</span>
+          </div>
+        </div>
+        <div class="pred-card">
+          <div class="pred-icon">📈</div>
+          <div class="pred-content">
+            <span class="pred-label">Ahorro Proyectado</span>
+            <span class="pred-value positive">€{{ healthReport()!.predictions.projected_savings | number:'1.0-0' }}</span>
+          </div>
+        </div>
+        <div class="pred-card">
+          <div class="pred-icon">⚡</div>
+          <div class="pred-content">
+            <span class="pred-label">Nivel de Riesgo</span>
+            <span 
+              class="pred-badge"
+              [ngClass]="'risk-' + healthReport()!.predictions.risk_level">
+              {{ healthReport()!.predictions.risk_level === 'low' ? 'Bajo' : 
+                 healthReport()!.predictions.risk_level === 'medium' ? 'Medio' : 'Alto' }}
+            </span>
+          </div>
+        </div>
+        <div class="pred-card">
+          <div class="pred-icon">🎯</div>
+          <div class="pred-content">
+            <span class="pred-label">Confianza IA</span>
+            <span class="pred-value">{{ healthReport()!.predictions.confidence }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

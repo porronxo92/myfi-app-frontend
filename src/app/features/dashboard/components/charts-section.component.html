@@ -1,0 +1,34 @@
+<!-- Charts Section: Análisis Visual -->
+<section class="charts-section">
+  <div class="charts-content">
+    <h2>📊 Análisis Visual</h2>
+    
+    <div class="charts-grid">
+      
+      <!-- Category Doughnut Charts (Income + Expenses) -->
+      <div class="chart-container">
+        <h3>Distribución por Categoría - {{ monthName }} {{ year }}</h3>
+        <app-category-pie-chart 
+          *ngIf="monthlyCategoryBreakdown" 
+          [data]="monthlyCategoryBreakdown">
+        </app-category-pie-chart>
+        <div *ngIf="!monthlyCategoryBreakdown" class="chart-placeholder">
+          <p>Sin datos de categorías</p>
+        </div>
+      </div>
+
+      <!-- Monthly Trend Line Chart -->
+      <div class="chart-container">
+        <h3>Evolución Mensual del Año</h3>
+        <app-monthly-trend-chart 
+          *ngIf="yearlyMonthlyTrend && yearlyMonthlyTrend.length > 0" 
+          [data]="yearlyMonthlyTrend">
+        </app-monthly-trend-chart>
+        <div *ngIf="!yearlyMonthlyTrend || yearlyMonthlyTrend.length === 0" class="chart-placeholder">
+          <p>Sin datos de tendencias</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

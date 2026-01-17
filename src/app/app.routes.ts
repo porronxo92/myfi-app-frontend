@@ -47,6 +47,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/transactions/upload-statement.component').then(m => m.UploadStatementComponent),
     canActivate: [authGuard]
   },
+  {
+    path: 'investment',
+    loadComponent: () => import('./features/investment/investment.component').then(m => m.InvestmentComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'budget',
+    loadComponent: () => import('./features/budget/budget.component').then(m => m.BudgetComponent),
+    canActivate: [authGuard]
+  },
 
   // Ruta 404 - cualquier ruta no encontrada
   {

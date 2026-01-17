@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar.component';
+import { FooterComponent } from '../../shared/components/footer.component';
 import { TransactionService } from '../../core/services/transaction.service';
 import { CategoryService } from '../../core/services/category.service';
 import { AccountService } from '../../core/services/account.service';
@@ -9,13 +10,21 @@ import { Transaction } from '../../core/models/transaction.model';
 import { Category } from '../../core/models/category.model';
 import { Account } from '../../core/models/account.model';
 import { TransactionModalComponent, TransactionModalConfig } from '../../shared/components/transaction-modal.component';
+import { ConfirmModalComponent } from '../../shared/components/confirm-modal.component';
+import { EditTransactionModalComponent } from '../../shared/components/edit-transaction-modal.component';
 
 // Importar componentes de la página
 import { TransactionHeaderComponent } from './components/transaction-header.component';
 import { TransactionKpisComponent } from './components/transaction-kpis.component';
-import { TransactionFiltersComponent } from './components/transaction-filters.component';
-import { TransactionChartsComponent } from './components/transaction-charts.component';
+import { TransactionFiltersSidebarComponent } from './components/transaction-filters-sidebar.component';
 import { TransactionTableComponent } from './components/transaction-table.component';
+import { CategoryDonutChartComponent } from './components/category-donut-chart.component';
+
+interface CategoryData {
+  category: string;
+  total: number;
+  color: string;
+}
 
 export interface TransactionFilters {
   search?: string;
@@ -26,6 +35,8 @@ export interface TransactionFilters {
   amountMin?: number;
   amountMax?: number;
   accountId?: string;
+  selectedMonth?: number;
+  selectedYear?: number;
 }
 
 @Component({
@@ -34,12 +45,15 @@ export interface TransactionFilters {
   imports: [
     CommonModule,
     NavbarComponent,
+    FooterComponent,
     TransactionHeaderComponent,
     TransactionKpisComponent,
-    TransactionFiltersComponent,
-    TransactionChartsComponent,
+    TransactionFiltersSidebarComponent,
     TransactionTableComponent,
-    TransactionModalComponent
+    TransactionModalComponent,
+    ConfirmModalComponent,
+    CategoryDonutChartComponent,
+    EditTransactionModalComponent
   ],
   template: `
     <div class="transactions-layout">
@@ -68,41 +82,56 @@ export interface TransactionFilters {
           <button class="btn-retry" (click)="loadData()">Reintentar</button>
         </div>
 
-        <!-- Contenido -->
-        <div class="content-body" *ngIf="!loading() && !error()">
-          <!-- Tarjetas KPI -->
-          <app-transaction-kpis
-            [balance]="balance()"
-            [monthlyIncome]="monthlyIncome()"
-            [monthlyExpenses]="monthlyExpenses()"
-            [balanceVariation]="balanceVariation()"
-          ></app-transaction-kpis>
+        <!-- Contenido con Layout Grid -->
+        <div class="content-grid" *ngIf="!loading() && !error()">
+          <!-- Sidebar Izquierdo: Filtros (25%) -->
+          <aside class="sidebar-filters">
+            <app-transaction-filters
+              [categories]="categories()"
+              [accounts]="accounts()"
+              [activeFilters]="activeFilters()"
+              (filtersChange)="handleFiltersChange($event)"
+              (clearFilters)="handleClearFilters()"
+            ></app-transaction-filters>
+          </aside>
 
-          <!-- Gráficos (antes de filtros, no afectados por filtros) -->
-          <app-transaction-charts
-            [transactions]="transactions()"
-            [categories]="categories()"
-          ></app-transaction-charts>
+          <!-- Contenido Principal: KPIs + Tabla (75%) -->
+          <div class="main-content-area">
+            <!-- KPIs + Donut Chart en Grid -->
+            <div class="kpis-and-chart-container">
+              <!-- KPIs Simplificados -->
+              <app-transaction-kpis
+                [totalTransactions]="filteredTransactions().length"
+                [balance]="balance()"
+                [monthlyIncome]="monthlyIncome()"
+                [monthlyExpenses]="monthlyExpenses()"
+                [balanceVariation]="balanceVariation()"
+                [selectedMonth]="selectedMonth()"
+                [selectedYear]="selectedYear()"
+              ></app-transaction-kpis>
 
-          <!-- Filtros -->
-          <app-transaction-filters
-            [categories]="categories()"
-            [accounts]="accounts()"
-            [activeFilters]="activeFilters()"
-            (filtersChange)="handleFiltersChange($event)"
-            (clearFilters)="handleClearFilters()"
-          ></app-transaction-filters>
+              <!-- Gráfico Donut -->
+              <app-category-donut-chart
+                [incomeData]="incomeByCategory()"
+                [expenseData]="expenseByCategory()"
+              ></app-category-donut-chart>
+            </div>
 
-          <!-- Tabla -->
-          <app-transactions-table-wrapper
-            [transactions]="paginatedTransactions()"
-            [total]="filteredTransactions().length"
-            [page]="currentPage()"
-            [pageSize]="pageSize()"
-            (pageChange)="handlePageChange($event)"
-            (editTransaction)="handleEditTransaction($event)"
-            (deleteTransaction)="handleDeleteTransaction($event)"
-          ></app-transactions-table-wrapper>
+            <!-- Tabla -->
+            <app-transaction-table
+              [transactions]="paginatedTransactions()"
+              [total]="filteredTransactions().length"
+              [page]="currentPage()"
+              [pageSize]="pageSize()"
+              [sortField]="sortField()"
+              [sortDirection]="sortDirection()"
+              [accounts]="accounts()"
+              (pageChange)="handlePageChange($event)"
+              (sortChange)="handleSort($event)"
+              (editTransaction)="handleEditTransaction($event)"
+              (deleteTransaction)="handleDeleteTransaction($event)"
+            ></app-transaction-table>
+          </div>
         </div>
 
         <!-- Transaction Modal -->
@@ -112,25 +141,80 @@ export interface TransactionFilters {
           (closeModal)="closeTransactionModal()"
           (transactionCreated)="onTransactionCreated($event)"
         ></app-transaction-modal>
+
+        <!-- Confirm Delete Modal -->
+        <app-confirm-modal
+          *ngIf="showConfirmDelete()"
+          [title]="'Eliminar transacción'"
+          [message]="'¿Estás seguro de que quieres eliminar esta transacción?'"
+          [submessage]="'Esta acción no se puede deshacer.'"
+          [confirmText]="'Eliminar'"
+          [cancelText]="'Cancelar'"
+          [type]="'danger'"
+          (confirm)="confirmDelete()"
+          (cancel)="cancelDelete()"
+        ></app-confirm-modal>
+
+        <!-- Edit Transaction Modal -->
+        <app-edit-transaction-modal
+          *ngIf="showEditModal()"
+          [transaction]="transactionToEdit()!"
+          (closeModal)="closeEditModal()"
+          (transactionUpdated)="onTransactionUpdated($event)"
+        ></app-edit-transaction-modal>
       </main>
+      
+      <app-footer></app-footer>
     </div>
   `,
   styles: [`
     .transactions-layout {
       min-height: 100vh;
-      background-color: #f8fafc;
+      background: var(--bg-app, #f8fafc);
     }
 
     .main-content {
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
       padding: 2rem;
     }
 
-    .content-body {
+    .content-grid {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .sidebar-filters {
+      position: sticky;
+      top: 2rem;
+    }
+
+    .main-content-area {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
+    }
+
+    .kpis-and-chart-container {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar-filters {
+        position: static;
+      }
+
+      .kpis-and-chart-container {
+        grid-template-columns: 1fr;
+      }
     }
 
     .loading-container,
@@ -202,10 +286,26 @@ export class TransactionsComponent implements OnInit {
   activeFilters = signal<TransactionFilters>({});
   currentPage = signal<number>(1);
   pageSize = signal<number>(10);
+  
+  // Period state (para mostrar en KPIs)
+  selectedMonth = signal<number>(new Date().getMonth() + 1);
+  selectedYear = signal<number>(new Date().getFullYear());
+  
+  // Sorting state
+  sortField = signal<'date' | 'amount' | null>(null);
+  sortDirection = signal<'asc' | 'desc'>('desc');
 
   // Modal state
   showTransactionModal = signal<boolean>(false);
   transactionModalConfig = signal<TransactionModalConfig | null>(null);
+
+  // Confirm delete modal state
+  showConfirmDelete = signal<boolean>(false);
+  transactionToDelete = signal<Transaction | null>(null);
+
+  // Edit modal state
+  showEditModal = signal<boolean>(false);
+  transactionToEdit = signal<Transaction | null>(null);
 
   // Computed
   filteredTransactions = computed(() => {
@@ -244,25 +344,30 @@ export class TransactionsComponent implements OnInit {
       filtered = filtered.filter(t => Math.abs(t.amount) <= filters.amountMax!);
     }
 
-    if (filters.dateFrom) {
-      filtered = filtered.filter(t => {
-        const date = t.date || t.transaction_date || '';
-        return date >= filters.dateFrom!;
-      });
-    }
+    // Los filtros de fecha (dateFrom/dateTo) ya están aplicados en el backend
+    // cuando se cargan las transacciones del periodo seleccionado
 
-    if (filters.dateTo) {
-      filtered = filtered.filter(t => {
-        const date = t.date || t.transaction_date || '';
-        return date <= filters.dateTo!;
-      });
-    }
-
-    // Ordenar por fecha descendente (más recientes primero)
+    // Ordenar según el campo seleccionado
+    const sortField = this.sortField();
+    const sortDir = this.sortDirection();
+    
     return filtered.sort((a, b) => {
-      const dateA = new Date(a.date || a.transaction_date || '').getTime();
-      const dateB = new Date(b.date || b.transaction_date || '').getTime();
-      return dateB - dateA;
+      let compareValue = 0;
+      
+      if (sortField === 'date') {
+        const dateA = new Date(a.date || a.transaction_date || '').getTime();
+        const dateB = new Date(b.date || b.transaction_date || '').getTime();
+        compareValue = dateB - dateA;
+      } else if (sortField === 'amount') {
+        compareValue = Math.abs(b.amount) - Math.abs(a.amount);
+      } else {
+        // Por defecto: fecha descendente (más recientes primero)
+        const dateA = new Date(a.date || a.transaction_date || '').getTime();
+        const dateB = new Date(b.date || b.transaction_date || '').getTime();
+        compareValue = dateB - dateA;
+      }
+      
+      return sortDir === 'desc' ? compareValue : -compareValue;
     });
   });
 
@@ -274,55 +379,208 @@ export class TransactionsComponent implements OnInit {
 
   // KPIs calculados
   monthlyIncome = computed(() => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    const filterMonth = this.selectedMonth() - 1; // getMonth() retorna 0-11
+    const filterYear = this.selectedYear();
 
     return this.filteredTransactions()
       .filter(t => {
         const date = new Date(t.date || t.transaction_date || '');
         const type = t.type || t.transaction_type;
-        return date.getMonth() === currentMonth && 
-               date.getFullYear() === currentYear &&
+        return date.getMonth() === filterMonth && 
+               date.getFullYear() === filterYear &&
                type === 'income';
       })
       .reduce((sum, t) => sum + Math.abs(t.amount), 0);
   });
 
   monthlyExpenses = computed(() => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    const filterMonth = this.selectedMonth() - 1; // getMonth() retorna 0-11
+    const filterYear = this.selectedYear();
 
     return this.filteredTransactions()
       .filter(t => {
         const date = new Date(t.date || t.transaction_date || '');
         const type = t.type || t.transaction_type;
-        return date.getMonth() === currentMonth && 
-               date.getFullYear() === currentYear &&
+        return date.getMonth() === filterMonth && 
+               date.getFullYear() === filterYear &&
                type === 'expense';
       })
       .reduce((sum, t) => sum + Math.abs(t.amount), 0);
   });
 
   balance = computed(() => this.monthlyIncome() - this.monthlyExpenses());
+  
+  // Balance del mes anterior
+  previousMonthBalance = computed(() => {
+    const now = new Date();
+    const previousMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+    const previousYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+    
+    const income = this.transactions()
+      .filter(t => {
+        const date = new Date(t.date || t.transaction_date || '');
+        const type = t.type || t.transaction_type;
+        return date.getMonth() === previousMonth && 
+               date.getFullYear() === previousYear &&
+               type === 'income';
+      })
+      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    
+    const expenses = this.transactions()
+      .filter(t => {
+        const date = new Date(t.date || t.transaction_date || '');
+        const type = t.type || t.transaction_type;
+        return date.getMonth() === previousMonth && 
+               date.getFullYear() === previousYear &&
+               type === 'expense';
+      })
+      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    
+    return income - expenses;
+  });
 
   balanceVariation = computed(() => {
-    // TODO: Calcular variación real comparando con mes anterior
-    // Por ahora retornamos un valor mock
-    return 5.2;
+    const current = this.balance();
+    const previous = this.previousMonthBalance();
+    
+    if (previous === 0) return 0;
+    
+    return ((current - previous) / Math.abs(previous)) * 100;
   });
+
+  // Datos por categoría para el gráfico donut
+  incomeByCategory = computed(() => {
+    const filterMonth = this.selectedMonth() - 1;
+    const filterYear = this.selectedYear();
+    
+    const incomeTransactions = this.filteredTransactions()
+      .filter(t => {
+        const date = new Date(t.date || t.transaction_date || '');
+        const type = t.type || t.transaction_type;
+        return date.getMonth() === filterMonth && 
+               date.getFullYear() === filterYear &&
+               type === 'income';
+      });
+
+    return this.aggregateByCategory(incomeTransactions, '#10b981');
+  });
+
+  expenseByCategory = computed(() => {
+    const filterMonth = this.selectedMonth() - 1;
+    const filterYear = this.selectedYear();
+    
+    const expenseTransactions = this.filteredTransactions()
+      .filter(t => {
+        const date = new Date(t.date || t.transaction_date || '');
+        const type = t.type || t.transaction_type;
+        return date.getMonth() === filterMonth && 
+               date.getFullYear() === filterYear &&
+               type === 'expense';
+      });
+
+    return this.aggregateByCategory(expenseTransactions, '#ef4444');
+  });
+
+  private aggregateByCategory(transactions: Transaction[], defaultColor: string): CategoryData[] {
+    const categoryMap = new Map<string, number>();
+    
+    transactions.forEach(t => {
+      const categoryId = t.category_id;
+      if (!categoryId) return;
+      
+      const amount = Math.abs(t.amount);
+      const current = categoryMap.get(categoryId) || 0;
+      categoryMap.set(categoryId, current + amount);
+    });
+
+    const categories = this.categories();
+    const result: CategoryData[] = [];
+    
+    categoryMap.forEach((total, categoryId) => {
+      const category = categories.find(c => c.id === categoryId);
+      const categoryName = category?.name || 'Sin categoría';
+      
+      result.push({
+        category: categoryName,
+        total: total,
+        color: this.getCategoryColor(categoryName, defaultColor)
+      });
+    });
+
+    // Ordenar por total descendente
+    const sorted = result.sort((a, b) => b.total - a.total);
+    
+    console.log(`📊 Aggregated ${transactions.length} transactions into ${sorted.length} categories:`, sorted);
+    
+    return sorted;
+  }
+
+  private getCategoryColor(categoryName: string, defaultColor: string): string {
+    // Colores predefinidos para categorías comunes
+    const colorMap: { [key: string]: string } = {
+      // Gastos
+      'Alimentación': '#f97316',
+      'Supermercado': '#fb923c',
+      'Restaurantes': '#fdba74',
+      'Transporte': '#3b82f6',
+      'Gasolina': '#60a5fa',
+      'Transporte público': '#93c5fd',
+      'Vivienda': '#8b5cf6',
+      'Alquiler': '#a78bfa',
+      'Hipoteca': '#c4b5fd',
+      'Servicios': '#06b6d4',
+      'Luz': '#22d3ee',
+      'Agua': '#67e8f9',
+      'Internet': '#a5f3fc',
+      'Teléfono': '#cffafe',
+      'Entretenimiento': '#ec4899',
+      'Ocio': '#f472b6',
+      'Suscripciones': '#f9a8d4',
+      'Salud': '#14b8a6',
+      'Farmacia': '#2dd4bf',
+      'Médico': '#5eead4',
+      'Educación': '#f59e0b',
+      'Compras': '#84cc16',
+      'Ropa': '#a3e635',
+      'Hogar': '#6366f1',
+      
+      // Ingresos
+      'Salario': '#10b981',
+      'Nómina': '#34d399',
+      'Freelance': '#6ee7b7',
+      'Inversiones': '#059669',
+      'Alquiler recibido': '#047857',
+      'Otros ingresos': '#065f46'
+    };
+
+    return colorMap[categoryName] || defaultColor;
+  }
 
   ngOnInit(): void {
     this.loadData();
   }
 
-  loadData(): void {
+  loadData(month?: number, year?: number): void {
     this.loading.set(true);
     this.error.set(null);
 
-    // Cargar transacciones
-    this.transactionService.getTransactions().subscribe({
+    // Usar el mes y año proporcionados o los actuales
+    const filterMonth = month !== undefined ? month : this.selectedMonth();
+    const filterYear = year !== undefined ? year : this.selectedYear();
+
+    // Calcular dateFrom y dateTo para el mes seleccionado
+    const monthStr = filterMonth.toString().padStart(2, '0');
+    const lastDay = new Date(filterYear, filterMonth, 0).getDate();
+    const dateFrom = `${filterYear}-${monthStr}-01`;
+    const dateTo = `${filterYear}-${monthStr}-${lastDay.toString().padStart(2, '0')}`;
+
+    console.log(`📅 Cargando transacciones del periodo: ${dateFrom} a ${dateTo}`);
+
+    // Cargar transacciones del periodo específico
+    this.transactionService.getTransactions({
+      date_from: dateFrom,
+      date_to: dateTo
+    }).subscribe({
       next: (transactions) => {
         this.transactions.set(transactions);
         this.loading.set(false);
@@ -356,13 +614,41 @@ export class TransactionsComponent implements OnInit {
   }
 
   handleFiltersChange(filters: TransactionFilters): void {
-    this.activeFilters.set(filters);
     this.currentPage.set(1); // Reset a la primera página
+    
+    // Detectar si cambió el periodo (mes o año)
+    const monthChanged = filters.selectedMonth !== undefined && filters.selectedMonth !== this.selectedMonth();
+    const yearChanged = filters.selectedYear !== undefined && filters.selectedYear !== this.selectedYear();
+    const periodChanged = monthChanged || yearChanged;
+    
+    // Si cambió el periodo, actualizar y recargar desde backend
+    if (periodChanged) {
+      console.log(`🔄 Periodo cambiado: mes=${filters.selectedMonth}, año=${filters.selectedYear}`);
+      
+      if (filters.selectedMonth !== undefined) {
+        this.selectedMonth.set(filters.selectedMonth);
+      }
+      if (filters.selectedYear !== undefined) {
+        this.selectedYear.set(filters.selectedYear);
+      }
+      
+      // Recargar transacciones con el nuevo periodo
+      this.loadData(filters.selectedMonth, filters.selectedYear);
+    }
+    
+    // Actualizar filtros (sin recargar transacciones)
+    this.activeFilters.set(filters);
   }
 
   handleClearFilters(): void {
+    const now = new Date();
     this.activeFilters.set({});
     this.currentPage.set(1);
+    this.selectedMonth.set(now.getMonth() + 1);
+    this.selectedYear.set(now.getFullYear());
+    
+    // Recargar transacciones del mes actual
+    this.loadData(now.getMonth() + 1, now.getFullYear());
   }
 
   handlePageChange(page: number): void {
@@ -396,13 +682,62 @@ export class TransactionsComponent implements OnInit {
     this.loadData();
   }
 
+  handleSort(field: 'date' | 'amount'): void {
+    if (this.sortField() === field) {
+      // Toggle direction
+      this.sortDirection.set(this.sortDirection() === 'desc' ? 'asc' : 'desc');
+    } else {
+      // New field, default to descending
+      this.sortField.set(field);
+      this.sortDirection.set('desc');
+    }
+  }
+
   handleEditTransaction(transaction: Transaction): void {
-    // TODO: Implementar edición
-    console.log('Editar transacción:', transaction);
+    console.log('✏️ Abriendo modal de edición para:', transaction);
+    this.transactionToEdit.set(transaction);
+    this.showEditModal.set(true);
   }
 
   handleDeleteTransaction(transaction: Transaction): void {
-    // TODO: Implementar eliminación
-    console.log('Eliminar transacción:', transaction);
+    this.transactionToDelete.set(transaction);
+    this.showConfirmDelete.set(true);
+  }
+
+  confirmDelete(): void {
+    const transaction = this.transactionToDelete();
+    if (!transaction) return;
+
+    this.transactionService.deleteTransaction(transaction.id).subscribe({
+      next: () => {
+        console.log('✅ Transacción eliminada');
+        this.showConfirmDelete.set(false);
+        this.transactionToDelete.set(null);
+        this.loadData();
+      },
+      error: (err) => {
+        console.error('❌ Error al eliminar transacción:', err);
+        alert('Error al eliminar la transacción');
+        this.showConfirmDelete.set(false);
+        this.transactionToDelete.set(null);
+      }
+    });
+  }
+
+  cancelDelete(): void {
+    this.showConfirmDelete.set(false);
+    this.transactionToDelete.set(null);
+  }
+  
+  closeEditModal(): void {
+    this.showEditModal.set(false);
+    this.transactionToEdit.set(null);
+  }
+  
+  onTransactionUpdated(transaction: Transaction): void {
+    console.log('✅ Transacción actualizada:', transaction);
+    this.showEditModal.set(false);
+    this.transactionToEdit.set(null);
+    this.loadData(this.selectedMonth(), this.selectedYear());
   }
 }

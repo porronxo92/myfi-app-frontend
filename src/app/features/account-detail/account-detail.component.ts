@@ -106,7 +106,7 @@ import { TransactionModalComponent, TransactionModalConfig } from '../../shared/
   styles: [`
     .account-detail-page {
       min-height: 100vh;
-      background: #f8fafc;
+      background: var(--bg-app, #f8fafc);
     }
 
     .page-container {

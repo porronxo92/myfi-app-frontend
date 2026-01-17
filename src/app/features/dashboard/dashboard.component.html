@@ -1,0 +1,269 @@
+<!-- Navbar -->
+<app-navbar></app-navbar>
+
+<!-- Dashboard Main Container -->
+<div class="dashboard-container">
+  
+  <!-- Header con filtros -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="header-title">
+        <h1>Dashboard Financiero</h1>
+        <p class="subtitle">Resumen inteligente de tus finanzas</p>
+      </div>
+    </div>
+
+    <!-- Filtros del Dashboard -->
+    <div class="filters-placeholder">
+      <div class="filter-item">
+        <label>Mes</label>
+        <select 
+          class="filter-select"
+          [value]="(dashboardFilters$ | async)?.month || currentMonth"
+          (change)="onMonthChange($event)">
+          <option value="1">Enero</option>
+          <option value="2">Febrero</option>
+          <option value="3">Marzo</option>
+          <option value="4">Abril</option>
+          <option value="5">Mayo</option>
+          <option value="6">Junio</option>
+          <option value="7">Julio</option>
+          <option value="8">Agosto</option>
+          <option value="9">Septiembre</option>
+          <option value="10">Octubre</option>
+          <option value="11">Noviembre</option>
+          <option value="12">Diciembre</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Año</label>
+        <select 
+          class="filter-select" 
+          [value]="(dashboardFilters$ | async)?.year || currentYear"
+          (change)="onYearChange($event)">
+          <option *ngFor="let year of availableYears()" [value]="year">{{ year }}</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>Cuenta</label>
+        <select 
+          class="filter-select"
+          [value]="(dashboardFilters$ | async)?.accountId || ''"
+          (change)="onAccountChange($event)">
+          <option value="">Todas las cuentas</option>
+          <option *ngFor="let account of accounts()" [value]="account.id">
+            {{ account.name }} ({{ account.balance | number:'1.2-2' }}€)
+          </option>
+        </select>
+      </div>
+      <button class="btn-refresh" (click)="refreshDashboard()" [disabled]="dashboardLoading$ | async">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+        </svg>
+        Actualizar
+      </button>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div *ngIf="dashboardLoading$ | async" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando datos financieros...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="dashboardError$ | async as error" class="error-state">
+    <div class="error-content">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+      </svg>
+      <h3>Error al cargar datos</h3>
+      <p>{{ error }}</p>
+      <button class="btn-retry" (click)="retry()">Reintentar</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="(dashboardData$ | async) as data" class="dashboard-content">
+    
+    <!-- Hero Section: 4 Summary Cards (añadido Savings Rate) -->
+    <section class="hero-section">
+      <div class="summary-cards">
+        <div class="summary-card balance">
+          <div class="card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
+            </svg>
+          </div>
+          <div class="card-content">
+            <h3>Balance Anual</h3>
+            <p class="amount">€{{ data.annualSummary.balance?.current_balance || 0 | number:'1.2-2' }}</p>
+            <span class="trend-label" *ngIf="data.annualSummary.balance?.initial_balance">
+              Inicial: €{{ data.annualSummary.balance.initial_balance | number:'1.2-2' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="summary-card income">
+          <div class="card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+            </svg>
+          </div>
+          <div class="card-content">
+            <h3>Ingresos Anuales</h3>
+            <p class="amount">€{{ data.annualSummary.income?.total_income || 0 | number:'1.2-2' }}</p>
+            <span class="trend-label" *ngIf="data.annualSummary.income?.monthly_average">
+              Media mensual: €{{ data.annualSummary.income.monthly_average | number:'1.2-2' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="summary-card expenses">
+          <div class="card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6L9 12.75l4.286-4.286a11.948 11.948 0 014.306 6.43l.776 2.898m0 0l3.182-5.511m-3.182 5.511l-5.511-3.181" />
+            </svg>
+          </div>
+          <div class="card-content">
+            <h3>Gastos Anuales</h3>
+            <p class="amount">€{{ data.annualSummary.expenses?.total_expenses || 0 | number:'1.2-2' }}</p>
+            <span class="trend-label" *ngIf="data.annualSummary.expenses?.monthly_average">
+              Media mensual: €{{ data.annualSummary.expenses.monthly_average | number:'1.2-2' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="summary-card savings">
+          <div class="card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="card-content">
+            <h3>Tasa de Ahorro Anual</h3>
+            <p class="amount">{{ data.annualSummary.savingsRate?.savings_percentage || 0 | number:'1.1-1' }}%</p>
+            <span class="trend-label" *ngIf="data.annualSummary.savingsRate?.savings_amount !== undefined">
+              Ahorro: €{{ data.annualSummary.savingsRate.savings_amount | number:'1.2-2' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charts Section -->
+    <app-charts-section
+      [monthlyCategoryBreakdown]="data.monthlyCategoryBreakdown"
+      [yearlyMonthlyTrend]="data.yearlyMonthlyTrend"
+      [monthName]="getMonthName((dashboardFilters$ | async)?.month || currentMonth)"
+      [year]="(dashboardFilters$ | async)?.year || currentYear">
+    </app-charts-section>
+
+    <!-- Financial Health Score -->
+    <section class="health-section">
+      <app-health-card 
+        [year]="(dashboardFilters$ | async)?.year || currentYear"
+        [accountId]="(dashboardFilters$ | async)?.accountId || null">
+      </app-health-card>
+    </section>
+
+    <!-- Alerts & Anomalies Section -->
+    <section class="alerts-section" *ngIf="data.anomalies && data.anomalies.length > 0">
+      <h2>🚨 Alertas y Transacciones Inusuales</h2>
+      <div class="alerts-grid">
+        <div class="alert-card" *ngFor="let anomaly of data.anomalies.slice(0, 3)">
+          <div class="alert-icon severity-{{ anomaly.severity }}">⚠️</div>
+          <div class="alert-content">
+            <h4>{{ anomaly.description }}</h4>
+            <p class="alert-amount">€{{ anomaly.amount | number:'1.2-2' }}</p>
+            <span class="alert-badge">Desviación: {{ anomaly.z_score | number:'1.1-1' }}σ</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Insights Section -->
+    <section class="insights-section" *ngIf="data.insights && data.insights.length > 0">
+      <h2>💡 Insights Financieros</h2>
+      <div class="insights-grid">
+        <div class="insight-card" 
+          *ngFor="let insight of data.insights" 
+          [ngClass]="'insight-' + (insight.type || 'info')">
+          <div class="insight-icon">
+            <span *ngIf="insight.type === 'alert'">⚠️</span>
+            <span *ngIf="insight.type === 'positive'">✅</span>
+            <span *ngIf="insight.type === 'recommendation'">💡</span>
+            <span *ngIf="!insight.type || insight.type === 'info'">ℹ️</span>
+          </div>
+          <div class="insight-content">
+            <h4>{{ insight.title }}</h4>
+            <p>{{ insight.message }}</p>
+            <span class="insight-category" *ngIf="insight.category">{{ insight.category }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recommendations Section -->
+    <section class="recommendations-section" *ngIf="data.recommendations && data.recommendations.length > 0">
+      <h2>🎯 Recomendaciones Personalizadas</h2>
+      <div class="recommendations-grid">
+        <div class="recommendation-card" 
+          *ngFor="let rec of data.recommendations.slice(0, 4)"
+          [ngClass]="'priority-' + (rec.priority || 'medium')">
+          <div class="rec-header">
+            <span class="rec-priority">{{ rec.priority || 'Media' }}</span>
+            <span class="rec-category" *ngIf="rec.category">{{ rec.category }}</span>
+          </div>
+          <h4>{{ rec.title }}</h4>
+          <p>{{ rec.description }}</p>
+          <div class="rec-savings" *ngIf="rec.potential_savings">
+            <span class="savings-label">Ahorro potencial:</span>
+            <span class="savings-amount">€{{ rec.potential_savings | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recurring Expenses -->
+    <section class="recurring-section" *ngIf="data.recurringExpenses && data.recurringExpenses.length > 0">
+      <h2>🔄 Gastos Recurrentes Detectados</h2>
+      <div class="recurring-list">
+        <div class="recurring-item" *ngFor="let expense of data.recurringExpenses.slice(0, 5)">
+          <div class="recurring-info">
+            <h4>{{ expense.merchant || expense.description }}</h4>
+            <p class="recurring-frequency">{{ expense.frequency }} · {{ expense.category }}</p>
+          </div>
+          <div class="recurring-amount">
+            <span class="amount-value">€{{ expense.average_amount | number:'1.2-2' }}</span>
+            <span class="amount-label">promedio</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Chatbot Floating Button -->
+  <button 
+    class="chatbot-toggle"
+    (click)="toggleChatbot()"
+    [class.active]="isChatbotOpen()"
+    title="Asistente financiero">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+    </svg>
+  </button>
+
+  <!-- Chatbot Modal -->
+  <div class="chatbot-modal-overlay" *ngIf="isChatbotOpen()" (click)="closeChatbot()">
+    <div class="chatbot-modal" (click)="$event.stopPropagation()">
+      <app-financial-chatbot 
+        (close)="closeChatbot()">
+      </app-financial-chatbot>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<app-footer></app-footer>

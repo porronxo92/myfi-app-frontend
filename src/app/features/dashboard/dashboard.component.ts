@@ -1,788 +1,57 @@
-import { Component, OnInit, inject, computed, signal } from '@angular/core';
+import { Component, OnInit, inject, computed, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService } from '../../core/services/account.service';
 import { TransactionService } from '../../core/services/transaction.service';
 import { CategoryService } from '../../core/services/category.service';
-import { AddAccountModalComponent } from '../../shared/components/add-account-modal.component';
+import { DashboardStateService } from '../../core/services/dashboard-state.service';
+import { ChatbotService } from '../../core/services/chatbot.service';
 import { NavbarComponent } from '../../shared/components/navbar.component';
-import { DashboardSummaryComponent } from './components/dashboard-summary.component';
-import { AccountsListComponent } from './components/accounts-list.component';
-import { RecentTransactionsComponent } from './components/recent-transactions.component';
-import { BalanceTrendChartComponent } from './components/balance-trend-chart.component';
+import { FooterComponent } from '../../shared/components/footer.component';
+import { FinancialChatbotComponent } from './components/financial-chatbot.component';
+import { HealthCardComponent } from './components/health-card.component';
+import { ChartsSectionComponent } from './components/charts-section.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    CommonModule, 
-    AddAccountModalComponent,
+    CommonModule,
     NavbarComponent,
-    DashboardSummaryComponent,
-    AccountsListComponent,
-    RecentTransactionsComponent,
-    BalanceTrendChartComponent
+    FooterComponent,
+    FinancialChatbotComponent,
+    HealthCardComponent,
+    ChartsSectionComponent
   ],
-  template: `
-    <div class="dashboard-layout">
-      <!-- Top Navbar -->
-      <app-navbar></app-navbar>
-
-      <!-- Main Content -->
-      <main class="main-content">
-        <!-- Header -->
-        <header class="content-header">
-          <div class="header-text">
-            <h1 class="page-title">Balance global financiero</h1>
-            <p class="page-subtitle">Visión general de tus cuentas.</p>
-          </div>
-        </header>
-
-        <div class="content-body">
-          <!-- Loading State -->
-          <div class="loading-container" *ngIf="isLoading()">
-            <div class="spinner"></div>
-            <p>Cargando datos...</p>
-          </div>
-
-          <!-- Error State -->
-          <div class="error-container" *ngIf="hasError()">
-            <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <p class="error-message">{{ errorMessage() }}</p>
-            <button class="btn-retry" (click)="loadData()">Reintentar</button>
-          </div>
-
-          <!-- Content Modular -->
-          <div *ngIf="!isLoading() && !hasError()">
-            <!-- 1. Zona superior — KPIs financieros -->
-            <app-dashboard-summary></app-dashboard-summary>
-
-            <!-- 2 & 3. Zona central + lateral derecha -->
-            <div class="dashboard-grid">
-              <!-- 2. Zona central izquierda — Tendencia de balance -->
-              <div class="grid-main">
-                <app-balance-trend-chart></app-balance-trend-chart>
-              </div>
-
-              <!-- 3. Zona lateral derecha — Transacciones recientes -->
-              <div class="grid-sidebar">
-                <app-recent-transactions></app-recent-transactions>
-              </div>
-            </div>
-
-            <!-- 4. Zona inferior — Cuentas bancarias -->
-            <app-accounts-list (addAccount)="openNewAccountModal()"></app-accounts-list>
-          </div>
-        </div>
-      </main>
-
-      <!-- Modal Crear Cuenta -->
-      <app-add-account-modal
-        *ngIf="showAccountModal()"
-        (closeModal)="closeAccountModal()"
-        (accountCreated)="onAccountCreated($event)"
-      ></app-add-account-modal>
-
-      <!-- Modal de confirmación de logout -->
-      <div class="modal-overlay" *ngIf="showLogoutModal()" (click)="showLogoutModal.set(false)">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <div class="modal-icon warning">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-              </svg>
-            </div>
-            <h3 class="modal-title">¿Cerrar sesión?</h3>
-            <p class="modal-description">Estás a punto de cerrar tu sesión. ¿Estás seguro de que deseas continuar?</p>
-          </div>
-          <div class="modal-actions">
-            <button class="btn-modal-secondary" (click)="showLogoutModal.set(false)">
-              Cancelar
-            </button>
-            <button class="btn-modal-danger" (click)="confirmLogout()">
-              Cerrar sesión
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .dashboard-layout {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      background: #f8fafc;
-    }
-
-    /* MAIN CONTENT */
-    .main-content {
-      flex: 1;
-      max-width: 1600px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    .content-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .page-title {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0;
-    }
-
-    .page-subtitle {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin: 0.25rem 0 0 0;
-    }
-
-    /* DASHBOARD GRID LAYOUT */
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .grid-main {
-      min-width: 0;
-    }
-
-    .grid-sidebar {
-      min-width: 0;
-    }
-
-    @media (max-width: 1024px) {
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.2s;
-      box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
-    }
-
-    .btn-icon {
-      width: 18px;
-      height: 18px;
-    }
-
-    /* LOADING & ERROR STATES */
-    .loading-container,
-    .error-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 4rem 2rem;
-      text-align: center;
-    }
-
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #e2e8f0;
-      border-top-color: #3b82f6;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 1rem;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .error-icon {
-      width: 64px;
-      height: 64px;
-      color: #ef4444;
-      margin-bottom: 1rem;
-    }
-
-    .error-message {
-      font-size: 1.125rem;
-      color: #64748b;
-      margin-bottom: 1.5rem;
-    }
-
-    .btn-retry {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn-retry:hover {
-      background: #2563eb;
-    }
-
-    /* KPI CARDS */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .kpi-card {
-      background: white;
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s;
-    }
-
-    .kpi-card:hover {
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      transform: translateY(-2px);
-    }
-
-    .kpi-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
-    .kpi-label {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin: 0 0 0.5rem 0;
-      font-weight: 500;
-    }
-
-    .kpi-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0 0 0.75rem 0;
-    }
-
-    .kpi-change {
-      font-size: 0.813rem;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      font-weight: 500;
-      margin: 0;
-    }
-
-    .kpi-change.positive {
-      color: #10b981;
-    }
-
-    .kpi-change.negative {
-      color: #ef4444;
-    }
-
-    .kpi-change.neutral {
-      color: #64748b;
-    }
-
-    .change-icon {
-      width: 14px;
-      height: 14px;
-    }
-
-    .kpi-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .kpi-icon svg {
-      width: 28px;
-      height: 28px;
-    }
-
-    .kpi-icon.balance {
-      background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
-      color: #7c3aed;
-    }
-
-    .kpi-icon.income {
-      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-      color: #059669;
-    }
-
-    .kpi-icon.expenses {
-      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-      color: #dc2626;
-    }
-
-    /* CONTENT GRID */
-    .content-grid {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    @media (max-width: 1200px) {
-      .content-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* TRANSACTIONS CARD */
-    .transactions-card {
-      background: white;
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
-
-    .card-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0;
-    }
-
-    .link-secondary {
-      font-size: 0.875rem;
-      color: #3b82f6;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .link-secondary:hover {
-      text-decoration: underline;
-    }
-
-    .transactions-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .transaction-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.75rem;
-      border-radius: 10px;
-      transition: background 0.2s;
-    }
-
-    .transaction-item:hover {
-      background: #f8fafc;
-    }
-
-    .transaction-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .transaction-icon svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .transaction-icon.income {
-      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-      color: #059669;
-    }
-
-    .transaction-icon.expense {
-      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-      color: #dc2626;
-    }
-
-    .transaction-details {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .transaction-name {
-      font-weight: 600;
-      color: #0f172a;
-      margin: 0;
-      font-size: 0.938rem;
-    }
-
-    .transaction-date {
-      font-size: 0.813rem;
-      color: #64748b;
-      margin: 0.25rem 0 0 0;
-    }
-
-    .transaction-amount {
-      font-weight: 700;
-      font-size: 0.938rem;
-      margin: 0;
-    }
-
-    .transaction-amount.positive {
-      color: #10b981;
-    }
-
-    .transaction-amount.negative {
-      color: #0f172a;
-    }
-
-    /* ACCOUNTS SECTION */
-    .accounts-section {
-      grid-column: 1 / -1;
-    }
-
-    .section-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0 0 1.5rem 0;
-    }
-
-    .accounts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .account-card {
-      background: white;
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s;
-      border: 2px solid transparent;
-    }
-
-    .account-card:hover {
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      transform: translateY(-2px);
-    }
-
-    .account-card.add-account {
-      border: 2px dashed #cbd5e1;
-      background: #f8fafc;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      gap: 0.75rem;
-    }
-
-    .account-card.add-account:hover {
-      border-color: #3b82f6;
-      background: #eff6ff;
-    }
-
-    .account-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-    }
-
-    .account-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
-      color: #7c3aed;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .account-icon svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .account-name {
-      font-weight: 600;
-      color: #0f172a;
-      margin: 0;
-      font-size: 0.938rem;
-    }
-
-    .account-type {
-      font-size: 0.813rem;
-      color: #64748b;
-      margin: 0 0 0.75rem 0;
-      text-transform: capitalize;
-    }
-
-    .account-balance {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0;
-    }
-
-    .add-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #e0e7ff;
-      color: #3b82f6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .add-icon svg {
-      width: 24px;
-      height: 24px;
-    }
-
-    .add-text {
-      font-weight: 600;
-      color: #3b82f6;
-      margin: 0;
-    }
-
-    /* EMPTY STATE */
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 2rem;
-      text-align: center;
-    }
-
-    .empty-icon {
-      width: 64px;
-      height: 64px;
-      color: #cbd5e1;
-      margin-bottom: 1rem;
-    }
-
-    .empty-text {
-      font-size: 1rem;
-      color: #64748b;
-      margin: 0 0 1.5rem 0;
-    }
-
-    .btn-empty {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .btn-empty:hover {
-      background: #2563eb;
-    }
-
-    /* ===== MODAL DE CONFIRMACIÓN ===== */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      animation: fadeIn 0.2s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
-    }
-
-    .modal-content {
-      background: white;
-      border-radius: 16px;
-      padding: 2rem;
-      max-width: 400px;
-      width: 90%;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      animation: slideUp 0.3s ease-out;
-    }
-
-    @keyframes slideUp {
-      from {
-        transform: translateY(20px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    .modal-header {
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-
-    .modal-icon {
-      width: 56px;
-      height: 56px;
-      margin: 0 auto 1rem;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-icon.warning {
-      background: #fef3c7;
-      color: #f59e0b;
-    }
-
-    .modal-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0 0 0.5rem 0;
-    }
-
-    .modal-description {
-      font-size: 0.9375rem;
-      color: #64748b;
-      margin: 0;
-      line-height: 1.5;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 0.75rem;
-    }
-
-    .btn-modal-secondary,
-    .btn-modal-danger {
-      flex: 1;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.9375rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-    }
-
-    .btn-modal-secondary {
-      background: #f1f5f9;
-      color: #475569;
-    }
-
-    .btn-modal-secondary:hover {
-      background: #e2e8f0;
-    }
-
-    .btn-modal-danger {
-      background: #ef4444;
-      color: white;
-    }
-
-    .btn-modal-danger:hover {
-      background: #dc2626;
-      box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
-    }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-      .navbar-content {
-        padding: 0 1rem;
-      }
-
-      .navbar-left {
-        gap: 1.5rem;
-      }
-
-      .nav-menu {
-        display: none;
-      }
-
-      .user-name {
-        display: none;
-      }
-
-      .main-content {
-        padding: 1rem;
-      }
-
-      .page-title {
-        font-size: 1.5rem;
-      }
-
-      .kpi-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .content-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  `]
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private accountService = inject(AccountService);
   private transactionService = inject(TransactionService);
   private categoryService = inject(CategoryService);
+  private dashboardState = inject(DashboardStateService);
+  private chatbotService = inject(ChatbotService);
   private router = inject(Router);
+  private destroy$ = new Subject<void>();
   
   // Auth
   user = this.authService.user;
 
   // Data from services (solo lo necesario para el dashboard principal)
   accounts = this.accountService.accounts;
+
+  // New dashboard observables
+  dashboardData$ = this.dashboardState.data$;
+  dashboardLoading$ = this.dashboardState.loading$;
+  dashboardError$ = this.dashboardState.error$;
+  dashboardFilters$ = this.dashboardState.filters$;
+
+  // Chatbot state
+  isChatbotOpen = signal(false);
 
   // Loading & Error states
   isLoading = computed(() => 
@@ -808,9 +77,28 @@ export class DashboardComponent implements OnInit {
   showAccountModal = signal(false);
   showLogoutModal = signal(false);
 
+  // Filtros state
+  currentYear = new Date().getFullYear();
+  currentMonth = new Date().getMonth() + 1;
+  availableYears = signal<number[]>([this.currentYear]);
+
   ngOnInit(): void {
     console.log('📊 Dashboard cargado para usuario:', this.user()?.email);
     this.loadData();
+    this.loadDashboardAnalytics();
+    this.loadAvailableYears();
+
+    // Subscribe to filter changes
+    this.dashboardFilters$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(filters => {
+        console.log('Filtros de dashboard actualizados:', filters);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadData(): void {
@@ -842,8 +130,8 @@ export class DashboardComponent implements OnInit {
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
     this.transactionService.getTransactions({
-      start_date: firstDay.toISOString().split('T')[0],
-      end_date: lastDay.toISOString().split('T')[0]
+      date_from: firstDay.toISOString().split('T')[0],
+      date_to: lastDay.toISOString().split('T')[0]
     }).subscribe({
       next: () => console.log('✅ Transacciones cargadas'),
       error: (err) => console.error('❌ Error cargando transacciones:', err)
@@ -886,5 +174,130 @@ export class DashboardComponent implements OnInit {
         // Aquí podrías mostrar un mensaje de error al usuario
       }
     });
+  }
+
+  // ============================================
+  // NEW METHODS FOR DASHBOARD REDESIGN
+  // ============================================
+
+  /**
+   * Load dashboard analytics data
+   */
+  loadDashboardAnalytics(): void {
+    console.log('📊 Cargando analytics del dashboard...');
+    this.dashboardState.loadDashboardData();
+  }
+
+  /**
+   * Handle filter changes
+   */
+  onFiltersChange(filters: any): void {
+    console.log('🔍 Actualizando filtros:', filters);
+    this.dashboardState.updateFilters(filters);
+  }
+
+  /**
+   * Load available years with transactions
+   */
+  private loadAvailableYears(): void {
+    // Asumiendo que tienes un servicio de analytics inyectado
+    // Por ahora, generar años desde 2020 hasta el año actual
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = currentYear; year >= 2020; year--) {
+      years.push(year);
+    }
+    this.availableYears.set(years);
+  }
+
+  /**
+   * Handle year filter change
+   */
+  onYearChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const year = Number(select.value);
+    console.log('📅 Año cambiado a:', year);
+    this.dashboardState.setYear(year);
+  }
+
+  /**
+   * Handle month filter change
+   */
+  onMonthChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const month = Number(select.value);
+    console.log('📆 Mes cambiado a:', month);
+    this.dashboardState.setMonth(month);
+  }
+
+  /**
+   * Handle period filter change (mantener por compatibilidad)
+   */
+  onPeriodChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const period = select.value;
+    console.log('📅 Período cambiado a:', period);
+    this.dashboardState.setPeriod(period);
+  }
+
+  /**
+   * Handle account filter change
+   */
+  onAccountChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const accountId = select.value || null;
+    console.log('🏦 Cuenta cambiada a:', accountId);
+    this.dashboardState.setAccount(accountId);
+  }
+
+  /**
+   * Refresh dashboard data manually
+   */
+  refreshDashboard(): void {
+    console.log('🔄 Refrescando dashboard manualmente...');
+    this.dashboardState.loadDashboardData();
+  }
+
+  /**
+   * Refresh dashboard data
+   */
+  onRefresh(): void {
+    console.log('🔄 Refrescando dashboard...');
+    this.loadData();
+    this.loadDashboardAnalytics();
+  }
+
+  /**
+   * Toggle chatbot sidebar
+   */
+  toggleChatbot(): void {
+    this.isChatbotOpen.set(!this.isChatbotOpen());
+    console.log('💬 Chatbot abierto:', this.isChatbotOpen());
+  }
+
+  /**
+   * Close chatbot
+   */
+  closeChatbot(): void {
+    this.isChatbotOpen.set(false);
+  }
+
+  /**
+   * Retry loading on error
+   */
+  retry(): void {
+    console.log('♻️ Reintentando carga...');
+    this.onRefresh();
+  }
+
+  /**
+   * Get month name from month number
+   */
+  getMonthName(monthNumber: number): string {
+    const monthNames = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return monthNames[monthNumber - 1] || '';
   }
 }

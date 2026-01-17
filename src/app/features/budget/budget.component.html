@@ -1,0 +1,351 @@
+<app-navbar></app-navbar>
+
+<div class="budget-container">
+  <!-- Header -->
+  <div class="budget-header">
+    <div class="header-left">
+      <h1 class="title">
+        <i class="fas fa-wallet"></i>
+        Presupuesto
+      </h1>
+      <p class="subtitle">Gestiona y monitorea tus presupuestos mensuales</p>
+    </div>
+
+    <div class="header-right">
+      <!-- Botón Gestionar Categorías -->
+      <button 
+        class="btn-manage-categories" 
+        (click)="openManageCategoriesModal()"
+        title="Gestionar categorías">
+        <i class="fas fa-cog"></i>
+        <span>Administrar categorías</span>
+      </button>
+
+      <!-- Month Selector -->
+      <div class="month-selector">
+        <button class="btn-icon" (click)="goToPreviousMonth()" [disabled]="loading()">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="period-display">
+          <span class="month">{{ monthName() }}</span>
+          <span class="year">{{ selectedYear() }}</span>
+        </div>
+
+        <button class="btn-icon" (click)="goToNextMonth()" [disabled]="loading()">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando presupuesto...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error()" class="error-container">
+    <i class="fas fa-exclamation-circle"></i>
+    <p>{{ error() }}</p>
+    <button class="btn-retry" (click)="loadCurrentBudget()">
+      Reintentar
+    </button>
+  </div>
+
+  <!-- No Budget State -->
+  <div *ngIf="!loading() && !error() && !hasBudgetForCurrentMonth() && viewMode() === 'view'" class="no-budget-container">
+    <div class="empty-state">
+      <i class="fas fa-chart-pie empty-icon"></i>
+      <h2>No tienes presupuesto para {{ periodLabel() }}</h2>
+      <p>Crea un presupuesto para comenzar a controlar tus gastos mensuales</p>
+      
+      <div class="action-buttons">
+        <button class="btn-primary" (click)="goToCreateBudget()">
+          <i class="fas fa-plus"></i>
+          Crear Presupuesto
+        </button>
+        
+        <button class="btn-secondary" (click)="copyPreviousMonthBudget()">
+          <i class="fas fa-copy"></i>
+          Copiar Mes Anterior
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Budget View Mode -->
+  <div *ngIf="!loading() && !error() && hasBudgetForCurrentMonth() && viewMode() === 'view'" class="budget-view">
+    <!-- Summary Card -->
+    <div class="summary-card" *ngIf="currentProgress()">
+      <div class="summary-header">
+        <h2>Resumen de {{ periodLabel() }}</h2>
+        <div class="summary-actions">
+          <button class="btn-icon-small" (click)="goToEditBudget()" title="Editar">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-icon-small btn-danger" (click)="deleteBudget()" title="Eliminar">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="summary-stats">
+        <div class="stat-item">
+          <span class="stat-label">Presupuestado</span>
+          <span class="stat-value allocated">{{ formatCurrency(currentProgress()!.total_allocated) }}</span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-label">Gastado</span>
+          <span class="stat-value spent">{{ formatCurrency(currentProgress()!.total_spent) }}</span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-label">Restante</span>
+          <span class="stat-value remaining" [class.negative]="currentProgress()!.total_remaining < 0">
+            {{ formatCurrency(currentProgress()!.total_remaining) }}
+          </span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-label">Consumido</span>
+          <span class="stat-value percent" [style.color]="getStatusColor(currentProgress()!.status)">
+            {{ formatPercent(currentProgress()!.percent_used) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Overall Progress Bar -->
+      <div class="overall-progress">
+        <div class="progress-bar">
+          <div 
+            class="progress-fill" 
+            [style.width.%]="Math.min(currentProgress()!.percent_used, 100)"
+            [style.background-color]="getStatusColor(currentProgress()!.status)">
+          </div>
+        </div>
+        <div class="progress-label">
+          <span [style.color]="getStatusColor(currentProgress()!.status)">
+            {{ getStatusLabel(currentProgress()!.status) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget Items List -->
+    <div class="budget-items" *ngIf="currentProgress()">
+      <h3>Detalle por Categoría</h3>
+      
+      <div class="items-grid">
+        <div 
+          *ngFor="let item of currentProgress()!.items" 
+          class="budget-item-card"
+          [class.status-ok]="item.status === 'ok'"
+          [class.status-warning]="item.status === 'warning'"
+          [class.status-over]="item.status === 'over'">
+          
+          <div class="item-header">
+            <h4 class="item-title">{{ item.category_name }}</h4>
+            <span class="item-status-badge" [style.background-color]="getStatusColor(item.status)">
+              {{ getStatusLabel(item.status) }}
+            </span>
+          </div>
+
+          <div class="item-amounts">
+            <div class="amount-row">
+              <span class="amount-label">Asignado:</span>
+              <span class="amount-value">{{ formatCurrency(item.allocated) }}</span>
+            </div>
+            <div class="amount-row">
+              <span class="amount-label">Gastado:</span>
+              <span class="amount-value">{{ formatCurrency(item.spent) }}</span>
+            </div>
+            <div class="amount-row">
+              <span class="amount-label">Restante:</span>
+              <span class="amount-value" [class.negative]="item.remaining < 0">
+                {{ formatCurrency(item.remaining) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="item-progress">
+            <div class="progress-bar-small">
+              <div 
+                class="progress-fill-small" 
+                [style.width.%]="Math.min(item.percent_used, 100)"
+                [style.background-color]="getStatusColor(item.status)">
+              </div>
+            </div>
+            <span class="progress-percent" [style.color]="getStatusColor(item.status)">
+              {{ formatPercent(item.percent_used) }}
+            </span>
+          </div>
+
+          <div class="item-footer">
+            <span class="transaction-count">
+              <i class="fas fa-receipt"></i>
+              {{ item.transaction_count }} transacciones
+            </span>
+            <button 
+              class="btn-edit-item" 
+              (click)="handleEditBudgetItem(item)"
+              title="Editar partida">
+              <i class="fas fa-pencil-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create/Edit Mode -->
+  <div *ngIf="viewMode() !== 'view'" class="budget-form-container">
+    <div class="form-header">
+      <h2>{{ viewMode() === 'create' ? 'Crear' : 'Editar' }} Presupuesto - {{ periodLabel() }}</h2>
+      <button class="btn-icon-small" (click)="cancelEdit()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="budget-form">
+      <!-- Nombre del presupuesto -->
+      <div class="form-group">
+        <label for="budgetName">Nombre del presupuesto (opcional)</label>
+        <input 
+          type="text" 
+          id="budgetName"
+          class="form-control"
+          [value]="budgetForm().name"
+          (input)="updateFormName($any($event.target).value)"
+          placeholder="Ej: Plan de ahorro, Vacaciones, etc."
+        />
+      </div>
+
+      <!-- Total presupuestado -->
+      <div class="budget-total-display">
+        <span class="label">Total Presupuestado:</span>
+        <span class="amount">{{ formatCurrency(totalBudgetForm()) }}</span>
+      </div>
+
+      <!-- Lista de categorías -->
+      <div class="budget-items-form">
+        <div class="items-header">
+          <h3>Partidas del Presupuesto</h3>
+          <button 
+            class="btn-add-category" 
+            (click)="addCategory()"
+            [disabled]="availableCategories().length === 0"
+          >
+            <i class="fas fa-plus"></i>
+            Añadir Categoría
+          </button>
+        </div>
+
+        <div *ngIf="budgetForm().items.length === 0" class="empty-items">
+          <p><i class="fas fa-info-circle"></i> No hay categorías añadidas. Haz clic en "Añadir Categoría" para comenzar.</p>
+        </div>
+
+        <div class="budget-items-list">
+          <div 
+            *ngFor="let item of budgetForm().items; let i = index" 
+            class="budget-item-form-card"
+          >
+            <div class="item-form-header">
+              <span class="item-number">#{{ i + 1 }}</span>
+              <button 
+                class="btn-remove" 
+                (click)="removeCategory(i)"
+                title="Eliminar categoría"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+
+            <div class="item-form-body">
+              <!-- Selector de categoría -->
+              <div class="form-group">
+                <label>Categoría</label>
+                <select 
+                  class="form-control"
+                  [value]="item.category_id"
+                  (change)="updateItemCategory(i, $any($event.target).value)"
+                >
+                  <option [value]="item.category_id">
+                    {{ getCategoryName(item.category_id) }}
+                  </option>
+                  <option 
+                    *ngFor="let cat of availableCategories()" 
+                    [value]="cat.id"
+                  >
+                    {{ cat.name }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Monto asignado -->
+              <div class="form-group">
+                <label>Monto Asignado (€)</label>
+                <input 
+                  type="number" 
+                  class="form-control"
+                  [value]="item.allocated_amount"
+                  (input)="updateItemAmount(i, +$any($event.target).value)"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+              </div>
+
+              <!-- Notas -->
+              <div class="form-group">
+                <label>Notas (opcional)</label>
+                <textarea 
+                  class="form-control"
+                  [value]="item.notes"
+                  (input)="updateItemNotes(i, $any($event.target).value)"
+                  rows="2"
+                  placeholder="Notas o comentarios sobre esta partida..."
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="form-actions">
+        <button class="btn-secondary" (click)="cancelEdit()">
+          Cancelar
+        </button>
+        <button 
+          class="btn-primary" 
+          (click)="saveBudget()"
+          [disabled]="budgetForm().items.length === 0"
+        >
+          <i class="fas fa-save"></i>
+          {{ viewMode() === 'create' ? 'Crear Presupuesto' : 'Guardar Cambios' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Budget Item Modal -->
+<app-edit-budget-item-modal
+  *ngIf="showEditItemModal() && itemToEdit()"
+  [budgetItem]="itemToEdit()!"
+  (closeModal)="onCloseEditItemModal()"
+  (itemUpdated)="onBudgetItemUpdated()"
+></app-edit-budget-item-modal>
+
+<!-- Manage Categories Modal -->
+<app-manage-categories-modal
+  *ngIf="showManageCategoriesModal()"
+  (closeModal)="onCloseManageCategoriesModal()"
+  (categoriesUpdated)="onCategoriesUpdated()"
+></app-manage-categories-modal>
+
+<!-- Footer -->
+<app-footer></app-footer>

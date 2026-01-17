@@ -1,3 +1,44 @@
+/* ========================================
+   GLOBAL TYPOGRAPHY SYSTEM - FINTECH APP
+   ======================================== */
+
+/* CSS Variables - Typography */
+:root {
+  /* Font Families */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  
+  /* Font Weights */
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  
+  /* Letter Spacing */
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.01em;
+  
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.6;
+  --leading-loose: 1.75;
+  
+  /* Color Palette - Semantic */
+  --color-income: #10b981;      /* Verde esmeralda */
+  --color-expense: #ef4444;     /* Rojo suave */
+  --color-neutral: #64748b;     /* Slate-500 */
+  --color-neutral-dark: #475569; /* Slate-600 */
+  
+  /* Background System - Light Mode */
+  --bg-app: #f8fafc;            /* Slate-50 - Fondo principal de la app */
+  --bg-page: #ffffff;           /* Blanco - Fondo de contenido/tarjetas */
+  --bg-elevated: #ffffff;       /* Blanco - Elementos elevados */
+  --bg-hover: #f1f5f9;          /* Slate-100 - Hover states */
+}
+
 /* Reset y estilos globales */
 * {
   margin: 0;
@@ -7,14 +48,17 @@
 
 html, body {
   height: 100%;
-  font-family: "Tomorrow", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 16px;
-  font-weight: 400;
-  line-height: 1.6;
+  font-weight: var(--font-regular);
+  line-height: var(--leading-normal);
   color: #0f172a;
-  background: #f8fafc;
+  background: var(--bg-app);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
+  /* Habilitar números tabulares por defecto */
+  font-feature-settings: "tnum" on, "cv05" on;
 }
 
 /* Mejorar renderizado de texto */
@@ -26,6 +70,114 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+/* ========================================
+   UTILITY CLASSES - TYPOGRAPHY
+   ======================================== */
+
+/* Clase para números financieros (Uso: Balances, Importes, KPIs) */
+.financial-num {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  letter-spacing: var(--tracking-tight);
+  text-align: right;
+}
+
+/* Clase para Big Number (Balance Total Dashboard) */
+.big-number {
+  font-family: var(--font-sans);
+  font-weight: var(--font-extrabold);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+}
+
+/* Clase para datos técnicos (IBAN, SWIFT, Tickers, Transaction IDs) */
+.tech-data {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: var(--font-regular);
+  color: var(--color-neutral);
+  letter-spacing: 0;
+}
+
+/* Clase para KPIs secundarios */
+.kpi-value {
+  font-family: var(--font-sans);
+  font-weight: var(--font-semibold);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  
+  &.income {
+    color: var(--color-income);
+  }
+  
+  &.expense {
+    color: var(--color-expense);
+  }
+}
+
+/* Clase para celdas de categoría en tablas */
+.category-cell {
+  font-weight: var(--font-medium);
+  color: var(--color-neutral-dark);
+}
+
+/* Clase para texto de chat (IA conversacional) */
+.chat-text {
+  font-family: var(--font-sans);
+  font-weight: var(--font-regular);
+  line-height: var(--leading-relaxed);
+  text-align: left;
+}
+
+/* Clase para alineación de números en tablas */
+.table-amount {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  text-align: right;
+  font-weight: var(--font-medium);
+}
+
+/* ========================================
+   BACKGROUND UTILITIES
+   ======================================== */
+
+/* Clase para páginas principales (contenedor raíz) */
+.page-layout {
+  min-height: 100vh;
+  background: var(--bg-app);
+}
+
+/* Clase para contenedores de contenido */
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+/* Clase para tarjetas/secciones con fondo */
+.content-card {
+  background: var(--bg-page);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* ========================================
+   UTILIDADES GENERALES
+   ======================================== */
 
 /* Utilidades */
 .text-center {
@@ -81,11 +233,17 @@ body.dark-mode {
   --input-bg: #1e293b;
   --button-bg: #3b82f6;
   --button-hover: #60a5fa;
+  
+  /* Background System - Dark Mode */
+  --bg-app: #0f172a;            /* Slate-900 - Fondo principal de la app */
+  --bg-page: #1e293b;           /* Slate-800 - Fondo de contenido/tarjetas */
+  --bg-elevated: #334155;       /* Slate-700 - Elementos elevados */
+  --bg-hover: #475569;          /* Slate-600 - Hover states */
 }
 
 /* Aplicar estilos de dark mode globalmente */
 body.dark-mode {
-  background: var(--bg-primary);
+  background: var(--bg-app);
   color: var(--text-primary);
 }
 

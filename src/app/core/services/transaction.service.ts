@@ -28,8 +28,8 @@ export class TransactionService {
   error = signal<string | null>(null);
 
   getTransactions(params?: {
-    start_date?: string;
-    end_date?: string;
+    date_from?: string;
+    date_to?: string;
     account_id?: string;
     category_id?: number;
   }): Observable<Transaction[]> {
@@ -37,8 +37,9 @@ export class TransactionService {
     this.error.set(null);
 
     let httpParams = new HttpParams();
-    if (params?.start_date) httpParams = httpParams.set('start_date', params.start_date);
-    if (params?.end_date) httpParams = httpParams.set('end_date', params.end_date);
+    httpParams = httpParams.set('page_size', '100'); // Obtener todas las transacciones del periodo
+    if (params?.date_from) httpParams = httpParams.set('date_from', params.date_from);
+    if (params?.date_to) httpParams = httpParams.set('date_to', params.date_to);
     if (params?.account_id) httpParams = httpParams.set('account_id', params.account_id);
     if (params?.category_id) httpParams = httpParams.set('category_id', params.category_id.toString());
 
@@ -60,7 +61,7 @@ export class TransactionService {
     );
   }
 
-  getTransactionById(id: number): Observable<Transaction> {
+  getTransactionById(id: string): Observable<Transaction> {
     return this.http.get<Transaction>(`${this.apiUrl}/${id}`);
   }
 
@@ -70,13 +71,13 @@ export class TransactionService {
     );
   }
 
-  updateTransaction(id: number, transaction: Partial<Transaction>): Observable<Transaction> {
+  updateTransaction(id: string, transaction: Partial<Transaction>): Observable<Transaction> {
     return this.http.put<Transaction>(`${this.apiUrl}/${id}`, transaction).pipe(
       tap(() => this.refreshTransactions())
     );
   }
 
-  deleteTransaction(id: number): Observable<void> {
+  deleteTransaction(id: number | string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap(() => this.refreshTransactions())
     );
@@ -122,8 +123,8 @@ export class TransactionService {
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
     this.getTransactions({
-      start_date: firstDay.toISOString().split('T')[0],
-      end_date: lastDay.toISOString().split('T')[0]
+      date_from: firstDay.toISOString().split('T')[0],
+      date_to: lastDay.toISOString().split('T')[0]
     }).subscribe();
   }
 }

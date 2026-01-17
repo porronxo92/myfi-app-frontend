@@ -1,7 +1,16 @@
-const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+// Función helper para determinar la URL del backend dinámicamente
+function getBackendUrl(): string {
+  const hostname = window.location.hostname;
+  const protocol = window.location.protocol; // 'http:' o 'https:'
+  
+  // Siempre usar puerto 8000 para el backend
+  const backendPort = 8000;
+  
+  return `${protocol}//${hostname}:${backendPort}`;
+}
 
 export const environment = {
   production: false,
-  apiUrl: isLocalhost ? 'http://localhost:8000/api' : 'https://myfi-app-backend.onrender.com/api',
-  apiBaseUrl: isLocalhost ? 'http://localhost:8000' : 'https://myfi-app-backend.onrender.com'
+  apiUrl: `${getBackendUrl()}/api`,
+  apiBaseUrl: getBackendUrl()
 };

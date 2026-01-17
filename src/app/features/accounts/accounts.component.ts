@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AccountService } from '../../core/services/account.service';
 import { NavbarComponent } from '../../shared/components/navbar.component';
+import { FooterComponent } from '../../shared/components/footer.component';
 import { AddAccountModalComponent } from '../../shared/components/add-account-modal.component';
 import { AccountCardComponent } from '../../shared/components/account-card.component';
 
 @Component({
   selector: 'app-accounts',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, AddAccountModalComponent, AccountCardComponent],
+  imports: [CommonModule, NavbarComponent, FooterComponent, AddAccountModalComponent, AccountCardComponent],
   template: `
     <div class="accounts-page">
       <app-navbar></app-navbar>
@@ -89,12 +90,14 @@ import { AccountCardComponent } from '../../shared/components/account-card.compo
           </div>
         </div>
       </div>
+      
+      <app-footer></app-footer>
     </div>
   `,
   styles: [`
     .accounts-page {
       min-height: 100vh;
-      background: #f8fafc;
+      background: var(--bg-app, #f8fafc);
     }
 
     .page-container {
