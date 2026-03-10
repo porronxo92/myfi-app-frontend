@@ -2,10 +2,11 @@ import { Routes } from '@angular/router';
 import { authGuard, publicGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  // Ruta raíz - redirige según autenticación
+  // Ruta raíz - Landing page (solo para usuarios no autenticados)
   {
     path: '',
-    redirectTo: 'dashboard',
+    loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent),
+    canActivate: [publicGuard], // Si ya está logueado, redirige a dashboard
     pathMatch: 'full'
   },
 

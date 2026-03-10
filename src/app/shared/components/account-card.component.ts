@@ -50,7 +50,7 @@ import { MaskIbanPipe } from '../pipes/mask-iban.pipe';
       <div class="card-body">
         <h3 class="account-name">{{ accountName }}</h3>
         <p class="account-type">{{ getAccountTypeLabel(accountType) }}</p>
-        <p class="account-iban">{{ accountNumber | maskIban }}</p>
+        <p class="account-iban" *ngIf="accountNumber">{{ accountNumber | maskIban }}</p>
         <p class="account-bank">{{ bankName }}</p>
       </div>
 
@@ -75,22 +75,24 @@ import { MaskIbanPipe } from '../pipes/mask-iban.pipe';
     </div>
   `,
   styles: [`
+    /* ========================================
+       ACCOUNT CARD - INSTITUTIONAL
+       ======================================== */
+    
     .account-card {
-      background: white;
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      border: 1px solid transparent;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
+      padding: var(--space-5);
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all var(--transition-fast);
       display: flex;
       flex-direction: column;
     }
 
     .account-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-      border-color: #3b82f6;
+      border-color: var(--color-slate-500);
+      background: var(--bg-hover);
     }
 
     .account-card.inactive {
@@ -102,15 +104,15 @@ import { MaskIbanPipe } from '../pipes/mask-iban.pipe';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: var(--space-4);
     }
 
     .bank-icon {
-      width: 48px;
-      height: 48px;
-      background: #f8fafc;
-      border-radius: 12px;
-      padding: 0.5rem;
+      width: 40px;
+      height: 40px;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
+      padding: var(--space-2);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -124,59 +126,63 @@ import { MaskIbanPipe } from '../pipes/mask-iban.pipe';
     }
 
     .account-status {
-      padding: 0.25rem 0.75rem;
-      border-radius: 12px;
-      font-size: 0.75rem;
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      font-size: 0.625rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      background: #fee2e2;
-      color: #dc2626;
+      letter-spacing: 0.05em;
+      background: rgba(202, 53, 33, 0.1);
+      color: var(--color-negative);
+      border: 1px solid rgba(202, 53, 33, 0.2);
     }
 
     .account-status.active {
-      background: #dcfce7;
-      color: #16a34a;
+      background: rgba(34, 160, 107, 0.1);
+      color: var(--color-positive);
+      border-color: rgba(34, 160, 107, 0.2);
     }
 
     /* Body */
     .card-body {
       flex: 1;
-      margin-bottom: 1rem;
+      margin-bottom: var(--space-4);
     }
 
     .account-name {
-      font-size: 1.125rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0 0 0.25rem 0;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 var(--space-1) 0;
     }
 
     .account-type {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin: 0 0 0.5rem 0;
-      text-transform: capitalize;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin: 0 0 var(--space-3) 0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     .account-iban {
-      font-size: 0.875rem;
-      font-family: 'Courier New', monospace;
-      color: #64748b;
-      margin: 0 0 0.5rem 0;
+      font-family: var(--font-data);
+      font-size: 0.75rem;
+      color: var(--text-faint);
+      margin: 0 0 var(--space-2) 0;
+      letter-spacing: 0.02em;
     }
 
     .account-bank {
-      font-size: 0.875rem;
-      color: #475569;
+      font-size: 0.8125rem;
+      color: var(--text-tertiary);
       font-weight: 500;
       margin: 0;
     }
 
     /* Footer */
     .card-footer {
-      border-top: 1px solid #e2e8f0;
-      padding-top: 1rem;
+      border-top: var(--border-subtle);
+      padding-top: var(--space-4);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -185,51 +191,56 @@ import { MaskIbanPipe } from '../pipes/mask-iban.pipe';
     .balance-info {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 2px;
     }
 
     .balance-label {
-      font-size: 0.75rem;
+      font-size: 0.625rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--text-faint);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.05em;
     }
 
     .balance-amount {
-      font-size: 1.25rem;
-      font-weight: 700;
+      font-family: var(--font-data);
+      font-size: 1.125rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
     }
 
     .balance-amount.positive {
-      color: #16a34a;
+      color: var(--color-positive);
     }
 
     .balance-amount.negative {
-      color: #dc2626;
+      color: var(--color-negative);
     }
 
     .transactions-count {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-      color: #64748b;
+      gap: var(--space-2);
+      font-family: var(--font-data);
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
 
+    /* Responsive */
     @media (max-width: 768px) {
       .account-card {
-        padding: 1.25rem;
+        padding: var(--space-4);
       }
 
       .account-name {
-        font-size: 1rem;
+        font-size: 0.875rem;
       }
 
       .card-footer {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.75rem;
+        gap: var(--space-3);
       }
     }
   `]

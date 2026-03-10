@@ -94,7 +94,6 @@ export class BudgetComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    console.log('📊 Módulo de Presupuestos cargado');
     this.loadCurrentBudget();
     this.loadCategories();
     this.loadBudgets();
@@ -111,16 +110,16 @@ export class BudgetComponent implements OnInit {
           this.loadBudgetProgress(budget.id);
         }
       },
-      error: (err) => {
-        console.error('Error loading current budget:', err);
+      error: () => {
+        console.error('Error loading current budget');
       }
     });
   }
 
   loadBudgetProgress(budgetId: string): void {
     this.budgetService.getBudgetProgress(budgetId).subscribe({
-      error: (err) => {
-        console.error('Error loading budget progress:', err);
+      error: () => {
+        console.error('Error loading budget progress');
       }
     });
   }
@@ -290,7 +289,6 @@ export class BudgetComponent implements OnInit {
   createBudget(data: any): void {
     this.budgetService.createBudget(data).subscribe({
       next: (budget) => {
-        console.log('Presupuesto creado exitosamente');
         this.budgetService.currentBudget.set(budget);
         this.loadBudgetProgress(budget.id);
         this.loadBudgets();
@@ -298,7 +296,7 @@ export class BudgetComponent implements OnInit {
         this.resetForm();
       },
       error: (err) => {
-        console.error('Error creating budget:', err);
+        console.error('Error creating budget');
         alert(err.error?.detail || 'Error al crear presupuesto');
       }
     });
@@ -310,7 +308,6 @@ export class BudgetComponent implements OnInit {
 
     this.budgetService.updateBudget(budgetId, data).subscribe({
       next: (budget) => {
-        console.log('Presupuesto actualizado exitosamente');
         this.budgetService.currentBudget.set(budget);
         this.loadBudgetProgress(budget.id);
         this.loadBudgets();
@@ -318,7 +315,7 @@ export class BudgetComponent implements OnInit {
         this.resetForm();
       },
       error: (err) => {
-        console.error('Error updating budget:', err);
+        console.error('Error updating budget');
         alert(err.error?.detail || 'Error al actualizar presupuesto');
       }
     });
@@ -384,12 +381,11 @@ export class BudgetComponent implements OnInit {
     if (confirm('¿Estás seguro de que deseas eliminar este presupuesto?')) {
       this.budgetService.deleteBudget(budget.id).subscribe({
         next: () => {
-          console.log('Presupuesto eliminado exitosamente');
           this.loadCurrentBudget();
           this.loadBudgets();
         },
-        error: (err) => {
-          console.error('Error deleting budget:', err);
+        error: () => {
+          console.error('Error deleting budget');
         }
       });
     }
@@ -421,13 +417,12 @@ export class BudgetComponent implements OnInit {
       target_year: this.selectedYear()
     }).subscribe({
       next: (newBudget) => {
-        console.log('Presupuesto copiado exitosamente');
         this.budgetService.currentBudget.set(newBudget);
         this.loadBudgetProgress(newBudget.id);
         this.loadBudgets();
       },
-      error: (err) => {
-        console.error('Error copying budget:', err);
+      error: () => {
+        console.error('Error copying budget');
         alert('Error al copiar presupuesto');
       }
     });
@@ -461,8 +456,6 @@ export class BudgetComponent implements OnInit {
   // ============================================
 
   handleEditBudgetItem(item: any): void {
-    console.log('🖊️ Abriendo modal de edición para item:', item);
-    
     this.itemToEdit.set({
       id: item.id,
       category_id: item.category_id,
@@ -480,7 +473,6 @@ export class BudgetComponent implements OnInit {
   }
 
   onBudgetItemUpdated(): void {
-    console.log('✅ Budget item actualizado, recargando datos...');
     this.showEditItemModal.set(false);
     this.itemToEdit.set(null);
     
@@ -504,7 +496,6 @@ export class BudgetComponent implements OnInit {
   }
 
   onCategoriesUpdated(): void {
-    console.log('✅ Categorías actualizadas, recargando...');
     this.loadCategories();
     
     // Si estamos en modo creación/edición, actualizar la lista

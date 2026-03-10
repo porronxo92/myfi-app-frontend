@@ -42,10 +42,10 @@ export class AccountService {
           this.calculateTotalBalance(accounts);
           this.loading.set(false);
         },
-        error: (err) => {
+        error: () => {
           this.error.set('Error al cargar las cuentas');
           this.loading.set(false);
-          console.error('Error loading accounts:', err);
+          console.error('Error loading accounts');
         }
       })
     );

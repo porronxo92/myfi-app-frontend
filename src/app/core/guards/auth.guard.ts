@@ -20,11 +20,9 @@ export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
 
   if (authService.hasValidSession()) {
-    console.log('✅ Guard: Usuario autenticado, permitir acceso');
     return true;
   }
 
-  console.warn('⛔ Guard: Usuario NO autenticado, redirigir a login');
   // Guardar URL intentada para redirigir después del login
   router.navigate(['/login'], {
     queryParams: { returnUrl: state.url }
@@ -50,7 +48,6 @@ export const publicGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (authService.hasValidSession()) {
-    console.log('ℹ️ Guard: Usuario ya autenticado, redirigir a dashboard');
     router.navigate(['/dashboard']);
     return false;
   }

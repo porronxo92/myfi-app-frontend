@@ -328,16 +328,13 @@ export class EditBudgetItemModalComponent implements OnInit {
       notes: this.form.value.notes || ''
     };
 
-    console.log('📝 Actualizando budget item:', this.budgetItem.id, updateData);
-
     this.budgetService.updateBudgetItem(this.budgetItem.id, updateData).subscribe({
       next: () => {
-        console.log('✅ Budget item actualizado exitosamente');
         this.saving.set(false);
         this.itemUpdated.emit();
       },
-      error: (err) => {
-        console.error('❌ Error al actualizar budget item:', err);
+      error: () => {
+        console.error('Error al actualizar budget item');
         alert('Error al actualizar la partida del presupuesto. Por favor, intenta de nuevo.');
         this.saving.set(false);
       }

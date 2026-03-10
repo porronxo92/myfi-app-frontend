@@ -161,8 +161,8 @@ export class InvestmentComponent implements OnInit {
         // Cargar logos para todas las posiciones
         this.loadStockLogos(data.positions);
       },
-      error: (err) => {
-        console.error('Error loading investments:', err);
+      error: () => {
+        console.error('Error loading investments');
         this.loading.set(false);
       }
     });
@@ -224,8 +224,8 @@ export class InvestmentComponent implements OnInit {
         
         this.stockLogos.set(updatedLogos);
       },
-      error: (err) => {
-        console.error('Error loading stock logos:', err);
+      error: () => {
+        console.error('Error loading stock logos');
       }
     });
   }
@@ -282,8 +282,8 @@ export class InvestmentComponent implements OnInit {
           this.showSearchResults.set(true);
         }, 1000);
       },
-      error: (err) => {
-        console.error('Error searching stocks:', err);
+      error: () => {
+        console.error('Error searching stocks');
         setTimeout(() => {
           this.searchLoading.set(false);
           this.searchResults.set([]);
@@ -357,8 +357,8 @@ export class InvestmentComponent implements OnInit {
         this.resetNewPosition();
         this.loadPositions(); // Recargar todo
       },
-      error: (err) => {
-        console.error('Error adding position:', err);
+      error: () => {
+        console.error('Error adding position');
         alert('Error al agregar la inversión. Por favor intenta de nuevo.');
       }
     });
@@ -422,8 +422,8 @@ export class InvestmentComponent implements OnInit {
         this.closeSellModal();
         this.loadPositions(); // Recargar posiciones (ya no aparecerá la vendida)
       },
-      error: (err) => {
-        console.error('Error selling position:', err);
+      error: () => {
+        console.error('Error selling position');
         alert('Error al vender la posición. Por favor intenta de nuevo.');
       }
     });
@@ -443,8 +443,8 @@ export class InvestmentComponent implements OnInit {
       next: () => {
         this.loadPositions();
       },
-      error: (err) => {
-        console.error('Error deleting position:', err);
+      error: () => {
+        console.error('Error deleting position');
         alert('Error al eliminar la posición.');
       }
     });
@@ -493,8 +493,8 @@ export class InvestmentComponent implements OnInit {
         this.cancelEdit();
         this.loadPositions();
       },
-      error: (err) => {
-        console.error('Error updating position:', err);
+      error: () => {
+        console.error('Error updating position');
         alert('Error al actualizar la posición.');
       }
     });

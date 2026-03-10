@@ -44,7 +44,6 @@ export class HealthCardComponent implements OnInit, OnChanges {
       
       // Verificar que el año haya cambiado realmente y no sea la primera carga
       if (!changes['year'].firstChange && newYear !== oldYear && newYear !== this.previousYear) {
-        console.log(`📅 Health Card: Año cambiado de ${oldYear} a ${newYear} - Resetear estado del reporte`);
         this.previousYear = newYear;
         // Resetear el estado para que el usuario deba solicitar el nuevo reporte
         this.reportRequested.set(false);
@@ -56,29 +55,18 @@ export class HealthCardComponent implements OnInit, OnChanges {
     
     // NOTA: accountId ya NO dispara recarga del reporte
     // El análisis de salud financiera es global del año, no filtrado por cuenta
-    if (changes['accountId'] && !changes['accountId'].firstChange) {
-      console.log('🏦 Health Card: Filtro de cuenta cambiado pero NO se recarga el reporte (análisis global del año)');
-    }
-    
-    // Si llegamos aquí, no hubo cambios relevantes
-    if (changes['year'] || changes['accountId']) {
-      console.log('⏸️ Health Card: ngOnChanges disparado pero sin cambios reales en year');
-    }
   }
 
   requestHealthReport(): void {
     if (!this.year) {
-      console.warn('⚠️ Health Card: No se puede cargar el reporte sin un año especificado');
       return;
     }
 
-    console.log(`🔄 Health Card: Usuario solicitó reporte de salud financiera para año ${this.year}`);
     this.reportRequested.set(true);
     this.loadHealthReport();
   }
 
   loadHealthReport(): void {
-    console.log(`📊 Health Card: Cargando reporte de salud financiera para año ${this.year} (análisis global, todas las cuentas)`);
     this.isLoading.set(true);
     this.error.set(null);
 
@@ -88,8 +76,8 @@ export class HealthCardComponent implements OnInit, OnChanges {
         this.healthReport.set(report);
         this.isLoading.set(false);
       },
-      error: (err) => {
-        console.error('Error loading health report:', err);
+      error: () => {
+        console.error('Error loading health report');
         this.error.set('No se pudo generar el informe de salud financiera');
         this.isLoading.set(false);
       }

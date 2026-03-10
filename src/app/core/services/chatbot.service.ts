@@ -98,7 +98,7 @@ export class ChatbotService {
       }
       
     } catch (error: any) {
-      console.error('Error sending message:', error);
+      console.error('Error sending message');
       
       // Mensaje de error
       const errorMsg: ChatMessage = {
@@ -151,7 +151,7 @@ export class ChatbotService {
         JSON.stringify(recentMessages)
       );
     } catch (e) {
-      console.error('Error saving chat history:', e);
+      console.error('Error saving chat history');
     }
   }
 
@@ -167,7 +167,7 @@ export class ChatbotService {
         this._messages$.next(messages);
       }
     } catch (e) {
-      console.error('Error restoring chat history:', e);
+      console.error('Error restoring chat history');
     }
   }
 

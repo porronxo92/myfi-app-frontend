@@ -42,7 +42,7 @@ export class MonthlyTrendChartComponent implements OnInit, AfterViewInit, OnChan
   constructor(private chartService: ChartWrapperService) {}
 
   ngOnInit(): void {
-    console.log('📈 MonthlyTrendChart initialized with data:', this.data);
+    // Chart initialized
   }
 
   ngAfterViewInit(): void {
@@ -51,7 +51,6 @@ export class MonthlyTrendChartComponent implements OnInit, AfterViewInit, OnChan
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data'] && !changes['data'].firstChange) {
-      console.log('📈 MonthlyTrendChart data changed, updating chart');
       this.updateChart(this.data);
     }
   }
@@ -62,13 +61,11 @@ export class MonthlyTrendChartComponent implements OnInit, AfterViewInit, OnChan
 
   private createChart(): void {
     if (!this.chartCanvas) {
-      console.warn('Chart canvas not available yet');
       return;
     }
 
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
     if (!ctx) {
-      console.error('Cannot get 2D context from canvas');
       return;
     }
 
@@ -85,7 +82,6 @@ export class MonthlyTrendChartComponent implements OnInit, AfterViewInit, OnChan
   private prepareChartData(): any {
     // Si no hay datos, devolver estructura vacía
     if (!this.data || !Array.isArray(this.data) || this.data.length === 0) {
-      console.warn('Monthly trend data is missing or invalid:', this.data);
       return {
         labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
         datasets: [

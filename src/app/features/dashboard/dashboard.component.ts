@@ -83,7 +83,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   availableYears = signal<number[]>([this.currentYear]);
 
   ngOnInit(): void {
-    console.log('📊 Dashboard cargado para usuario:', this.user()?.email);
     this.loadData();
     this.loadDashboardAnalytics();
     this.loadAvailableYears();
@@ -91,8 +90,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Subscribe to filter changes
     this.dashboardFilters$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(filters => {
-        console.log('Filtros de dashboard actualizados:', filters);
+      .subscribe(() => {
+        // Filters updated
       });
   }
 
@@ -102,23 +101,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadData(): void {
-    console.log('🔄 Cargando datos del dashboard...');
-    
     // Solo cargar cuentas al inicio
     this.accountService.getAccounts().subscribe({
       next: (accounts) => {
-        console.log(`📋 Cuentas cargadas: ${accounts.length}`);
-        
         // Solo cargar transacciones si hay cuentas (NO cargar categorías automáticamente)
         if (accounts.length > 0) {
-          console.log('✅ Hay cuentas, cargando transacciones...');
           this.loadTransactions();
-        } else {
-          console.log('ℹ️ No hay cuentas, mostrando estado vacío');
         }
       },
       error: (err) => {
-        console.error('❌ Error cargando cuentas:', err);
+        console.error('Error cargando cuentas');
       }
     });
   }
@@ -133,19 +125,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
       date_from: firstDay.toISOString().split('T')[0],
       date_to: lastDay.toISOString().split('T')[0]
     }).subscribe({
-      next: () => console.log('✅ Transacciones cargadas'),
-      error: (err) => console.error('❌ Error cargando transacciones:', err)
+      next: () => {},
+      error: () => console.error('Error cargando transacciones')
     });
   }
 
   logout(): void {
-    console.log('🚪 Abriendo modal de logout');
     this.showLogoutModal.set(true);
-    console.log('📊 Estado showLogoutModal:', this.showLogoutModal());
   }
 
   confirmLogout(): void {
-    console.log('✅ Confirmando logout');
     this.showLogoutModal.set(false);
     this.authService.logout();
   }
@@ -159,19 +148,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   onAccountCreated(accountData: any): void {
-    console.log('✅ Creando cuenta con datos:', accountData);
-    
     // Llamar al servicio para crear la cuenta
     this.accountService.createAccount(accountData).subscribe({
       next: () => {
-        console.log('✅ Cuenta creada exitosamente');
         this.closeAccountModal();
         // Recargar datos
         this.loadData();
       },
-      error: (error) => {
-        console.error('❌ Error al crear la cuenta:', error);
-        // Aquí podrías mostrar un mensaje de error al usuario
+      error: () => {
+        console.error('Error al crear la cuenta');
       }
     });
   }
@@ -184,7 +169,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Load dashboard analytics data
    */
   loadDashboardAnalytics(): void {
-    console.log('📊 Cargando analytics del dashboard...');
     this.dashboardState.loadDashboardData();
   }
 
@@ -192,7 +176,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Handle filter changes
    */
   onFiltersChange(filters: any): void {
-    console.log('🔍 Actualizando filtros:', filters);
     this.dashboardState.updateFilters(filters);
   }
 
@@ -216,7 +199,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onYearChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     const year = Number(select.value);
-    console.log('📅 Año cambiado a:', year);
     this.dashboardState.setYear(year);
   }
 
@@ -226,7 +208,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onMonthChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     const month = Number(select.value);
-    console.log('📆 Mes cambiado a:', month);
     this.dashboardState.setMonth(month);
   }
 
@@ -236,7 +217,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onPeriodChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     const period = select.value;
-    console.log('📅 Período cambiado a:', period);
     this.dashboardState.setPeriod(period);
   }
 
@@ -246,7 +226,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onAccountChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     const accountId = select.value || null;
-    console.log('🏦 Cuenta cambiada a:', accountId);
     this.dashboardState.setAccount(accountId);
   }
 
@@ -254,7 +233,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Refresh dashboard data manually
    */
   refreshDashboard(): void {
-    console.log('🔄 Refrescando dashboard manualmente...');
     this.dashboardState.loadDashboardData();
   }
 
@@ -262,7 +240,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Refresh dashboard data
    */
   onRefresh(): void {
-    console.log('🔄 Refrescando dashboard...');
     this.loadData();
     this.loadDashboardAnalytics();
   }
@@ -272,7 +249,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   toggleChatbot(): void {
     this.isChatbotOpen.set(!this.isChatbotOpen());
-    console.log('💬 Chatbot abierto:', this.isChatbotOpen());
   }
 
   /**
@@ -286,7 +262,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Retry loading on error
    */
   retry(): void {
-    console.log('♻️ Reintentando carga...');
     this.onRefresh();
   }
 

@@ -32,19 +32,23 @@ import { CommonModule } from '@angular/common';
     </div>
   `,
   styles: [`
+    /* ========================================
+       LOGOUT MODAL - INSTITUTIONAL DESIGN
+       ======================================== */
+    
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(11, 17, 32, 0.85);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      padding: 1rem;
-      animation: fadeIn 0.2s ease-out;
+      padding: var(--space-4);
+      animation: fadeIn 0.15s ease-out;
     }
 
     @keyframes fadeIn {
@@ -53,18 +57,18 @@ import { CommonModule } from '@angular/common';
     }
 
     .modal-content {
-      background: white;
-      border-radius: 16px;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
       width: 100%;
-      max-width: 400px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      animation: slideUp 0.3s ease-out;
+      max-width: 420px;
+      animation: slideUp 0.2s ease-out;
     }
 
     @keyframes slideUp {
       from { 
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(16px);
       }
       to { 
         opacity: 1;
@@ -73,7 +77,7 @@ import { CommonModule } from '@angular/common';
     }
 
     .modal-header {
-      padding: 2rem;
+      padding: var(--space-6);
       text-align: center;
     }
 
@@ -81,64 +85,72 @@ import { CommonModule } from '@angular/common';
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 64px;
-      height: 64px;
-      margin: 0 auto 1rem;
-      background: #fef2f2;
-      border-radius: 50%;
-      color: #ef4444;
+      width: 56px;
+      height: 56px;
+      margin: 0 auto var(--space-4);
+      background: rgba(202, 53, 33, 0.1);
+      border-radius: var(--radius-md);
+      color: var(--color-negative);
+    }
+
+    .icon-container svg {
+      width: 28px;
+      height: 28px;
     }
 
     .modal-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 var(--space-2);
+      letter-spacing: var(--tracking-wide);
     }
 
     .modal-description {
-      font-size: 0.9375rem;
-      color: #64748b;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     .modal-footer {
-      padding: 1.5rem 2rem;
-      border-top: 1px solid #e2e8f0;
+      padding: var(--space-5) var(--space-6);
+      border-top: var(--border-subtle);
+      background: var(--bg-elevated);
       display: flex;
-      gap: 1rem;
+      gap: var(--space-3);
       justify-content: flex-end;
     }
 
     .btn-secondary,
     .btn-danger {
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
+      padding: var(--space-3) var(--space-5);
+      border-radius: var(--radius-md);
       font-weight: 600;
       cursor: pointer;
       border: none;
-      transition: all 0.2s;
-      font-size: 0.9375rem;
+      transition: all var(--transition-fast);
+      font-size: 0.8125rem;
     }
 
     .btn-secondary {
-      background: #f1f5f9;
-      color: #475569;
+      background: transparent;
+      color: var(--text-muted);
+      border: var(--border-subtle);
     }
 
     .btn-secondary:hover {
-      background: #e2e8f0;
+      background: var(--bg-hover);
+      color: var(--text-primary);
     }
 
     .btn-danger {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
+      background: var(--color-negative);
       color: white;
     }
 
     .btn-danger:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      filter: brightness(1.1);
     }
 
     @media (max-width: 768px) {

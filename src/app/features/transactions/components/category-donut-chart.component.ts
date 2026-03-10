@@ -63,65 +63,65 @@ interface CategoryData {
   `,
   styles: [`
     .chart-card {
-      background: white;
-      border-radius: 12px;
-      padding: 1rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s, box-shadow 0.2s;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
+      padding: var(--space-4);
       display: flex;
       flex-direction: column;
       height: 100%;
+      transition: border-color 100ms ease;
     }
 
     .chart-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: var(--color-slate-500);
     }
 
     .chart-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.5rem;
+      margin-bottom: var(--space-3);
       flex-shrink: 0;
     }
 
     .chart-title {
       margin: 0;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #64748b;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .chart-toggle {
       display: flex;
-      gap: 0.25rem;
-      background: #f3f4f6;
-      border-radius: 6px;
+      gap: 2px;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
       padding: 2px;
     }
 
     .toggle-btn {
-      padding: 0.25rem 0.625rem;
+      padding: var(--space-1) var(--space-3);
       border: none;
       background: transparent;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       font-size: 0.6875rem;
       font-weight: 600;
-      color: #6b7280;
+      color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 100ms ease;
       white-space: nowrap;
     }
 
     .toggle-btn:hover {
-      color: #111827;
+      color: var(--text-secondary);
     }
 
     .toggle-btn.active {
-      background: white;
-      color: #111827;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      background: var(--color-accent);
+      color: var(--color-slate-900);
     }
 
     .chart-container {
@@ -150,29 +150,32 @@ interface CategoryData {
 
     .center-label {
       font-size: 0.6875rem;
-      color: #6b7280;
+      color: var(--text-muted);
       font-weight: 500;
-      margin-bottom: 0.125rem;
+      margin-bottom: var(--space-1);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
 
     .center-amount {
-      font-size: 1.125rem;
-      font-weight: 700;
+      font-family: var(--font-data);
+      font-size: 1rem;
+      font-weight: 600;
       line-height: 1;
     }
 
     .income-color {
-      color: #10b981;
+      color: var(--color-positive);
     }
 
     .expense-color {
-      color: #ef4444;
+      color: var(--color-negative);
     }
 
     .no-data {
       text-align: center;
-      padding: 0.5rem;
-      color: #6b7280;
+      padding: var(--space-3);
+      color: var(--text-muted);
       flex: 1;
       display: flex;
       align-items: center;
@@ -188,7 +191,7 @@ interface CategoryData {
       .chart-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.5rem;
+        gap: var(--space-2);
       }
 
       .center-amount {
@@ -210,7 +213,7 @@ export class CategoryDonutChartComponent implements OnInit, AfterViewInit, OnCha
   private chart: Chart | null = null;
 
   ngOnInit(): void {
-    console.log('📊 CategoryDonutChart initialized');
+    // Chart initialized
   }
 
   ngAfterViewInit(): void {
@@ -219,16 +222,12 @@ export class CategoryDonutChartComponent implements OnInit, AfterViewInit, OnCha
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['incomeData'] || changes['expenseData']) {
-      console.log('📈 Data changed - incomeData:', this.incomeData?.length, 'expenseData:', this.expenseData?.length);
-      
       // Si el chart ya existe, actualizar
       if (this.chart) {
-        console.log('🔄 Updating existing chart');
         this.updateChart();
       }
       // Si es el primer cambio pero ya tenemos el canvas, crear el chart
       else if (this.chartCanvas) {
-        console.log('🎉 Creating chart with initial data');
         this.createChart();
       }
     }
@@ -247,13 +246,11 @@ export class CategoryDonutChartComponent implements OnInit, AfterViewInit, OnCha
 
   private createChart(): void {
     if (!this.chartCanvas) {
-      console.warn('Chart canvas not available yet');
       return;
     }
 
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
     if (!ctx) {
-      console.error('Cannot get 2D context from canvas');
       return;
     }
 
@@ -265,10 +262,7 @@ export class CategoryDonutChartComponent implements OnInit, AfterViewInit, OnCha
   private prepareChartData(): any {
     const data = this.chartType() === 'income' ? this.incomeData : this.expenseData;
     
-    console.log(`📄 Preparing chart data for ${this.chartType()}:`, data);
-    
     if (!data || data.length === 0) {
-      console.log('⚠️ No data available');
       this.hasData.set(false);
       this.currentTotal.set(0);
       return {
@@ -288,8 +282,6 @@ export class CategoryDonutChartComponent implements OnInit, AfterViewInit, OnCha
     const labels = data.map(cat => cat.category);
     const values = data.map(cat => cat.total);
     const colors = data.map(cat => cat.color);
-
-    console.log('✅ Chart data prepared - labels:', labels, 'values:', values, 'total:', total);
 
     return {
       labels,

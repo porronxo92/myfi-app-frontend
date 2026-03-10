@@ -40,8 +40,8 @@ interface TrendPoint {
           <!-- Gradient -->
           <defs>
             <linearGradient id="miniGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.2" />
-              <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0" />
+              <stop offset="0%" style="stop-color:#B5924C;stop-opacity:0.2" />
+              <stop offset="100%" style="stop-color:#B5924C;stop-opacity:0" />
             </linearGradient>
           </defs>
         </svg>
@@ -50,11 +50,12 @@ interface TrendPoint {
   `,
   styles: [`
     .balance-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 16px;
-      padding: 2rem;
-      color: white;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
+      border-left: 3px solid var(--color-accent);
+      padding: var(--space-6);
+      color: var(--text-primary);
       position: relative;
       overflow: hidden;
     }
@@ -62,32 +63,46 @@ interface TrendPoint {
     .balance-header {
       position: relative;
       z-index: 1;
-      margin-bottom: 1.5rem;
+      margin-bottom: var(--space-5);
     }
 
     .balance-label {
-      font-size: 0.875rem;
-      opacity: 0.9;
-      margin: 0 0 0.5rem 0;
-      font-weight: 500;
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      margin: 0 0 var(--space-2) 0;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .balance-amount {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin: 0 0 0.75rem 0;
+      font-family: var(--font-data);
+      font-size: 2rem;
+      font-weight: 600;
+      margin: 0 0 var(--space-3) 0;
       line-height: 1;
+      letter-spacing: -0.02em;
+      color: var(--color-accent);
     }
 
     .balance-variation {
       display: inline-flex;
       align-items: center;
-      gap: 0.375rem;
-      background: rgba(255, 255, 255, 0.2);
-      padding: 0.375rem 0.75rem;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      font-weight: 500;
+      gap: var(--space-2);
+      background: var(--bg-elevated);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: var(--font-data);
+    }
+
+    .balance-variation.positive {
+      color: var(--color-positive);
+    }
+
+    .balance-variation.negative {
+      color: var(--color-negative);
     }
 
     .balance-variation svg {
@@ -96,8 +111,8 @@ interface TrendPoint {
 
     .balance-chart {
       height: 80px;
-      margin-top: 1rem;
-      opacity: 0.8;
+      margin-top: var(--space-4);
+      opacity: 0.6;
     }
 
     .chart-svg {
@@ -106,7 +121,7 @@ interface TrendPoint {
     }
 
     .chart-line {
-      stroke: white;
+      stroke: var(--color-accent);
       stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
@@ -114,11 +129,11 @@ interface TrendPoint {
 
     @media (max-width: 768px) {
       .balance-card {
-        padding: 1.5rem;
+        padding: var(--space-4);
       }
 
       .balance-amount {
-        font-size: 2rem;
+        font-size: 1.5rem;
       }
     }
   `]

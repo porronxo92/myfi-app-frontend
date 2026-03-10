@@ -51,6 +51,45 @@ export class AuthService {
   }
 
   /**
+   * Formatea una imagen de perfil para asegurar que tenga el prefijo correcto
+   * Previene el Error 431 que ocurre cuando el navegador intenta cargar
+   * una cadena base64 pura como URL relativa
+   */
+  private formatProfilePicture(picture: string | undefined): string | undefined {
+    if (!picture) {
+      return picture;
+    }
+
+    // Si ya tiene el prefijo correcto de data URL, devolverlo tal cual
+    if (picture.startsWith('data:')) {
+      return picture;
+    }
+
+    // Si es una URL HTTP, devolverla tal cual
+    if (picture.startsWith('http://') || picture.startsWith('https://')) {
+      return picture;
+    }
+
+    // Detectar base64 JPEG (empieza con /9j/) o PNG (empieza con iVBOR)
+    // IMPORTANTE: esto debe ir ANTES del check de '/' para rutas relativas
+    if (picture.startsWith('/9j/') || picture.startsWith('iVBOR')) {
+      return `data:image/jpeg;base64,${picture}`;
+    }
+
+    // Si es una ruta relativa del servidor (ej: /assets/...)
+    if (picture.startsWith('/')) {
+      return picture;
+    }
+
+    // Si parece base64 puro (solo caracteres válidos), agregar el prefijo
+    if (/^[A-Za-z0-9+/=]+$/.test(picture.substring(0, 100)) && picture.length > 100) {
+      return `data:image/jpeg;base64,${picture}`;
+    }
+
+    return picture;
+  }
+
+  /**
    * LOGIN - Autenticar usuario
    * POST /api/users/login
    */
@@ -85,7 +124,6 @@ export class AuthService {
     const refreshToken = this.getRefreshToken();
     
     if (!refreshToken) {
-      console.error('âŒ No hay refresh token disponible');
       this.logout();
       return throwError(() => new Error('No refresh token'));
     }
@@ -96,10 +134,8 @@ export class AuthService {
     ).pipe(
       tap(response => {
         this.handleAuthenticationSuccess(response);
-        console.log('âœ… Token renovado automÃ¡ticamente');
       }),
       catchError(error => {
-        console.error('âŒ Error renovando token, cerrando sesiÃ³n');
         this.logout();
         return throwError(() => error);
       })
@@ -107,7 +143,7 @@ export class AuthService {
   }
 
   /**
-   * LOGOUT - Cerrar sesiÃ³n
+   * LOGOUT - Cerrar sesión
    */
   logout(): void {
     // Limpiar localStorage
@@ -122,11 +158,10 @@ export class AuthService {
 
     // Redirigir a login
     this.router.navigate(['/login']);
-    console.log('ðŸ‘‹ SesiÃ³n cerrada - localStorage limpiado');
   }
 
   /**
-   * VERIFICAR SI HAY SESIÃ“N ACTIVA
+   * VERIFICAR SI HAY SESIÓN ACTIVA
    */
   hasValidSession(): boolean {
     return !!this.getAccessToken() && !!this.getRefreshToken();
@@ -147,7 +182,7 @@ export class AuthService {
   }
 
   // ============================================
-  // MÃ‰TODOS PRIVADOS
+  // MÉTODOS PRIVADOS
   // ============================================
 
   /**
@@ -158,6 +193,11 @@ export class AuthService {
     localStorage.setItem(this.STORAGE_KEYS.ACCESS_TOKEN, response.access_token);
     localStorage.setItem(this.STORAGE_KEYS.REFRESH_TOKEN, response.refresh_token);
     
+    // Formatear la imagen antes de guardar
+    if (response.user.profile_picture) {
+      response.user.profile_picture = this.formatProfilePicture(response.user.profile_picture);
+    }
+    
     // Guardar usuario en localStorage
     this.setUser(response.user);
 
@@ -165,12 +205,6 @@ export class AuthService {
     this.userSignal.set(response.user);
     this.isAuthenticatedSignal.set(true);
     this.updateAuthenticationState();
-
-    console.log('âœ… AutenticaciÃ³n exitosa', {
-      user: response.user.email,
-      expires_in: `${response.expires_in / 60} minutos`,
-      storage: 'localStorage'
-    });
   }
 
   /**
@@ -195,39 +229,45 @@ export class AuthService {
   }
 
   /**
-   * Actualizar estado de autenticaciÃ³n (BehaviorSubject)
+   * Actualizar estado de autenticación (BehaviorSubject)
    */
   private updateAuthenticationState(): void {
     this.isAuthenticatedSubject.next(this.isAuthenticated());
   }
 
   /**
-   * Cargar datos de autenticaciÃ³n desde localStorage
+   * Cargar datos de autenticación desde localStorage
    */
   private loadFromStorage(): void {
     const user = this.getUserFromStorage();
     const hasTokens = this.hasValidSession();
 
     if (user && hasTokens) {
+      // Formatear la imagen antes de asignar al signal
+      if (user.profile_picture) {
+        user.profile_picture = this.formatProfilePicture(user.profile_picture);
+      }
+      
       this.userSignal.set(user);
       this.isAuthenticatedSignal.set(true);
-      console.log('âœ… SesiÃ³n restaurada desde localStorage:', user.email);
-    } else {
-      console.log('â„¹ï¸ No hay sesiÃ³n guardada en localStorage');
     }
   }
 
   /**
    * Actualizar datos del usuario en el estado
-   * (Ãštil despuÃ©s de actualizar perfil)
+   * (Útil después de actualizar perfil)
    */
   updateUserProfile(updatedUser: Partial<User>): void {
     const currentUser = this.userSignal();
     if (currentUser) {
+      // Formatear la imagen si viene en la actualización
+      if (updatedUser.profile_picture) {
+        updatedUser.profile_picture = this.formatProfilePicture(updatedUser.profile_picture);
+      }
+      
       const mergedUser = { ...currentUser, ...updatedUser };
       this.userSignal.set(mergedUser);
       localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(mergedUser));
-      console.log('âœ… Usuario actualizado en AuthService:', mergedUser);
     }
   }
 
@@ -243,19 +283,18 @@ export class AuthService {
     } else {
       // Error del lado del servidor
       if (error.status === 401) {
-        errorMessage = 'Email o contraseÃ±a incorrectos';
+        errorMessage = 'Email o contraseña incorrectos';
       } else if (error.status === 422) {
-        errorMessage = error.error?.detail || 'Datos invÃ¡lidos';
+        errorMessage = error.error?.detail || 'Datos inválidos';
       } else if (error.status === 429) {
-        errorMessage = error.error?.detail || 'Demasiados intentos. Intenta mÃ¡s tarde';
+        errorMessage = error.error?.detail || 'Demasiados intentos. Intenta más tarde';
       } else if (error.status === 500) {
-        errorMessage = 'Error del servidor. Intenta mÃ¡s tarde';
+        errorMessage = 'Error del servidor. Intenta más tarde';
       } else {
         errorMessage = error.error?.detail || `Error ${error.status}: ${error.statusText}`;
       }
     }
 
-    console.error('âŒ Error HTTP:', errorMessage, error);
     return throwError(() => new Error(errorMessage));
   }
 }

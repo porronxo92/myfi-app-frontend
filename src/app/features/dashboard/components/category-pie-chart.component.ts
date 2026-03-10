@@ -126,7 +126,7 @@ export class CategoryPieChartComponent implements OnInit, AfterViewInit, OnChang
   constructor(private chartService: ChartWrapperService) {}
 
   ngOnInit(): void {
-    console.log('📊 CategoryPieChart initialized with data:', this.data);
+    // Chart initialized
   }
 
   ngAfterViewInit(): void {
@@ -135,7 +135,6 @@ export class CategoryPieChartComponent implements OnInit, AfterViewInit, OnChang
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data'] && !changes['data'].firstChange) {
-      console.log('📊 CategoryPieChart data changed, updating charts');
       this.updateCharts();
     }
   }
@@ -152,13 +151,11 @@ export class CategoryPieChartComponent implements OnInit, AfterViewInit, OnChang
 
   private createIncomeChart(): void {
     if (!this.incomeCanvas) {
-      console.warn('Income chart canvas not available yet');
       return;
     }
 
     const ctx = this.incomeCanvas.nativeElement.getContext('2d');
     if (!ctx) {
-      console.error('Cannot get 2D context from income canvas');
       return;
     }
 
@@ -169,13 +166,11 @@ export class CategoryPieChartComponent implements OnInit, AfterViewInit, OnChang
 
   private createExpenseChart(): void {
     if (!this.expenseCanvas) {
-      console.warn('Expense chart canvas not available yet');
       return;
     }
 
     const ctx = this.expenseCanvas.nativeElement.getContext('2d');
     if (!ctx) {
-      console.error('Cannot get 2D context from expense canvas');
       return;
     }
 

@@ -21,7 +21,7 @@ export interface CreateAccountDto {
   balance: number;
   currency: string;
   bank_name: string;
-  account_number: string;
+  account_number?: string;
   is_active: boolean;
   notes?: string;
   user_id: string;

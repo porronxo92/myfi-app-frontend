@@ -119,7 +119,7 @@ export class StockLogoCacheService {
       const cached = localStorage.getItem(this.CACHE_KEY);
       return cached ? JSON.parse(cached) : {};
     } catch (error) {
-      console.error('Error loading cache:', error);
+      console.error('Error loading cache');
       return {};
     }
   }
@@ -128,7 +128,7 @@ export class StockLogoCacheService {
     try {
       localStorage.setItem(this.CACHE_KEY, JSON.stringify(cache));
     } catch (error) {
-      console.error('Error saving cache:', error);
+      console.error('Error saving cache');
       // Si falla por espacio, limpiar caché antigua
       this.clearAll();
     }

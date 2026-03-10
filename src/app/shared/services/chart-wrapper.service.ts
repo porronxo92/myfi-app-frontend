@@ -16,18 +16,18 @@ Chart.register(...registerables);
 })
 export class ChartWrapperService {
 
-  // Paleta de colores consistente
+  // Paleta Noir & Gold
   private colorPalette = [
-    '#6366f1', // Índigo
-    '#10b981', // Verde
-    '#ef4444', // Rojo
-    '#f59e0b', // Naranja
-    '#3b82f6', // Azul
-    '#8b5cf6', // Púrpura
-    '#ec4899', // Rosa
-    '#14b8a6', // Teal
-    '#f97316', // Naranja oscuro
-    '#06b6d4', // Cyan
+    '#F59E0B', // Gold Accent
+    '#D97706', // Gold Darker
+    '#0F172A', // Noir Dominant
+    '#1E293B', // Noir Light
+    '#10B981', // Emerald (éxito)
+    '#EF4444', // Crimson (error)
+    '#FCD34D', // Gold Light
+    '#334155', // Gris oscuro
+    '#E2E8F0', // Gris claro
+    '#FFFFFF', // Blanco
   ];
 
   constructor() {}

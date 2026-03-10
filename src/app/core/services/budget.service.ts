@@ -52,10 +52,10 @@ export class BudgetService {
           this.budgets.set(budgets);
           this.loading.set(false);
         },
-        error: (err) => {
+        error: () => {
           this.error.set('Error al cargar presupuestos');
           this.loading.set(false);
-          console.error('Error fetching budgets:', err);
+          console.error('Error fetching budgets');
         }
       })
     );
@@ -74,10 +74,10 @@ export class BudgetService {
           this.currentBudget.set(budget);
           this.loading.set(false);
         },
-        error: (err) => {
+        error: () => {
           this.error.set('Error al cargar presupuesto actual');
           this.loading.set(false);
-          console.error('Error fetching current budget:', err);
+          console.error('Error fetching current budget');
         }
       })
     );
@@ -94,10 +94,10 @@ export class BudgetService {
     return this.http.get<Budget>(`${this.apiUrl}/${id}`).pipe(
       tap({
         next: () => this.loading.set(false),
-        error: (err) => {
+        error: () => {
           this.error.set('Error al cargar presupuesto');
           this.loading.set(false);
-          console.error('Error fetching budget:', err);
+          console.error('Error fetching budget');
         }
       })
     );
@@ -121,8 +121,8 @@ export class BudgetService {
         next: (progress) => {
           this.currentProgress.set(progress);
         },
-        error: (err) => {
-          console.error('Error fetching budget progress:', err);
+        error: () => {
+          console.error('Error fetching budget progress');
         }
       })
     );
@@ -147,10 +147,10 @@ export class BudgetService {
           this.getBudgets().subscribe();
           this.loading.set(false);
         },
-        error: (err) => {
+        error: () => {
           this.error.set('Error al crear presupuesto');
           this.loading.set(false);
-          console.error('Error creating budget:', err);
+          console.error('Error creating budget');
         }
       })
     );
@@ -172,10 +172,10 @@ export class BudgetService {
           this.getBudgets().subscribe();
           this.loading.set(false);
         },
-        error: (err) => {
+        error: () => {
           this.error.set('Error al copiar presupuesto');
           this.loading.set(false);
-          console.error('Error copying budget:', err);
+          console.error('Error copying budget');
         }
       })
     );
@@ -201,10 +201,10 @@ export class BudgetService {
           this.getBudgets().subscribe();
           this.loading.set(false);
         },
-        error: (err) => {
+        error: () => {
           this.error.set('Error al actualizar presupuesto');
           this.loading.set(false);
-          console.error('Error updating budget:', err);
+          console.error('Error updating budget');
         }
       })
     );
@@ -229,10 +229,10 @@ export class BudgetService {
           this.getBudgets().subscribe();
           this.loading.set(false);
         },
-        error: (err) => {
+        error: () => {
           this.error.set('Error al eliminar presupuesto');
           this.loading.set(false);
-          console.error('Error deleting budget:', err);
+          console.error('Error deleting budget');
         }
       })
     );

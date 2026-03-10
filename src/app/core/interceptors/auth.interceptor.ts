@@ -37,8 +37,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
       // Si es 401 (Unauthorized) en un endpoint PROTEGIDO, intentar renovar token
       if (error.status === 401) {
-        console.warn('⚠️ Token expirado (401), intentando renovar...');
-        
         return authService.refreshToken().pipe(
           switchMap(() => {
             // Token renovado, reintentar petición original con nuevo token
@@ -52,7 +50,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           }),
           catchError(refreshError => {
             // Refresh falló, cerrar sesión
-            console.error('❌ Refresh token falló, cerrando sesión');
             authService.logout();
             return throwError(() => refreshError);
           })

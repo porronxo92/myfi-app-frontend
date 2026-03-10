@@ -170,37 +170,37 @@ export interface TransactionFilters {
   styles: [`
     .transactions-layout {
       min-height: 100vh;
-      background: var(--bg-app, #f8fafc);
+      background: var(--bg-app);
     }
 
     .main-content {
       max-width: 1600px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: var(--space-6);
     }
 
     .content-grid {
       display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: 2rem;
+      grid-template-columns: 280px 1fr;
+      gap: var(--space-6);
       align-items: start;
     }
 
     .sidebar-filters {
       position: sticky;
-      top: 2rem;
+      top: var(--space-6);
     }
 
     .main-content-area {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: var(--space-5);
     }
 
     .kpis-and-chart-container {
       display: grid;
       grid-template-columns: 1fr 2fr;
-      gap: 1.5rem;
+      gap: var(--space-5);
     }
 
     @media (max-width: 1024px) {
@@ -223,17 +223,17 @@ export interface TransactionFilters {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 4rem 2rem;
+      padding: var(--space-12);
       text-align: center;
     }
 
     .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #e2e8f0;
-      border-top-color: #3b82f6;
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 2px solid var(--bg-hover);
+      border-top-color: var(--color-accent);
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      animation: spin 0.8s linear infinite;
     }
 
     @keyframes spin {
@@ -241,31 +241,32 @@ export interface TransactionFilters {
     }
 
     .error-icon {
-      width: 64px;
-      height: 64px;
-      color: #ef4444;
-      margin-bottom: 1rem;
+      width: 3rem;
+      height: 3rem;
+      color: var(--color-negative);
+      margin-bottom: var(--space-4);
     }
 
     .error-message {
-      color: #64748b;
-      font-size: 1.125rem;
-      margin: 0.5rem 0 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin: var(--space-2) 0 var(--space-5);
     }
 
     .btn-retry {
-      padding: 0.75rem 1.5rem;
-      background-color: #3b82f6;
-      color: white;
+      padding: var(--space-3) var(--space-5);
+      background: var(--color-accent);
+      color: var(--color-slate-950);
       border: none;
-      border-radius: 8px;
-      font-weight: 500;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.8125rem;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background 100ms ease;
     }
 
     .btn-retry:hover {
-      background-color: #2563eb;
+      background: var(--color-accent-hover);
     }
   `]
 })
@@ -510,8 +511,6 @@ export class TransactionsComponent implements OnInit {
     // Ordenar por total descendente
     const sorted = result.sort((a, b) => b.total - a.total);
     
-    console.log(`📊 Aggregated ${transactions.length} transactions into ${sorted.length} categories:`, sorted);
-    
     return sorted;
   }
 
@@ -574,8 +573,6 @@ export class TransactionsComponent implements OnInit {
     const dateFrom = `${filterYear}-${monthStr}-01`;
     const dateTo = `${filterYear}-${monthStr}-${lastDay.toString().padStart(2, '0')}`;
 
-    console.log(`📅 Cargando transacciones del periodo: ${dateFrom} a ${dateTo}`);
-
     // Cargar transacciones del periodo específico
     this.transactionService.getTransactions({
       date_from: dateFrom,
@@ -588,7 +585,7 @@ export class TransactionsComponent implements OnInit {
       error: (err) => {
         this.error.set('Error al cargar las transacciones');
         this.loading.set(false);
-        console.error('Error loading transactions:', err);
+        console.error('Error loading transactions');
       }
     });
 
@@ -597,8 +594,8 @@ export class TransactionsComponent implements OnInit {
       next: (categories) => {
         this.categories.set(categories);
       },
-      error: (err) => {
-        console.error('Error loading categories:', err);
+      error: () => {
+        console.error('Error loading categories');
       }
     });
 
@@ -607,8 +604,8 @@ export class TransactionsComponent implements OnInit {
       next: (accounts) => {
         this.accounts.set(accounts);
       },
-      error: (err) => {
-        console.error('Error loading accounts:', err);
+      error: () => {
+        console.error('Error loading accounts');
       }
     });
   }
@@ -623,8 +620,6 @@ export class TransactionsComponent implements OnInit {
     
     // Si cambió el periodo, actualizar y recargar desde backend
     if (periodChanged) {
-      console.log(`🔄 Periodo cambiado: mes=${filters.selectedMonth}, año=${filters.selectedYear}`);
-      
       if (filters.selectedMonth !== undefined) {
         this.selectedMonth.set(filters.selectedMonth);
       }
@@ -678,7 +673,6 @@ export class TransactionsComponent implements OnInit {
   }
 
   onTransactionCreated(transaction: any): void {
-    console.log('✅ Transacción/Transferencia creada:', transaction);
     this.loadData();
   }
 
@@ -694,7 +688,6 @@ export class TransactionsComponent implements OnInit {
   }
 
   handleEditTransaction(transaction: Transaction): void {
-    console.log('✏️ Abriendo modal de edición para:', transaction);
     this.transactionToEdit.set(transaction);
     this.showEditModal.set(true);
   }
@@ -710,13 +703,12 @@ export class TransactionsComponent implements OnInit {
 
     this.transactionService.deleteTransaction(transaction.id).subscribe({
       next: () => {
-        console.log('✅ Transacción eliminada');
         this.showConfirmDelete.set(false);
         this.transactionToDelete.set(null);
         this.loadData();
       },
-      error: (err) => {
-        console.error('❌ Error al eliminar transacción:', err);
+      error: () => {
+        console.error('Error al eliminar transacción');
         alert('Error al eliminar la transacción');
         this.showConfirmDelete.set(false);
         this.transactionToDelete.set(null);
@@ -735,7 +727,6 @@ export class TransactionsComponent implements OnInit {
   }
   
   onTransactionUpdated(transaction: Transaction): void {
-    console.log('✅ Transacción actualizada:', transaction);
     this.showEditModal.set(false);
     this.transactionToEdit.set(null);
     this.loadData(this.selectedMonth(), this.selectedYear());

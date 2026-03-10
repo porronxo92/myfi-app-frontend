@@ -56,145 +56,134 @@ import { CommonModule } from '@angular/common';
     }
 
     .kpi-card {
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s, box-shadow 0.2s;
-      margin-bottom: 1rem;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
+      padding: var(--space-5);
+      margin-bottom: var(--space-4);
+      transition: border-color 100ms ease;
     }
 
     .kpi-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: var(--color-slate-500);
     }
 
     .kpi-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: var(--space-3);
     }
 
     .kpi-label {
-      font-size: 0.875rem;
-      color: #64748b;
-      font-weight: 500;
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .kpi-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .kpi-icon.count {
-      background-color: #f0f9ff;
-      color: #0ea5e9;
+      background: var(--color-accent-subtle);
+      color: var(--color-accent);
     }
 
     .kpi-icon.balance {
-      background-color: #eff6ff;
-      color: #3b82f6;
+      background: var(--color-accent-subtle);
+      color: var(--color-accent);
     }
 
     .kpi-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin-bottom: 0.75rem;
+      font-family: var(--font-data);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-3);
+      letter-spacing: -0.02em;
     }
 
     .kpi-value.positive {
-      color: #10b981;
+      color: var(--color-positive);
     }
 
     .kpi-value.negative {
-      color: #ef4444;
+      color: var(--color-negative);
     }
 
     .balance-details {
       display: flex;
-      gap: 1rem;
-      margin-bottom: 0.75rem;
-      padding: 0.75rem;
-      background: #f8fafc;
-      border-radius: 8px;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+      padding: var(--space-3);
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
     }
 
     .balance-item {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: var(--space-1);
     }
 
     .balance-item .label {
-      font-size: 0.75rem;
-      color: #64748b;
+      font-size: 0.6875rem;
+      color: var(--text-muted);
       font-weight: 500;
     }
 
     .balance-item .value {
-      font-size: 0.875rem;
+      font-family: var(--font-data);
+      font-size: 0.8125rem;
       font-weight: 600;
     }
 
     .balance-item.income .value {
-      color: #10b981;
+      color: var(--color-positive);
     }
 
     .balance-item.expense .value {
-      color: #ef4444;
+      color: var(--color-negative);
     }
 
     .kpi-footer {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
+      gap: var(--space-2);
+      font-size: 0.8125rem;
     }
 
     .kpi-trend {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: var(--space-1);
+      font-family: var(--font-data);
       font-weight: 600;
-    }
-
-    .kpi-trend.up {
-      color: #10b981;
-    }
-
-    .kpi-trend.down {
-      color: #ef4444;
-    }
-
-    .kpi-trend.neutral {
-      color: #64748b;
-    }
-
-    .kpi-period {
-      color: #94a3b8;
       font-size: 0.75rem;
     }
 
+    .kpi-trend.up { color: var(--color-positive); }
+    .kpi-trend.down { color: var(--color-negative); }
+    .kpi-trend.neutral { color: var(--text-muted); }
+
+    .kpi-period {
+      color: var(--text-muted);
+      font-size: 0.6875rem;
+    }
+
     @media (max-width: 768px) {
-      .kpis-container {
-        grid-template-columns: 1fr;
-      }
-      
-      .kpi-value {
-        font-size: 1.75rem;
-      }
-      
-      .balance-details {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
+      .kpis-container { grid-template-columns: 1fr; }
+      .kpi-value { font-size: 1.25rem; }
+      .balance-details { flex-direction: column; gap: var(--space-2); }
     }
   `]
 })

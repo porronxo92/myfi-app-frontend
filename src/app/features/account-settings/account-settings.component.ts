@@ -1,17 +1,21 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserProfileService, UserProfile, UpdateUserProfile, ChangePasswordRequest } from '../../core/services/user-profile.service';
 import { AuthService } from '../../core/services/auth.service';
+import { SafeImagePipe } from '../../shared/pipes/safe-image.pipe';
 
 @Component({
   selector: 'app-account-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, SafeImagePipe],
   templateUrl: './account-settings.component.html',
   styleUrls: ['./account-settings.component.scss']
 })
 export class AccountSettingsComponent implements OnInit {
+  router = inject(Router);
+  
   userProfile = signal<UserProfile | null>(null);
   loading = signal<boolean>(false);
   successMessage = signal<string | null>(null);
@@ -50,6 +54,7 @@ export class AccountSettingsComponent implements OnInit {
     this.loading.set(true);
     this.userProfileService.getCurrentProfile().subscribe({
       next: (profile) => {
+        // El servicio ya formateó la imagen con el prefijo correcto
         this.userProfile.set(profile);
         // Rellenar formulario con datos actuales
         this.profileForm.patchValue({
@@ -59,8 +64,8 @@ export class AccountSettingsComponent implements OnInit {
         });
         this.loading.set(false);
       },
-      error: (err) => {
-        console.error('Error al cargar perfil:', err);
+      error: () => {
+        console.error('Error al cargar perfil');
         this.errorMessage.set('Error al cargar los datos del perfil');
         this.loading.set(false);
       }
@@ -97,6 +102,15 @@ export class AccountSettingsComponent implements OnInit {
     }
   }
 
+  /**
+   * Sube y actualiza la foto de perfil
+   * 
+   * Proceso:
+   * 1. Comprime la imagen a 800x800px con calidad 80% (reduce ~95% del tamaño)
+   * 2. Convierte a base64 (formato: "data:image/jpeg;base64,...")
+   * 3. Envía al backend en el body JSON (evita error 431)
+   * 4. Actualiza el estado local y el AuthService para reflejar cambios inmediatos
+   */
   uploadProfilePicture() {
     const file = this.selectedFile();
     if (!file) {
@@ -107,11 +121,8 @@ export class AccountSettingsComponent implements OnInit {
     this.loading.set(true);
     this.clearMessages();
 
-    // Convertir a base64
-    const reader = new FileReader();
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      const base64 = e.target?.result as string;
-
+    // Comprimir y convertir imagen a base64
+    this.compressImage(file).then(base64 => {
       this.userProfileService.updateProfilePicture(base64).subscribe({
         next: (profile) => {
           this.userProfile.set(profile);
@@ -123,16 +134,87 @@ export class AccountSettingsComponent implements OnInit {
           this.loading.set(false);
           this.autoHideMessage();
         },
-        error: (err) => {
-          console.error('Error al actualizar foto:', err);
-          this.errorMessage.set(err.error?.detail || 'Error al actualizar la foto de perfil');
+        error: () => {
+          console.error('Error al actualizar foto');
+          this.errorMessage.set('Error al actualizar la foto de perfil');
           this.loading.set(false);
         }
       });
-    };
-    reader.readAsDataURL(file);
+    }).catch(() => {
+      console.error('Error al comprimir imagen');
+      this.errorMessage.set('Error al procesar la imagen');
+      this.loading.set(false);
+    });
   }
 
+  /**
+   * Comprime una imagen a un tamaño máximo manteniendo la proporción
+   * 
+   * Objetivo: Reducir el tamaño de la imagen para evitar error 431 (Request Header Fields Too Large)
+   * 
+   * @param file - Archivo de imagen a comprimir
+   * @param maxWidth - Ancho máximo en píxeles (default: 800)
+   * @param maxHeight - Alto máximo en píxeles (default: 800)
+   * @param quality - Calidad de compresión JPEG 0-1 (default: 0.8)
+   * @returns Promise<string> - String base64 con formato "data:image/jpeg;base64,..."
+   * 
+   * Reducción típica: 3-5MB → 100-300KB (~95% más pequeño)
+   */
+  private compressImage(file: File, maxWidth: number = 800, maxHeight: number = 800, quality: number = 0.8): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        const img = new Image();
+        
+        img.onload = () => {
+          // Calcular dimensiones manteniendo proporción
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > height) {
+            if (width > maxWidth) {
+              height = height * (maxWidth / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = width * (maxHeight / height);
+              height = maxHeight;
+            }
+          }
+          
+          // Crear canvas y comprimir
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('No se pudo crear el contexto del canvas'));
+            return;
+          }
+          
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convertir a base64 con compresión
+          const base64 = canvas.toDataURL('image/jpeg', quality);
+          resolve(base64);
+        };
+        
+        img.onerror = () => reject(new Error('Error al cargar la imagen'));
+        img.src = e.target?.result as string;
+      };
+      
+      reader.onerror = () => reject(new Error('Error al leer el archivo'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /**
+   * Elimina la foto de perfil actual
+   * Envía un string vacío al backend para borrar la imagen
+   */
   removeProfilePicture() {
     this.loading.set(true);
     this.clearMessages();
@@ -147,9 +229,9 @@ export class AccountSettingsComponent implements OnInit {
         this.loading.set(false);
         this.autoHideMessage();
       },
-      error: (err) => {
-        console.error('Error al eliminar foto:', err);
-        this.errorMessage.set(err.error?.detail || 'Error al eliminar la foto de perfil');
+      error: () => {
+        console.error('Error al eliminar foto');
+        this.errorMessage.set('Error al eliminar la foto de perfil');
         this.loading.set(false);
       }
     });
@@ -174,9 +256,9 @@ export class AccountSettingsComponent implements OnInit {
         this.loading.set(false);
         this.autoHideMessage();
       },
-      error: (err) => {
-        console.error('Error al actualizar perfil:', err);
-        this.errorMessage.set(err.error?.detail || 'Error al actualizar el perfil');
+      error: () => {
+        console.error('Error al actualizar perfil');
+        this.errorMessage.set('Error al actualizar el perfil');
         this.loading.set(false);
       }
     });
@@ -210,9 +292,9 @@ export class AccountSettingsComponent implements OnInit {
         this.loading.set(false);
         this.autoHideMessage();
       },
-      error: (err) => {
-        console.error('Error al cambiar contraseña:', err);
-        this.errorMessage.set(err.error?.detail || 'Error al cambiar la contraseña');
+      error: () => {
+        console.error('Error al cambiar contraseña');
+        this.errorMessage.set('Error al cambiar la contraseña');
         this.loading.set(false);
       }
     });

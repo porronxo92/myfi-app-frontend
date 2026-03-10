@@ -106,27 +106,27 @@ import { TransactionModalComponent, TransactionModalConfig } from '../../shared/
   styles: [`
     .account-detail-page {
       min-height: 100vh;
-      background: var(--bg-app, #f8fafc);
+      background: var(--bg-app);
     }
 
     .page-container {
       max-width: 1400px;
-      padding: 2rem;
+      padding: var(--space-6);
       margin: 0 auto;
     }
 
     .cards-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+      gap: var(--space-5);
+      margin-bottom: var(--space-5);
     }
 
     .summary-cards-container {
       display: flex;
       flex-direction: column;
       width: 100%;
-      gap: 1.5rem;
+      gap: var(--space-5);
     }
 
     .loading-container,
@@ -135,18 +135,18 @@ import { TransactionModalComponent, TransactionModalConfig } from '../../shared/
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 4rem 2rem;
+      padding: var(--space-8) var(--space-5);
       text-align: center;
     }
 
     .spinner {
       width: 48px;
       height: 48px;
-      border: 4px solid #e2e8f0;
-      border-top-color: #3b82f6;
+      border: 3px solid var(--color-slate-600);
+      border-top-color: var(--color-accent);
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin-bottom: 1rem;
+      margin-bottom: var(--space-4);
     }
 
     @keyframes spin {
@@ -156,12 +156,12 @@ import { TransactionModalComponent, TransactionModalConfig } from '../../shared/
     .error-icon {
       width: 64px;
       height: 64px;
-      color: #ef4444;
-      margin-bottom: 1rem;
+      color: var(--color-negative);
+      margin-bottom: var(--space-4);
     }
 
     .error-message {
-      color: #ef4444;
+      color: var(--color-negative);
       font-weight: 500;
     }
 
@@ -173,7 +173,7 @@ import { TransactionModalComponent, TransactionModalConfig } from '../../shared/
 
     @media (max-width: 768px) {
       .page-container {
-        padding: 1rem;
+        padding: var(--space-4);
       }
     }
   `]
@@ -229,18 +229,12 @@ export class AccountDetailComponent implements OnInit {
   ngOnInit(): void {
     // Obtener ID de la cuenta desde la URL
     this.route.params.subscribe(params => {
-      console.log('📋 Params recibidos:', params);
-      console.log('📋 ID extraído:', params['id']);
-      console.log('📋 Tipo:', typeof params['id']);
-      console.log('📋 Longitud:', params['id']?.length);
       this.accountId = params['id'];
       this.loadData();
     });
   }
 
   loadData(): void {
-    console.log('🔄 Cargando datos de la cuenta:', this.accountId);
-
     // Cargar cuentas si no están cargadas
     if (this.accountService.accounts().length === 0) {
       this.accountService.getAccounts().subscribe();
@@ -250,18 +244,16 @@ export class AccountDetailComponent implements OnInit {
     this.transactionService.getTransactions({
       account_id: this.accountId
     }).subscribe({
-      next: () => console.log('✅ Transacciones cargadas'),
-      error: (err) => console.error('❌ Error cargando transacciones:', err)
+      next: () => {},
+      error: () => console.error('Error cargando transacciones')
     });
 
     // Cargar categorías para los filtros (solo categorías con transacciones)
     if (this.categoryService.categories().length === 0) {
       this.categoryService.getCategories().subscribe({
-        next: (categories) => console.log('✅ Categorías cargadas:', categories),
-        error: (err) => console.error('❌ Error cargando categorías:', err)
+        next: () => {},
+        error: () => console.error('Error cargando categorías')
       });
-    } else {
-      console.log('✅ Categorías ya estaban cargadas:', this.categoryService.categories());
     }
   }
 
@@ -270,7 +262,7 @@ export class AccountDetailComponent implements OnInit {
   }
 
   handleFilterChange(): void {
-    console.log('Filtros actualizados');
+    // Filters updated
   }
 
   handleTransfer(): void {
@@ -296,7 +288,6 @@ export class AccountDetailComponent implements OnInit {
   }
 
   onTransactionCreated(transaction: any): void {
-    console.log('✅ Transacción/Transferencia creada:', transaction);
     // Reload data to show new transaction
     this.loadData();
   }

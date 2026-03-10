@@ -166,8 +166,6 @@ export class DashboardStateService {
       const period = this.buildPeriodString(year, month);
       const previousPeriod = this.getPreviousPeriod(period);
       
-      console.log('🔍 Dashboard loading data with filters:', { year, month, accountId, period, previousPeriod });
-      
       // Peticiones en paralelo (19 llamadas: 4 anuales + 15 mensuales)
       const [
         // === DATOS ANUALES (para Summary Cards - solo afectados por año y cuenta) ===
@@ -279,18 +277,11 @@ export class DashboardStateService {
         monthlyCategoryBreakdown,
         yearlyMonthlyTrend
       };
-      
-      console.log('✅ Dashboard data loaded:', {
-        annualBalance: annualBalance,
-        annualIncome: annualIncome,
-        annualExpenses: annualExpenses,
-        monthlySummary: summary
-      });
 
       this._data$.next(dashboardData);
       
     } catch (error: any) {
-      console.error('Error loading dashboard data:', error);
+      console.error('Error loading dashboard data');
       this._error$.next(error.message || 'Error al cargar datos del dashboard');
     } finally {
       this._loading$.next(false);
@@ -377,7 +368,7 @@ export class DashboardStateService {
         const filters = JSON.parse(savedFilters);
         this._filters$.next(filters);
       } catch (e) {
-        console.error('Error restoring filters:', e);
+        console.error('Error restoring filters');
       }
     }
   }

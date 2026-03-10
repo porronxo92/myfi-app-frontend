@@ -2,12 +2,14 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.component';
+import { SafeImagePipe } from '../pipes/safe-image.pipe';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, LogoutConfirmationModalComponent],
+  imports: [CommonModule, LogoutConfirmationModalComponent, SafeImagePipe],
   template: `
     <nav class="navbar">
       <div class="navbar-content">
@@ -27,10 +29,30 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
 
         <!-- Usuario y Logout -->
         <div class="navbar-right">
+          <!-- Theme Toggle -->
+          <button 
+            class="btn-theme-toggle" 
+            (click)="themeService.toggle()" 
+            [attr.aria-label]="themeService.getToggleAriaLabel()"
+            title="Cambiar tema">
+            @if (themeService.isDark()) {
+              <!-- Sun icon - show when dark (click to go light) -->
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5" stroke-width="2"/>
+                <path stroke-linecap="round" stroke-width="2" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+              </svg>
+            } @else {
+              <!-- Moon icon - show when light (click to go dark) -->
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+              </svg>
+            }
+          </button>
+
           <div class="user-info" (click)="navigateTo('/account-settings')" title="Configuración de cuenta">
             <div class="avatar">
               @if (user()?.profile_picture) {
-                <img [src]="user()!.profile_picture" [alt]="user()?.full_name || 'Usuario'" class="avatar-img">
+                <img [src]="user()!.profile_picture | safeImage" [alt]="user()?.full_name || 'Usuario'" class="avatar-img">
               } @else {
                 {{ (user()?.full_name || user()?.email || 'U')[0].toUpperCase() }}
               }
@@ -98,7 +120,7 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
         <div class="user-info-mobile" (click)="navigateToMobile('/account-settings')">
           <div class="avatar">
             @if (user()?.profile_picture) {
-              <img [src]="user()!.profile_picture" [alt]="user()?.full_name || 'Usuario'" class="avatar-img">
+              <img [src]="user()!.profile_picture | safeImage" [alt]="user()?.full_name || 'Usuario'" class="avatar-img">
             } @else {
               {{ (user()?.full_name || user()?.email || 'U')[0].toUpperCase() }}
             }
@@ -130,18 +152,22 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
     />
   `,
   styles: [`
+    /* ========================================
+       NAVBAR - INSTITUTIONAL DESIGN
+       ======================================== */
+    
     .navbar {
-      background: white;
-      border-bottom: 1px solid #e2e8f0;
+      background: var(--bg-surface);
+      border-bottom: var(--border-subtle);
       position: sticky;
       top: 0;
       z-index: 100;
     }
 
     .navbar-content {
-      max-width: 1400px;
+      max-width: 1440px;
       margin: 0 auto;
-      padding: 1rem 2rem;
+      padding: var(--space-3) var(--space-6);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -150,84 +176,102 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
     .navbar-left {
       display: flex;
       align-items: center;
-      gap: 3rem;
+      gap: var(--space-10);
     }
 
+    /* Logo - Clean Typography */
     .logo {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       font-weight: 700;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--color-accent);
+      letter-spacing: -0.02em;
       margin: 0;
       cursor: pointer;
       user-select: none;
+      transition: color var(--transition-fast);
     }
 
+    .logo:hover {
+      color: var(--color-accent-hover);
+    }
+
+    /* Navigation Menu */
     .nav-menu {
       display: flex;
-      gap: 1.5rem;
+      gap: var(--space-1);
     }
 
     .nav-link {
-      color: #64748b;
+      color: var(--text-muted);
       font-weight: 500;
+      font-size: 0.8125rem;
       cursor: pointer;
-      transition: color 0.2s;
+      transition: all var(--transition-fast);
       text-decoration: none;
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      letter-spacing: var(--tracking-wide);
     }
 
     .nav-link:hover {
-      color: #3b82f6;
+      color: var(--text-primary);
+      background: var(--bg-hover);
     }
 
     .nav-link.active {
-      color: #3b82f6;
+      color: var(--color-accent);
+      background: var(--color-accent-subtle);
       position: relative;
     }
 
+    /* Active indicator - bottom line */
     .nav-link.active::after {
       content: '';
       position: absolute;
-      bottom: -1.25rem;
-      left: 0;
-      right: 0;
+      bottom: -0.75rem;
+      left: var(--space-3);
+      right: var(--space-3);
       height: 2px;
-      background: #3b82f6;
+      background: var(--color-accent);
+      border-radius: 1px;
     }
 
+    /* Right Section */
     .navbar-right {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--space-3);
     }
 
+    /* User Info */
     .user-info {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-3);
       cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 8px;
-      transition: background-color 0.2s;
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      transition: background var(--transition-fast);
+      border: var(--border-subtle);
     }
 
     .user-info:hover {
-      background-color: #f8fafc;
+      background: var(--bg-hover);
+      border-color: var(--color-slate-500);
     }
 
+    /* Avatar */
     .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      background: var(--color-accent);
+      color: var(--color-slate-950);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 600;
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       overflow: hidden;
       flex-shrink: 0;
     }
@@ -239,37 +283,64 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
     }
 
     .user-name {
-      color: #0f172a;
+      color: var(--text-secondary);
       font-weight: 500;
-      font-size: 0.9375rem;
+      font-size: 0.8125rem;
     }
 
+    /* Logout Button */
     .btn-logout {
-      width: 40px;
-      height: 40px;
-      border: 1px solid #e2e8f0;
-      background: white;
-      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      border: var(--border-subtle);
+      background: transparent;
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #64748b;
+      color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all var(--transition-fast);
     }
 
     .btn-logout:hover {
-      border-color: #ef4444;
-      color: #ef4444;
-      background: #fef2f2;
+      border-color: var(--color-negative);
+      color: var(--color-negative);
+      background: rgba(202, 53, 33, 0.08);
     }
 
     .btn-logout svg {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
     }
 
-    /* Botón Hamburguesa */
+    /* Theme Toggle Button */
+    .btn-theme-toggle {
+      width: 36px;
+      height: 36px;
+      border: var(--border-subtle);
+      background: transparent;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-theme-toggle:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+      background: var(--color-accent-subtle);
+    }
+
+    .btn-theme-toggle svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Hamburger Button */
     .btn-hamburger {
       display: none;
       flex-direction: column;
@@ -284,16 +355,16 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
     }
 
     .btn-hamburger span {
-      width: 24px;
+      width: 20px;
       height: 2px;
-      background: #64748b;
-      border-radius: 2px;
-      transition: all 0.3s;
+      background: var(--text-muted);
+      border-radius: 1px;
+      transition: all 0.25s ease;
       transform-origin: center;
     }
 
     .btn-hamburger.open span:nth-child(1) {
-      transform: translateY(7px) rotate(45deg);
+      transform: translateY(6px) rotate(45deg);
     }
 
     .btn-hamburger.open span:nth-child(2) {
@@ -301,22 +372,22 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
     }
 
     .btn-hamburger.open span:nth-child(3) {
-      transform: translateY(-7px) rotate(-45deg);
+      transform: translateY(-6px) rotate(-45deg);
     }
 
-    /* Menú Móvil */
+    /* Mobile Menu */
     .mobile-menu {
       position: fixed;
-      top: 65px;
+      top: 57px;
       right: -100%;
       width: 280px;
-      height: calc(100vh - 65px);
-      background: white;
-      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
-      transition: right 0.3s ease;
+      height: calc(100vh - 57px);
+      background: var(--bg-surface);
+      border-left: var(--border-subtle);
+      transition: right 0.25s ease;
       z-index: 99;
       overflow-y: auto;
-      padding: 1rem 0;
+      padding: var(--space-4) 0;
     }
 
     .mobile-menu.open {
@@ -326,26 +397,27 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
     .nav-link-mobile {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding: 1rem 1.5rem;
-      color: #64748b;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      color: var(--text-muted);
       font-weight: 500;
+      font-size: 0.875rem;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all var(--transition-fast);
       text-decoration: none;
-      border-left: 3px solid transparent;
+      border-left: 2px solid transparent;
     }
 
     .nav-link-mobile:hover:not(.disabled) {
-      background: #f8fafc;
-      color: #3b82f6;
-      border-left-color: #3b82f6;
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-left-color: var(--color-accent);
     }
 
     .nav-link-mobile.active {
-      background: #eff6ff;
-      color: #3b82f6;
-      border-left-color: #3b82f6;
+      background: var(--color-accent-subtle);
+      color: var(--color-accent);
+      border-left-color: var(--color-accent);
     }
 
     .nav-link-mobile.disabled {
@@ -354,59 +426,59 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
     }
 
     .nav-link-mobile svg {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
     }
 
     .nav-link-mobile span {
-      font-size: 0.9375rem;
+      font-size: 0.875rem;
     }
 
     .nav-link-mobile.logout-link {
-      color: #ef4444;
-      margin-top: 0.5rem;
+      color: var(--color-negative);
+      margin-top: var(--space-2);
     }
 
     .nav-link-mobile.logout-link:hover {
-      background: #fef2f2;
-      color: #dc2626;
-      border-left-color: #ef4444;
+      background: rgba(202, 53, 33, 0.08);
+      color: var(--color-negative);
+      border-left-color: var(--color-negative);
     }
 
     /* Divider */
     .mobile-divider {
       height: 1px;
-      background: #e2e8f0;
-      margin: 1rem 0;
+      background: var(--border-subtle);
+      margin: var(--space-4) 0;
     }
 
-    /* Usuario en móvil */
+    /* Mobile User Info */
     .user-info-mobile {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 1rem 1.5rem;
-      background: #f8fafc;
-      border-left: 3px solid #3b82f6;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      background: var(--bg-elevated);
+      border-left: 2px solid var(--color-accent);
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background var(--transition-fast);
     }
 
     .user-info-mobile:hover {
-      background: #e0f2fe;
+      background: var(--color-accent-subtle);
     }
 
     .user-info-mobile .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      background: var(--color-accent);
+      color: var(--color-slate-950);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 600;
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
       overflow: hidden;
       flex-shrink: 0;
     }
@@ -420,22 +492,22 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
     .user-details {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 2px;
       min-width: 0;
     }
 
     .user-name-mobile {
-      color: #0f172a;
+      color: var(--text-primary);
       font-weight: 600;
-      font-size: 0.9375rem;
+      font-size: 0.875rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .user-email-mobile {
-      color: #64748b;
-      font-size: 0.8125rem;
+      color: var(--text-muted);
+      font-size: 0.75rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -448,11 +520,11 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(11, 17, 32, 0.8);
       z-index: 98;
       opacity: 0;
       visibility: hidden;
-      transition: opacity 0.3s, visibility 0.3s;
+      transition: opacity 0.25s, visibility 0.25s;
     }
 
     .mobile-overlay.open {
@@ -463,11 +535,11 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
     /* Media Queries */
     @media (max-width: 780px) {
       .navbar-content {
-        padding: 1rem;
+        padding: var(--space-3) var(--space-4);
       }
 
       .navbar-left {
-        gap: 1.5rem;
+        gap: var(--space-4);
       }
 
       .nav-menu.desktop {
@@ -498,6 +570,7 @@ import { LogoutConfirmationModalComponent } from './logout-confirmation-modal.co
 export class NavbarComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  public themeService = inject(ThemeService);
 
   user = this.authService.user;
   showLogoutModal = signal(false);

@@ -111,91 +111,91 @@ import { TransactionTableComponent } from '../../../shared/components/transactio
   `,
   styles: [`
     .transactions-section {
-      background: white;
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
+      padding: var(--space-5);
     }
 
     .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: var(--space-5);
     }
 
     .section-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #0f172a;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-primary);
       margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .header-actions {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--space-2);
       align-items: center;
     }
 
     .btn-action {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.625rem 1rem;
-      border-radius: 8px;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
       font-weight: 600;
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 100ms ease;
       border: none;
       white-space: nowrap;
     }
 
     .btn-action.primary {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      color: white;
-      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+      background: var(--color-accent);
+      color: var(--color-slate-900);
     }
 
     .btn-action.primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+      background: var(--color-accent-hover);
     }
 
     .btn-action.secondary {
-      background: white;
-      color: #3b82f6;
-      border: 1px solid #3b82f6;
+      background: transparent;
+      color: var(--color-accent);
+      border: 1px solid var(--color-accent);
     }
 
     .btn-action.secondary:hover {
-      background: #eff6ff;
+      background: var(--color-accent-subtle);
     }
 
     .btn-icon {
-      width: 36px;
-      height: 36px;
-      border: 1px solid #e2e8f0;
-      background: white;
-      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      border: var(--border-subtle);
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #64748b;
+      color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 100ms ease;
       flex-shrink: 0;
     }
 
     .btn-icon:hover {
-      border-color: #3b82f6;
-      color: #3b82f6;
+      border-color: var(--color-accent);
+      color: var(--color-accent);
     }
 
     .filters-bar {
       display: flex;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
       align-items: center;
       flex-wrap: nowrap;
     }
@@ -208,40 +208,59 @@ import { TransactionTableComponent } from '../../../shared/components/transactio
 
     .search-icon {
       position: absolute;
-      left: 0.875rem;
+      left: var(--space-3);
       top: 50%;
       transform: translateY(-50%);
-      color: #94a3b8;
+      color: var(--text-muted);
+      font-size: 18px;
     }
 
     .filter-input {
       width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 0.9375rem;
-      transition: all 0.2s;
+      padding: var(--space-3);
+      background: var(--bg-elevated);
+      border: var(--border-subtle);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+      font-family: var(--font-ui);
+      color: var(--text-primary);
+      transition: border-color 100ms ease;
     }
 
     .filter-input.search {
-      padding-left: 2.75rem;
+      padding-left: 2.5rem;
+    }
+
+    .filter-input::placeholder {
+      color: var(--text-muted);
     }
 
     .filter-input:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: var(--color-accent);
     }
 
     .filter-select {
-      padding: 0.75rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 0.9375rem;
-      background: white;
+      padding: var(--space-3);
+      background: var(--bg-elevated);
+      border: var(--border-subtle);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+      font-family: var(--font-ui);
+      color: var(--text-primary);
       cursor: pointer;
       flex: 1;
       min-width: 140px;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--color-accent);
+    }
+
+    .filter-select option {
+      background: var(--bg-card);
+      color: var(--text-primary);
     }
 
     .filter-input.date {
@@ -250,25 +269,25 @@ import { TransactionTableComponent } from '../../../shared/components/transactio
     }
 
     .btn-reset {
-      padding: 0.75rem 1rem;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #64748b;
+      padding: var(--space-3) var(--space-4);
+      background: var(--bg-elevated);
+      border: var(--border-subtle);
+      border-radius: var(--radius-md);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 100ms ease;
     }
 
     .btn-reset:hover {
-      background: #f1f5f9;
-      color: #0f172a;
+      border-color: var(--color-negative);
+      color: var(--color-negative);
     }
 
     .table-container {
       overflow-x: auto;
-      margin-bottom: 1.5rem;
+      margin-bottom: var(--space-5);
     }
 
     .transactions-table {
@@ -277,17 +296,17 @@ import { TransactionTableComponent } from '../../../shared/components/transactio
     }
 
     .transactions-table thead {
-      background: #f8fafc;
+      background: var(--bg-elevated);
     }
 
     .transactions-table th {
-      padding: 0.875rem 1rem;
+      padding: var(--space-3) var(--space-4);
       text-align: left;
-      font-size: 0.8125rem;
+      font-size: 0.6875rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.05em;
     }
 
     .transactions-table th.text-right {
@@ -295,51 +314,51 @@ import { TransactionTableComponent } from '../../../shared/components/transactio
     }
 
     .transaction-row {
-      border-bottom: 1px solid #f1f5f9;
-      transition: background 0.2s;
+      border-bottom: 1px solid var(--color-slate-700);
+      transition: background 100ms ease;
     }
 
     .transaction-row:hover {
-      background: #f8fafc;
+      background: var(--bg-elevated);
     }
 
     .transactions-table td {
-      padding: 1rem;
-      font-size: 0.9375rem;
+      padding: var(--space-4);
+      font-size: 0.8125rem;
     }
 
     .date-cell {
       display: flex;
       flex-direction: column;
-      gap: 0.125rem;
+      gap: var(--space-1);
     }
 
     .date {
       font-weight: 500;
-      color: #0f172a;
+      color: var(--text-primary);
     }
 
     .time {
-      font-size: 0.8125rem;
-      color: #94a3b8;
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
 
     .concept-cell {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-3);
     }
 
     .category-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      background: #f1f5f9;
-      padding: 6px;
+      background: var(--bg-elevated);
+      padding: 4px;
     }
 
     .category-icon img {
@@ -349,46 +368,49 @@ import { TransactionTableComponent } from '../../../shared/components/transactio
     }
 
     .category-icon.income {
-      background: #dcfce7;
+      background: rgba(34, 160, 107, 0.15);
     }
 
     .category-icon.expense {
-      background: #fee2e2;
+      background: rgba(202, 53, 33, 0.15);
     }
 
     .category-badge {
       display: inline-block;
-      padding: 0.375rem 0.75rem;
-      border-radius: 6px;
-      font-size: 0.8125rem;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
       font-weight: 500;
       white-space: nowrap;
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
     }
 
     .amount {
+      font-family: var(--font-data);
       font-weight: 600;
-      font-size: 1rem;
+      font-size: 0.875rem;
     }
 
     .amount.income {
-      color: #16a34a;
+      color: var(--color-positive);
     }
 
     .amount.expense {
-      color: #dc2626;
+      color: var(--color-negative);
     }
 
     .status-badge {
       display: inline-block;
-      padding: 0.375rem 0.75rem;
-      border-radius: 6px;
-      font-size: 0.8125rem;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
       font-weight: 500;
     }
 
     .status-badge.completed {
-      background: #dcfce7;
-      color: #16a34a;
+      background: rgba(34, 160, 107, 0.15);
+      color: var(--color-positive);
     }
 
     .text-right {
@@ -397,24 +419,24 @@ import { TransactionTableComponent } from '../../../shared/components/transactio
 
     .empty-state {
       text-align: center;
-      padding: 4rem 2rem;
-      color: #94a3b8;
+      padding: var(--space-8) var(--space-5);
+      color: var(--text-muted);
     }
 
     .empty-state svg {
-      margin: 0 auto 1.5rem;
+      margin: 0 auto var(--space-5);
     }
 
     .empty-text {
-      font-size: 1.125rem;
+      font-size: 0.9375rem;
       font-weight: 600;
-      color: #64748b;
-      margin: 0 0 0.5rem 0;
+      color: var(--text-secondary);
+      margin: 0 0 var(--space-2) 0;
     }
 
     .empty-subtext {
-      font-size: 0.9375rem;
-      color: #94a3b8;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
       margin: 0;
     }
 
@@ -422,44 +444,45 @@ import { TransactionTableComponent } from '../../../shared/components/transactio
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: 1rem;
-      border-top: 1px solid #f1f5f9;
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--color-slate-700);
     }
 
     .pagination-info {
-      font-size: 0.875rem;
-      color: #64748b;
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
 
     .pagination-controls {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--space-3);
     }
 
     .page-indicator {
-      font-size: 0.875rem;
-      color: #0f172a;
+      font-family: var(--font-data);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
       font-weight: 500;
     }
 
     .btn-page {
-      width: 32px;
-      height: 32px;
-      border: 1px solid #e2e8f0;
-      background: white;
-      border-radius: 6px;
+      width: 28px;
+      height: 28px;
+      border: var(--border-subtle);
+      background: var(--bg-elevated);
+      border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #64748b;
+      color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 100ms ease;
     }
 
     .btn-page:hover:not(:disabled) {
-      border-color: #3b82f6;
-      color: #3b82f6;
+      border-color: var(--color-accent);
+      color: var(--color-accent);
     }
 
     .btn-page:disabled {
@@ -475,7 +498,7 @@ import { TransactionTableComponent } from '../../../shared/components/transactio
       .section-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 1rem;
+        gap: var(--space-3);
       }
 
       .header-actions {
@@ -510,12 +533,12 @@ import { TransactionTableComponent } from '../../../shared/components/transactio
 
       .btn-action {
         min-width: auto;
-        padding: 0.625rem;
+        padding: var(--space-3);
       }
 
       .pagination {
         flex-direction: column;
-        gap: 1rem;
+        gap: var(--space-3);
       }
     }
   `]

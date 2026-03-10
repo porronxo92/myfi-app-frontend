@@ -1,11 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { MaskIbanPipe } from '../../../shared/pipes/mask-iban.pipe';
 
 @Component({
   selector: 'app-account-header',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, MaskIbanPipe],
   template: `
     <div class="account-header">
       <!-- Logo y título -->
@@ -32,7 +33,7 @@ import { RouterModule } from '@angular/router';
       <!-- Información de la cuenta -->
       <div class="account-details">
         <div class="detail-row">
-          <div class="detail-item">
+          <div class="detail-item" *ngIf="iban">
             <span class="detail-label">IBAN</span>
             <span class="detail-value iban">{{ iban }}</span>
           </div>
@@ -71,30 +72,30 @@ import { RouterModule } from '@angular/router';
   `,
   styles: [`
     .account-header {
-      background: white;
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      margin-bottom: 1.5rem;
+      background: var(--bg-card);
+      padding: var(--space-6);
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
+      margin-bottom: var(--space-5);
     }
 
     .header-top {
       display: flex;
       align-items: flex-start;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid #e2e8f0;
+      gap: var(--space-5);
+      margin-bottom: var(--space-5);
+      padding-bottom: var(--space-5);
+      border-bottom: 1px solid var(--color-slate-600);
     }
 
     .bank-logo-container {
       flex-shrink: 0;
-      width: 80px;
-      height: 80px;
-      background: white;
-      border-radius: 12px;
-      padding: 1rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      width: 72px;
+      height: 72px;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      border: var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -113,39 +114,40 @@ import { RouterModule } from '@angular/router';
     .title-row {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      margin-bottom: 0.5rem;
+      gap: var(--space-3);
+      margin-bottom: var(--space-2);
     }
 
     .account-title {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #0f172a;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
       margin: 0;
+      letter-spacing: -0.02em;
     }
 
     .account-status {
-      padding: 0.375rem 0.875rem;
-      border-radius: 12px;
-      font-size: 0.75rem;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-sm);
+      font-size: 0.6875rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.05em;
     }
 
     .account-status.active {
-      background: #dcfce7;
-      color: #16a34a;
+      background: rgba(34, 160, 107, 0.15);
+      color: var(--color-positive);
     }
 
     .account-status.inactive {
-      background: #fee2e2;
-      color: #dc2626;
+      background: rgba(202, 53, 33, 0.15);
+      color: var(--color-negative);
     }
 
     .account-type {
-      font-size: 1rem;
-      color: #64748b;
+      font-size: 0.875rem;
+      color: var(--text-muted);
       margin: 0;
       font-weight: 500;
     }
@@ -153,19 +155,19 @@ import { RouterModule } from '@angular/router';
     .account-details {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--space-4);
     }
 
     .detail-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
+      gap: var(--space-5);
     }
 
     .detail-item {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: var(--space-1);
     }
 
     .detail-item.full-width {
@@ -173,47 +175,47 @@ import { RouterModule } from '@angular/router';
     }
 
     .detail-label {
-      font-size: 0.75rem;
+      font-size: 0.6875rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.05em;
     }
 
     .detail-value {
-      font-size: 0.9375rem;
-      color: #0f172a;
+      font-size: 0.875rem;
+      color: var(--text-primary);
       font-weight: 500;
     }
 
     .detail-value.iban {
-      font-family: 'Courier New', monospace;
-      color: #3b82f6;
+      font-family: var(--font-data);
+      color: var(--color-accent);
       font-weight: 600;
     }
 
     @media (max-width: 768px) {
       .account-header {
-        padding: 1.5rem;
+        padding: var(--space-4);
       }
 
       .header-top {
         flex-direction: column;
-        gap: 1rem;
+        gap: var(--space-3);
       }
 
       .bank-logo-container {
-        width: 60px;
-        height: 60px;
+        width: 56px;
+        height: 56px;
       }
 
       .account-title {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
       }
 
       .detail-row {
         grid-template-columns: 1fr;
-        gap: 1rem;
+        gap: var(--space-3);
       }
     }
   `]

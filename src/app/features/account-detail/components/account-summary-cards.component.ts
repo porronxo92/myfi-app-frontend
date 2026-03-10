@@ -43,30 +43,29 @@ import { CommonModule } from '@angular/common';
   styles: [`
     .summary-cards {
       display: grid;
-      gap: 1.25rem;
-      margin-bottom: 1.5rem;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
     }
 
     .summary-card {
-      background: white;
-      border-radius: 16px;
-      padding: 1.5rem;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
+      padding: var(--space-5);
       display: flex;
       align-items: flex-start;
-      gap: 1rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s;
+      gap: var(--space-4);
+      transition: border-color 100ms ease;
     }
 
     .summary-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border-color: var(--color-slate-500);
     }
 
     .card-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -74,13 +73,13 @@ import { CommonModule } from '@angular/common';
     }
 
     .summary-card.income .card-icon {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: white;
+      background: rgba(34, 160, 107, 0.15);
+      color: var(--color-positive);
     }
 
     .summary-card.expense .card-icon {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color: white;
+      background: rgba(202, 53, 33, 0.15);
+      color: var(--color-negative);
     }
 
     .card-content {
@@ -88,38 +87,43 @@ import { CommonModule } from '@angular/common';
     }
 
     .card-label {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin: 0 0 0.5rem 0;
-      font-weight: 500;
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      margin: 0 0 var(--space-2) 0;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .card-value {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin: 0 0 0.5rem 0;
+      font-family: var(--font-data);
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 var(--space-2) 0;
       line-height: 1;
+      letter-spacing: -0.02em;
     }
 
     .summary-card.income .card-value {
-      color: #059669;
+      color: var(--color-positive);
     }
 
     .summary-card.expense .card-value {
-      color: #dc2626;
+      color: var(--color-negative);
     }
 
     .card-variation {
-      font-size: 0.8125rem;
-      font-weight: 500;
+      font-family: var(--font-data);
+      font-size: 0.75rem;
+      font-weight: 600;
     }
 
     .card-variation.positive {
-      color: #16a34a;
+      color: var(--color-positive);
     }
 
     .card-variation.negative {
-      color: #dc2626;
+      color: var(--color-negative);
     }
 
     @media (max-width: 768px) {

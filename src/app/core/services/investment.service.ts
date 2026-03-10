@@ -36,8 +36,8 @@ export class InvestmentService {
     const params = new HttpParams().set('q', query.trim());
 
     return this.http.get<StockSearchResult[]>(`${this.apiUrl}/search`, { params }).pipe(
-      catchError(error => {
-        console.error('Error searching stocks:', error);
+      catchError(() => {
+        console.error('Error searching stocks');
         return of([]);
       })
     );
@@ -55,8 +55,8 @@ export class InvestmentService {
     const params = new HttpParams().set('q', ticker.trim().toUpperCase());
 
     return this.http.get<any>(`${this.apiUrl}/quote`, { params }).pipe(
-      catchError(error => {
-        console.error('Error fetching quote:', error);
+      catchError(() => {
+        console.error('Error fetching quote');
         return of(null);
       })
     );
@@ -78,8 +78,8 @@ export class InvestmentService {
     const params = new HttpParams().set('q', ticker.trim().toUpperCase());
 
     return this.http.get<StockLogoResponse>(`${this.apiUrl}/logo`, { params }).pipe(
-      catchError(error => {
-        console.error('Error fetching logo:', error);
+      catchError(() => {
+        console.error('Error fetching logo');
         return of({
           ticker: ticker.toUpperCase(),
           logo_url: null,
@@ -110,8 +110,8 @@ export class InvestmentService {
       summary: PortfolioSummary;
       insights: InvestmentInsight[];
     }>(this.apiUrl, { params }).pipe(
-      catchError(error => {
-        console.error('Error fetching investments:', error);
+      catchError(() => {
+        console.error('Error fetching investments');
         // Retornar estructura vacía en caso de error
         return of({
           positions: [],
@@ -135,8 +135,8 @@ export class InvestmentService {
    */
   getInvestment(id: string): Observable<EnrichedPosition | null> {
     return this.http.get<EnrichedPosition>(`${this.apiUrl}/${id}`).pipe(
-      catchError(error => {
-        console.error('Error fetching investment:', error);
+      catchError(() => {
+        console.error('Error fetching investment');
         return of(null);
       })
     );

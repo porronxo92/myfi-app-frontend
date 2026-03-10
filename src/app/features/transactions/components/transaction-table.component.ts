@@ -145,33 +145,39 @@ import { CategoryService } from '../../../core/services/category.service';
     </div>
   `,
   styles: [`
+    /* ========================================
+       TRANSACTION TABLE - INSTITUTIONAL
+       ======================================== */
+    
     .table-container {
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
+      padding: var(--space-5);
     }
 
     .table-header {
-      margin-bottom: 1.5rem;
+      margin-bottom: var(--space-5);
     }
 
     .table-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0 0 0.25rem 0;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 var(--space-1) 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .table-subtitle {
-      font-size: 0.875rem;
-      color: #64748b;
+      font-size: 0.75rem;
+      color: var(--text-muted);
       margin: 0;
     }
 
     .table-responsive {
       overflow-x: auto;
-      margin-bottom: 1.5rem;
+      margin-bottom: var(--space-5);
     }
 
     .transactions-table {
@@ -180,16 +186,15 @@ import { CategoryService } from '../../../core/services/category.service';
     }
 
     thead {
-      background: #f8fafc;
-      border-bottom: 2px solid #e2e8f0;
+      background: var(--bg-elevated);
     }
 
     th {
-      padding: 0.75rem 1rem;
+      padding: var(--space-3) var(--space-4);
       text-align: left;
-      font-size: 0.75rem;
+      font-size: 0.6875rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -197,22 +202,22 @@ import { CategoryService } from '../../../core/services/category.service';
     th.sortable {
       cursor: pointer;
       user-select: none;
-      transition: background 0.2s;
+      transition: background var(--transition-fast);
     }
 
     th.sortable:hover {
-      background: #f1f5f9;
+      background: var(--bg-hover);
     }
 
     .th-content {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--space-2);
     }
 
     .sort-icon {
       font-size: 0.75rem;
-      color: #3b82f6;
+      color: var(--color-accent);
     }
 
     th.text-right,
@@ -226,59 +231,69 @@ import { CategoryService } from '../../../core/services/category.service';
     }
 
     .transaction-row {
-      border-bottom: 1px solid #f1f5f9;
-      transition: background 0.2s;
+      border-bottom: 1px solid var(--color-slate-700);
+      transition: background var(--transition-fast);
     }
 
     .transaction-row:hover {
-      background: #f8fafc;
+      background: var(--bg-elevated);
     }
 
     td {
-      padding: 1rem;
-      font-size: 0.875rem;
-      color: #0f172a;
+      padding: var(--space-4);
+      font-size: 0.8125rem;
+      color: var(--text-primary);
     }
 
     .date-cell {
       font-size: 0.8125rem;
-      color: #64748b;
+      color: var(--text-muted);
       white-space: nowrap;
+      font-family: var(--font-data);
     }
 
     .description-content {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-3);
     }
 
     .category-icon {
       width: 32px;
       height: 32px;
-      border-radius: 50%;
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      background: #f1f5f9;
-      padding: 6px;
+      background: var(--bg-elevated);
+      border: var(--border-subtle);
     }
 
     .category-icon mat-icon {
-      width: 100%;
-      height: 100%;
+      width: 18px;
+      height: 18px;
       font-size: 18px;
       line-height: 18px;
+      color: var(--text-muted);
     }
 
     .category-icon.income {
-      background: #dcfce7;
-      color: #166534;
+      background: rgba(34, 160, 107, 0.1);
+      border-color: rgba(34, 160, 107, 0.2);
+    }
+
+    .category-icon.income mat-icon {
+      color: var(--color-positive);
     }
 
     .category-icon.expense {
-      background: #fee2e2;
-      color: #991b1b;
+      background: rgba(202, 53, 33, 0.1);
+      border-color: rgba(202, 53, 33, 0.2);
+    }
+
+    .category-icon.expense mat-icon {
+      color: var(--color-negative);
     }
 
     .description-text {
@@ -287,102 +302,112 @@ import { CategoryService } from '../../../core/services/category.service';
 
     .category-badge {
       display: inline-block;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 500;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-sm);
+      font-size: 0.6875rem;
+      font-weight: 600;
       white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+      border: var(--border-subtle);
     }
 
     .category-badge.income {
-      background: #dcfce7;
-      color: #166534;
+      background: rgba(34, 160, 107, 0.1);
+      color: var(--color-positive);
+      border-color: rgba(34, 160, 107, 0.2);
     }
 
     .category-badge.expense {
-      background: #fee2e2;
-      color: #991b1b;
+      background: rgba(202, 53, 33, 0.1);
+      color: var(--color-negative);
+      border-color: rgba(202, 53, 33, 0.2);
     }
 
     .category-badge.transfer {
-      background: #dbeafe;
-      color: #1e40af;
+      background: rgba(56, 139, 253, 0.1);
+      color: var(--color-info);
+      border-color: rgba(56, 139, 253, 0.2);
     }
 
     .account-cell {
       font-size: 0.8125rem;
-      color: #64748b;
+      color: var(--text-muted);
     }
 
     .amount {
       font-weight: 600;
       font-size: 0.9375rem;
+      font-family: var(--font-data);
     }
 
     .amount.positive {
-      color: #10b981;
+      color: var(--color-positive);
     }
 
     .amount.negative {
-      color: #ef4444;
+      color: var(--color-negative);
     }
 
     .actions-buttons {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--space-2);
       justify-content: center;
     }
 
     .btn-action {
-      padding: 0.5rem;
+      padding: var(--space-2);
       border: none;
-      border-radius: 6px;
+      border-radius: var(--radius-md);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all var(--transition-fast);
       background: transparent;
-      color: #64748b;
+      color: var(--text-muted);
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .btn-action:hover {
-      background: #f1f5f9;
+      background: var(--bg-elevated);
     }
 
     .btn-edit:hover {
-      color: #3b82f6;
-      background: #eff6ff;
+      color: var(--color-accent);
+      background: var(--color-accent-subtle);
     }
 
     .btn-delete:hover {
-      color: #ef4444;
-      background: #fef2f2;
+      color: var(--color-negative);
+      background: rgba(202, 53, 33, 0.1);
     }
 
     .empty-row td {
-      padding: 3rem 1rem;
+      padding: var(--space-10) var(--space-4);
     }
 
     .empty-state {
       text-align: center;
-      color: #94a3b8;
+      color: var(--text-muted);
     }
 
     .empty-state svg {
-      margin: 0 auto 1rem;
+      margin: 0 auto var(--space-4);
       opacity: 0.5;
+      color: var(--text-faint);
     }
 
     .empty-title {
-      font-size: 1.125rem;
+      font-size: 0.875rem;
       font-weight: 600;
-      color: #64748b;
-      margin: 0 0 0.5rem 0;
+      color: var(--text-secondary);
+      margin: 0 0 var(--space-2) 0;
     }
 
     .empty-text {
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
       margin: 0;
     }
 
@@ -391,33 +416,33 @@ import { CategoryService } from '../../../core/services/category.service';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid #f1f5f9;
+      gap: var(--space-4);
+      padding-top: var(--space-5);
+      border-top: var(--border-subtle);
     }
 
     .page-numbers {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--space-2);
     }
 
     .btn-page,
     .btn-page-number {
-      padding: 0.5rem 1rem;
-      border: 1px solid #e2e8f0;
-      background: white;
-      color: #64748b;
-      border-radius: 6px;
-      font-size: 0.875rem;
-      font-weight: 500;
+      padding: var(--space-2) var(--space-4);
+      border: var(--border-subtle);
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all var(--transition-fast);
     }
 
     .btn-page:hover:not(:disabled),
     .btn-page-number:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
+      background: var(--bg-hover);
+      border-color: var(--color-slate-500);
     }
 
     .btn-page:disabled {
@@ -426,14 +451,14 @@ import { CategoryService } from '../../../core/services/category.service';
     }
 
     .btn-page-number.active {
-      background: #3b82f6;
-      color: white;
-      border-color: #3b82f6;
+      background: var(--color-accent);
+      color: var(--color-slate-950);
+      border-color: var(--color-accent);
     }
 
     @media (max-width: 768px) {
       .table-container {
-        padding: 1rem;
+        padding: var(--space-4);
       }
 
       .transactions-table {
@@ -441,11 +466,12 @@ import { CategoryService } from '../../../core/services/category.service';
       }
 
       th, td {
-        padding: 0.5rem;
+        padding: var(--space-2);
       }
 
       .category-icon {
-        font-size: 1rem;
+        width: 28px;
+        height: 28px;
       }
 
       .description-text {
@@ -454,7 +480,7 @@ import { CategoryService } from '../../../core/services/category.service';
 
       .actions-buttons {
         flex-direction: column;
-        gap: 0.25rem;
+        gap: var(--space-1);
       }
 
       .pagination {

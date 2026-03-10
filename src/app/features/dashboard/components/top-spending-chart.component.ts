@@ -42,7 +42,7 @@ export class TopSpendingChartComponent implements OnInit, AfterViewInit, OnDestr
   constructor(private chartService: ChartWrapperService) {}
 
   ngOnInit(): void {
-    console.log('📊 TopSpendingChart initialized with data:', this.data);
+    // Chart initialized
   }
 
   ngAfterViewInit(): void {
@@ -55,13 +55,11 @@ export class TopSpendingChartComponent implements OnInit, AfterViewInit, OnDestr
 
   private createChart(): void {
     if (!this.chartCanvas) {
-      console.warn('Chart canvas not available yet');
       return;
     }
 
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
     if (!ctx) {
-      console.error('Cannot get 2D context from canvas');
       return;
     }
 

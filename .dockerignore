@@ -1,0 +1,46 @@
+# Ignorar archivos innecesarios en el contexto de Docker
+# Esto reduce el tamaño del contexto y acelera el build
+
+# Dependencias (se instalan durante el build)
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Salida de builds anteriores
+dist/
+finanzas-app/
+
+# Archivos de desarrollo
+.angular/
+.vscode/
+.idea/
+*.log
+*.tmp
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Documentación
+docs/
+*.md
+README.md
+
+# Tests
+*.spec.ts
+e2e/
+coverage/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Temporal
+*.swp
+*.swo
+*~

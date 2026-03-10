@@ -40,10 +40,10 @@ export class CategoryService {
           this.filterCategories(categories);
           this.loading.set(false);
         },
-        error: (err) => {
+        error: () => {
           this.error.set('Error al cargar las categorías');
           this.loading.set(false);
-          console.error('Error loading categories:', err);
+          console.error('Error loading categories');
         }
       })
     );
@@ -77,10 +77,10 @@ export class CategoryService {
           }
           this.loading.set(false);
         },
-        error: (err) => {
+        error: () => {
           this.error.set('Error al cargar las categorías');
           this.loading.set(false);
-          console.error('Error loading categories:', err);
+          console.error('Error loading categories');
         }
       })
     );

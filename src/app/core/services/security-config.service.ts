@@ -59,15 +59,7 @@ export class SecurityConfigService {
    * Log de información de seguridad para debugging
    */
   logSecurityContext(): void {
-    const info = this.getCookieSecurityInfo();
-    console.log('🔒 Security Context:', {
-      protocol: info.protocol,
-      hostname: info.hostname,
-      environment: info.environment,
-      secureAttribute: info.shouldUseSecureAttribute,
-      sameSite: info.sameSite,
-      recommendation: this.getSecurityRecommendation()
-    });
+    // Security context logging disabled in production
   }
 
   /**

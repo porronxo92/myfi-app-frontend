@@ -216,9 +216,6 @@ export class AccountsListComponent {
   accounts = this.accountService.accounts;
 
   navigateToAccount(accountId: string): void {
-    console.log('🔗 Navegando a cuenta con ID:', accountId);
-    console.log('🔗 Tipo de ID:', typeof accountId);
-    console.log('🔗 Longitud del ID:', accountId?.length);
     this.router.navigate(['/accounts', accountId]);
   }
 

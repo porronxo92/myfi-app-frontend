@@ -253,19 +253,23 @@ const TRANSFER_INCOME_CATEGORY_ID = '94c7e01f-ee86-4684-9bb8-37e8a4d378e0'; // I
     </div>
   `,
   styles: [`
+    /* ========================================
+       TRANSACTION MODAL - INSTITUTIONAL
+       ======================================== */
+    
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(11, 17, 32, 0.85);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      padding: 1rem;
-      animation: fadeIn 0.2s ease-out;
+      padding: var(--space-4);
+      animation: fadeIn 0.15s ease-out;
     }
 
     @keyframes fadeIn {
@@ -274,20 +278,20 @@ const TRANSFER_INCOME_CATEGORY_ID = '94c7e01f-ee86-4684-9bb8-37e8a4d378e0'; // I
     }
 
     .modal-content {
-      background: white;
-      border-radius: 16px;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
       width: 100%;
-      max-width: 600px;
+      max-width: 560px;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      animation: slideUp 0.3s ease-out;
+      animation: slideUp 0.2s ease-out;
     }
 
     @keyframes slideUp {
       from { 
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(16px);
       }
       to { 
         opacity: 1;
@@ -299,74 +303,89 @@ const TRANSFER_INCOME_CATEGORY_ID = '94c7e01f-ee86-4684-9bb8-37e8a4d378e0'; // I
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.5rem 2rem;
-      border-bottom: 1px solid #e2e8f0;
+      padding: var(--space-5) var(--space-6);
+      border-bottom: var(--border-subtle);
     }
 
     .modal-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #0f172a;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
       margin: 0;
+      letter-spacing: var(--tracking-wide);
     }
 
     .close-button {
       background: none;
       border: none;
-      color: #64748b;
+      color: var(--text-muted);
       cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 8px;
-      transition: all 0.2s;
+      padding: var(--space-2);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
     }
 
     .close-button:hover {
-      background: #f1f5f9;
-      color: #0f172a;
+      background: var(--bg-hover);
+      color: var(--text-primary);
     }
 
     .modal-body {
-      padding: 2rem;
+      padding: var(--space-6);
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: var(--space-5);
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--space-2);
     }
 
     .form-label {
       font-weight: 600;
-      color: #334155;
-      font-size: 0.875rem;
+      color: var(--text-muted);
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .form-input,
     .form-select,
     .form-textarea {
-      padding: 0.75rem 1rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 1rem;
-      color: #0f172a;
-      transition: all 0.2s;
-      font-family: inherit;
+      padding: var(--space-3) var(--space-4);
+      background: var(--bg-elevated);
+      border: var(--border-subtle);
+      border-radius: var(--radius-md);
+      font-size: 0.9375rem;
+      color: var(--text-primary);
+      transition: all var(--transition-fast);
     }
 
     .form-input:focus,
     .form-select:focus,
     .form-textarea:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 2px var(--color-accent-subtle);
     }
 
     .form-input::placeholder,
     .form-textarea::placeholder {
-      color: #94a3b8;
+      color: var(--text-faint);
+    }
+
+    .form-input[type="number"] {
+      font-family: var(--font-data);
+    }
+
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394A3B8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right var(--space-3) center;
+      cursor: pointer;
     }
 
     .form-textarea {
@@ -377,7 +396,7 @@ const TRANSFER_INCOME_CATEGORY_ID = '94c7e01f-ee86-4684-9bb8-37e8a4d378e0'; // I
     .form-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+      gap: var(--space-4);
     }
 
     .input-with-icon {
@@ -388,155 +407,160 @@ const TRANSFER_INCOME_CATEGORY_ID = '94c7e01f-ee86-4684-9bb8-37e8a4d378e0'; // I
 
     .input-icon {
       position: absolute;
-      left: 1rem;
-      color: #64748b;
+      left: var(--space-4);
+      color: var(--text-muted);
+      font-family: var(--font-data);
       font-weight: 600;
+      font-size: 0.9375rem;
       pointer-events: none;
     }
 
     .form-input.with-icon {
-      padding-left: 2.5rem;
+      padding-left: var(--space-10);
+      font-family: var(--font-data);
     }
 
     .hint-text {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin-top: -0.25rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
 
     .error-message {
-      color: #ef4444;
-      font-size: 0.875rem;
-      margin-top: -0.25rem;
+      color: var(--color-negative);
+      font-size: 0.75rem;
+      margin-top: var(--space-1);
     }
 
     /* Type Buttons */
     .type-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
+      gap: var(--space-3);
     }
 
     .type-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      padding: 0.875rem;
-      border: 2px solid #e2e8f0;
-      background: white;
-      border-radius: 8px;
+      gap: var(--space-2);
+      padding: var(--space-3);
+      border: var(--border-subtle);
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
       font-weight: 600;
-      font-size: 0.9375rem;
+      font-size: 0.8125rem;
       cursor: pointer;
-      transition: all 0.2s;
-      color: #64748b;
+      transition: all var(--transition-fast);
+      color: var(--text-muted);
     }
 
     .type-btn:hover {
-      border-color: #cbd5e1;
-      background: #f8fafc;
+      border-color: var(--color-slate-500);
+      background: var(--bg-hover);
     }
 
     .type-btn.active.income {
-      border-color: #10b981;
-      background: #ecfdf5;
-      color: #10b981;
+      border-color: var(--color-positive);
+      background: rgba(34, 160, 107, 0.1);
+      color: var(--color-positive);
     }
 
     .type-btn.active.expense {
-      border-color: #ef4444;
-      background: #fef2f2;
-      color: #ef4444;
+      border-color: var(--color-negative);
+      background: rgba(202, 53, 33, 0.1);
+      color: var(--color-negative);
     }
 
     .type-btn svg {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
     }
 
     /* Tags */
     .tags-container {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: var(--space-3);
     }
 
     .tags-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: var(--space-2);
     }
 
     .tag {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.375rem 0.75rem;
-      background: #f1f5f9;
-      color: #475569;
-      border-radius: 6px;
-      font-size: 0.875rem;
-      font-weight: 500;
+      gap: var(--space-2);
+      padding: var(--space-1) var(--space-3);
+      background: var(--color-accent-subtle);
+      color: var(--color-accent);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
     }
 
     .tag-remove {
       background: none;
       border: none;
-      color: #64748b;
+      color: var(--color-accent);
       cursor: pointer;
-      font-size: 1.25rem;
+      font-size: 1rem;
       line-height: 1;
       padding: 0;
-      transition: color 0.2s;
+      opacity: 0.7;
+      transition: opacity var(--transition-fast);
     }
 
     .tag-remove:hover {
-      color: #ef4444;
+      opacity: 1;
     }
 
     /* Footer */
     .modal-footer {
-      padding: 1.5rem 2rem;
-      border-top: 1px solid #e2e8f0;
+      padding: var(--space-5) var(--space-6);
+      border-top: var(--border-subtle);
+      background: var(--bg-elevated);
       display: flex;
-      gap: 1rem;
+      gap: var(--space-3);
       justify-content: flex-end;
     }
 
     .btn-primary,
     .btn-secondary {
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
+      padding: var(--space-3) var(--space-5);
+      border-radius: var(--radius-md);
       font-weight: 600;
       cursor: pointer;
       border: none;
-      transition: all 0.2s;
-      font-size: 0.9375rem;
+      transition: all var(--transition-fast);
+      font-size: 0.8125rem;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      color: white;
+      background: var(--color-accent);
+      color: var(--color-slate-950);
     }
 
     .btn-primary:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      background: var(--color-accent-hover);
     }
 
     .btn-primary:disabled {
-      opacity: 0.6;
+      opacity: 0.5;
       cursor: not-allowed;
     }
 
     .btn-secondary {
-      background: #f1f5f9;
-      color: #475569;
+      background: transparent;
+      color: var(--text-muted);
+      border: var(--border-subtle);
     }
 
     .btn-secondary:hover {
-      background: #e2e8f0;
+      background: var(--bg-hover);
+      color: var(--text-primary);
     }
 
     /* Responsive */
@@ -548,8 +572,8 @@ const TRANSFER_INCOME_CATEGORY_ID = '94c7e01f-ee86-4684-9bb8-37e8a4d378e0'; // I
       .modal-header,
       .modal-body,
       .modal-footer {
-        padding-left: 1.5rem;
-        padding-right: 1.5rem;
+        padding-left: var(--space-5);
+        padding-right: var(--space-5);
       }
 
       .form-row {
@@ -655,8 +679,8 @@ export class TransactionModalComponent implements OnInit {
         next: (categories) => {
           this.categories.set(categories);
         },
-        error: (err) => {
-          console.error('Error loading categories:', err);
+        error: () => {
+          console.error('Error loading categories');
         }
       });
     } else {
@@ -665,8 +689,8 @@ export class TransactionModalComponent implements OnInit {
         next: (categories) => {
           this.categories.set(categories);
         },
-        error: (err) => {
-          console.error('Error loading categories:', err);
+        error: () => {
+          console.error('Error loading categories');
         }
       });
     }
@@ -682,8 +706,8 @@ export class TransactionModalComponent implements OnInit {
         next: (accounts) => {
           this.accounts.set(accounts);
         },
-        error: (err) => {
-          console.error('Error loading accounts:', err);
+        error: () => {
+          console.error('Error loading accounts');
         }
       });
     }
@@ -791,9 +815,9 @@ export class TransactionModalComponent implements OnInit {
           this.transactionCreated.emit(result);
           this.closeModal.emit();
         },
-        error: (err) => {
+        error: () => {
           this.submitting.set(false);
-          console.error('Error creating transfer transactions:', err);
+          console.error('Error creating transfer transactions');
           // TODO: Show error message to user
         }
       });
@@ -825,9 +849,9 @@ export class TransactionModalComponent implements OnInit {
           this.transactionCreated.emit(result);
           this.closeModal.emit();
         },
-        error: (err) => {
+        error: () => {
           this.submitting.set(false);
-          console.error('Error creating transaction:', err);
+          console.error('Error creating transaction');
           // TODO: Show error message to user
         }
       });

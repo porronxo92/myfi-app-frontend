@@ -38,8 +38,8 @@ import { CommonModule } from '@angular/common';
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 2rem;
-      gap: 2rem;
+      margin-bottom: var(--space-6);
+      gap: var(--space-5);
     }
 
     .header-text {
@@ -47,63 +47,64 @@ import { CommonModule } from '@angular/common';
     }
 
     .page-title {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0 0 0.5rem 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 var(--space-1) 0;
+      letter-spacing: -0.01em;
     }
 
     .page-subtitle {
-      color: #64748b;
-      font-size: 1rem;
+      color: var(--text-muted);
+      font-size: 0.8125rem;
       margin: 0;
     }
 
     .header-actions {
       display: flex;
-      gap: 0.75rem;
+      gap: var(--space-3);
       flex-shrink: 0;
     }
 
     .btn {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.25rem;
-      border-radius: 8px;
-      font-weight: 500;
-      font-size: 0.9375rem;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.8125rem;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 100ms ease;
       border: none;
       white-space: nowrap;
     }
 
     .btn svg {
       flex-shrink: 0;
+      width: 1rem;
+      height: 1rem;
     }
 
     .btn-secondary {
-      background-color: white;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
+      background: transparent;
+      color: var(--text-muted);
+      border: var(--border-subtle);
     }
 
     .btn-secondary:hover {
-      background-color: #f8fafc;
-      border-color: #cbd5e1;
-      color: #475569;
+      background: var(--bg-hover);
+      border-color: var(--color-slate-500);
+      color: var(--text-primary);
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: white;
-      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+      background: var(--color-accent);
+      color: var(--color-slate-950);
     }
 
     .btn-primary:hover {
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
-      transform: translateY(-1px);
+      background: var(--color-accent-hover);
     }
 
     @media (max-width: 768px) {

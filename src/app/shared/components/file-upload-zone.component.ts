@@ -92,26 +92,31 @@ import { UploadService } from '../../core/services/upload.service';
     </div>
   `,
   styles: [`
+    /* ========================================
+       FILE UPLOAD ZONE - INSTITUTIONAL
+       ======================================== */
+
     .upload-zone {
-      border: 2px dashed #cbd5e1;
-      border-radius: 12px;
-      padding: 3rem 2rem;
+      border: 2px dashed var(--color-slate-600);
+      border-radius: var(--radius-lg);
+      padding: var(--space-10) var(--space-6);
       text-align: center;
-      background: #f8fafc;
-      transition: all 0.3s;
+      background: var(--bg-elevated);
+      transition: all var(--transition-fast);
       cursor: pointer;
       position: relative;
     }
 
     .upload-zone.drag-over {
-      border-color: #3b82f6;
-      background: #eff6ff;
-      transform: scale(1.02);
+      border-color: var(--color-accent);
+      background: var(--color-accent-subtle);
+      border-style: solid;
     }
 
     .upload-zone.has-file {
-      border-color: #10b981;
-      background: #f0fdf4;
+      border-color: var(--color-positive);
+      background: rgba(34, 160, 107, 0.05);
+      border-style: solid;
     }
 
     .file-input {
@@ -124,66 +129,70 @@ import { UploadService } from '../../core/services/upload.service';
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1rem;
+      gap: var(--space-4);
     }
 
     .upload-icon {
-      width: 64px;
-      height: 64px;
-      color: #94a3b8;
+      width: 48px;
+      height: 48px;
+      color: var(--text-faint);
     }
 
     .upload-title {
-      font-size: 1.25rem;
+      font-size: 0.9375rem;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--text-primary);
       margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
 
     .upload-description {
-      color: #64748b;
+      color: var(--text-muted);
       margin: 0;
+      font-size: 0.8125rem;
     }
 
     .btn-select-file {
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: white;
+      background: var(--color-accent);
+      color: var(--color-slate-950);
       border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
+      padding: var(--space-3) var(--space-6);
+      border-radius: var(--radius-md);
       font-weight: 600;
+      font-size: 0.8125rem;
       cursor: pointer;
-      transition: all 0.2s;
-      margin-top: 0.5rem;
+      transition: all var(--transition-fast);
+      margin-top: var(--space-2);
     }
 
     .btn-select-file:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      background: var(--color-accent-hover);
     }
 
     .upload-info {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
-      font-size: 0.875rem;
-      color: #94a3b8;
-      margin-top: 0.5rem;
+      gap: var(--space-1);
+      font-size: 0.75rem;
+      color: var(--text-faint);
+      margin-top: var(--space-2);
     }
 
     .file-selected {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding: 1rem;
-      background: white;
-      border-radius: 8px;
+      gap: var(--space-4);
+      padding: var(--space-4);
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      border: var(--border-subtle);
     }
 
     .file-icon {
-      width: 48px;
-      height: 48px;
-      color: #10b981;
+      width: 40px;
+      height: 40px;
+      color: var(--color-positive);
       flex-shrink: 0;
     }
 
@@ -194,64 +203,71 @@ import { UploadService } from '../../core/services/upload.service';
 
     .file-name {
       font-weight: 600;
-      color: #0f172a;
-      margin: 0 0 0.25rem 0;
+      color: var(--text-primary);
+      margin: 0 0 var(--space-1) 0;
+      font-size: 0.875rem;
       word-break: break-all;
     }
 
     .file-size {
-      color: #64748b;
-      font-size: 0.875rem;
+      color: var(--text-muted);
+      font-size: 0.75rem;
       margin: 0;
+      font-family: var(--font-data);
     }
 
     .btn-remove {
-      background: #fee2e2;
-      color: #dc2626;
+      background: rgba(202, 53, 33, 0.1);
+      color: var(--color-negative);
       border: none;
-      padding: 0.5rem;
-      border-radius: 6px;
+      padding: var(--space-2);
+      border-radius: var(--radius-md);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all var(--transition-fast);
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .btn-remove:hover {
-      background: #fecaca;
+      background: rgba(202, 53, 33, 0.2);
     }
 
     .upload-error {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1rem;
+      gap: var(--space-4);
     }
 
     .error-icon {
-      width: 48px;
-      height: 48px;
-      color: #dc2626;
+      width: 40px;
+      height: 40px;
+      color: var(--color-negative);
     }
 
     .error-message {
-      color: #dc2626;
+      color: var(--color-negative);
       font-weight: 500;
+      font-size: 0.875rem;
       margin: 0;
     }
 
     .btn-try-again {
-      background: #dc2626;
+      background: var(--color-negative);
       color: white;
       border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
+      padding: var(--space-3) var(--space-5);
+      border-radius: var(--radius-md);
       font-weight: 600;
+      font-size: 0.8125rem;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all var(--transition-fast);
     }
 
     .btn-try-again:hover {
-      background: #b91c1c;
+      background: #A82A1D;
     }
   `]
 })

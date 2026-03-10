@@ -17,11 +17,11 @@ import { CommonModule } from '@angular/common';
   styles: [`
     .app-footer {
       width: 100%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      background: var(--bg-page);
+      border-top: 1px solid var(--bg-elevated);
+      color: var(--text-muted);
       padding: 1rem 0;
       margin-top: auto;
-      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     }
 
     .footer-content {
@@ -29,7 +29,7 @@ import { CommonModule } from '@angular/common';
       margin: 0 auto;
       padding: 0 2rem;
       display: flex;
-      justify-content: flex-start;
+      justify-content: space-between;
       align-items: center;
     }
 
@@ -37,8 +37,12 @@ import { CommonModule } from '@angular/common';
       margin: 0;
       font-size: 0.875rem;
       font-weight: 500;
-      opacity: 0.95;
       letter-spacing: 0.3px;
+    }
+
+    .footer-text .highlight {
+      color: var(--color-accent);
+      font-weight: 600;
     }
 
     @media (max-width: 768px) {

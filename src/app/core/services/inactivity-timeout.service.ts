@@ -45,11 +45,9 @@ export class InactivityTimeoutService implements OnDestroy {
    */
   startMonitoring(): void {
     if (this.isMonitoring) {
-      console.log('⏱️ Monitoreo de inactividad ya está activo');
       return;
     }
 
-    console.log('🚀 Iniciando monitoreo de inactividad (timeout: 5 minutos)');
     this.isMonitoring = true;
     
     // Eventos a monitorear
@@ -84,8 +82,6 @@ export class InactivityTimeoutService implements OnDestroy {
    * Se debe llamar cuando el usuario cierre sesión
    */
   stopMonitoring(): void {
-    console.log('🛑 Deteniendo monitoreo de inactividad');
-    
     this.isMonitoring = false;
     this.showWarning.set(false);
     
@@ -106,7 +102,6 @@ export class InactivityTimeoutService implements OnDestroy {
     // Si hay advertencia visible, ocultarla
     if (this.showWarning()) {
       this.showWarning.set(false);
-      console.log('✅ Usuario activo de nuevo - Advertencia cancelada');
     }
 
     // Limpiar timers existentes
@@ -127,7 +122,6 @@ export class InactivityTimeoutService implements OnDestroy {
    * Muestra el modal de advertencia
    */
   private showWarningModal(): void {
-    console.warn('⚠️ Usuario inactivo - Mostrando advertencia de timeout');
     this.showWarning.set(true);
     this.remainingSeconds.set(30);
 
@@ -155,8 +149,6 @@ export class InactivityTimeoutService implements OnDestroy {
    * Ejecuta el logout por inactividad
    */
   private performLogout(): void {
-    console.warn('⏱️ Timeout por inactividad - Cerrando sesión automáticamente');
-    
     // Detener monitoreo
     this.stopMonitoring();
     
@@ -176,7 +168,6 @@ export class InactivityTimeoutService implements OnDestroy {
    * Permite al usuario extender la sesión (cuando hace click en "Continuar conectado")
    */
   extendSession(): void {
-    console.log('✅ Usuario extendió la sesión manualmente');
     this.resetTimers();
   }
 

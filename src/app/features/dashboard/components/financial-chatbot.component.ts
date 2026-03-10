@@ -123,7 +123,7 @@ export class FinancialChatbotComponent implements OnInit, OnDestroy, AfterViewCh
           this.messagesContainer.nativeElement.scrollHeight;
       }
     } catch (err) {
-      console.error('Error scrolling to bottom:', err);
+      console.error('Error scrolling to bottom');
     }
   }
 

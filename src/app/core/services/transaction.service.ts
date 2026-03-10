@@ -52,10 +52,10 @@ export class TransactionService {
           this.calculateMonthlyTotals(transactions);
           this.loading.set(false);
         },
-        error: (err) => {
+        error: () => {
           this.error.set('Error al cargar las transacciones');
           this.loading.set(false);
-          console.error('Error loading transactions:', err);
+          console.error('Error loading transactions');
         }
       })
     );

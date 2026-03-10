@@ -95,14 +95,18 @@ import { AccountCardComponent } from '../../shared/components/account-card.compo
     </div>
   `,
   styles: [`
+    /* ========================================
+       ACCOUNTS PAGE - INSTITUTIONAL
+       ======================================== */
+    
     .accounts-page {
       min-height: 100vh;
-      background: var(--bg-app, #f8fafc);
+      background: var(--bg-app);
     }
 
     .page-container {
-      max-width: 1400px;
-      padding: 2rem;
+      max-width: 1440px;
+      padding: var(--space-6);
       margin: 0 auto;
     }
 
@@ -110,38 +114,40 @@ import { AccountCardComponent } from '../../shared/components/account-card.compo
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem;
+      margin-bottom: var(--space-6);
     }
 
     .page-title {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #0f172a;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
       margin: 0;
+      letter-spacing: -0.02em;
     }
 
     .page-subtitle {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin: 0.25rem 0 0 0;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin: var(--space-1) 0 0 0;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      color: white;
+      background: var(--color-accent);
+      color: var(--color-slate-950);
       border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 10px;
+      padding: var(--space-3) var(--space-5);
+      border-radius: var(--radius-md);
       font-weight: 600;
+      font-size: 0.8125rem;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      transition: transform 0.2s;
+      gap: var(--space-2);
+      transition: all var(--transition-fast);
     }
 
     .btn-primary:hover {
-      transform: translateY(-2px);
+      background: var(--color-accent-hover);
     }
 
     .loading-container,
@@ -150,18 +156,18 @@ import { AccountCardComponent } from '../../shared/components/account-card.compo
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 4rem 2rem;
+      padding: var(--space-16) var(--space-6);
       text-align: center;
     }
 
     .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #e2e8f0;
-      border-top-color: #3b82f6;
+      width: 40px;
+      height: 40px;
+      border: 2px solid var(--bg-hover);
+      border-top-color: var(--color-accent);
       border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 1rem;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: var(--space-4);
     }
 
     @keyframes spin {
@@ -169,99 +175,109 @@ import { AccountCardComponent } from '../../shared/components/account-card.compo
     }
 
     .error-icon {
-      width: 64px;
-      height: 64px;
-      color: #ef4444;
-      margin-bottom: 1rem;
+      width: 48px;
+      height: 48px;
+      color: var(--color-negative);
+      margin-bottom: var(--space-4);
     }
 
     .error-message {
-      color: #ef4444;
+      color: var(--color-negative);
       font-weight: 500;
     }
 
     .accounts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: var(--space-5);
     }
 
+    /* Add Account Card */
     .add-card {
-      border: 2px dashed #cbd5e1;
-      background: #f8fafc;
+      border: var(--border-default);
+      border-style: dashed;
+      background: transparent;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 280px;
-      border-radius: 16px;
-      padding: 1.5rem;
+      min-height: 240px;
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all var(--transition-fast);
     }
 
     .add-card:hover {
-      border-color: #3b82f6;
-      background: #eff6ff;
+      border-color: var(--color-accent);
+      background: var(--color-accent-subtle);
     }
 
     .add-card-content {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1rem;
+      gap: var(--space-3);
     }
 
     .add-icon {
-      width: 64px;
-      height: 64px;
-      background: white;
-      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      background: var(--bg-hover);
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #3b82f6;
+      color: var(--color-accent);
+      transition: all var(--transition-fast);
+    }
+
+    .add-card:hover .add-icon {
+      background: var(--color-accent);
+      color: var(--color-slate-950);
     }
 
     .add-text {
-      color: #64748b;
-      font-weight: 600;
+      color: var(--text-muted);
+      font-weight: 500;
       margin: 0;
-      font-size: 1rem;
+      font-size: 0.875rem;
     }
 
+    /* Empty State */
     .empty-state {
       grid-column: 1 / -1;
       text-align: center;
-      padding: 4rem 2rem;
+      padding: var(--space-16) var(--space-6);
     }
 
     .empty-state svg {
-      color: #cbd5e1;
-      margin-bottom: 1.5rem;
+      color: var(--text-faint);
+      margin-bottom: var(--space-4);
+      opacity: 0.5;
     }
 
     .empty-title {
-      font-size: 1.25rem;
+      font-size: 1rem;
       font-weight: 600;
-      color: #64748b;
-      margin: 0 0 0.5rem 0;
+      color: var(--text-muted);
+      margin: 0 0 var(--space-2) 0;
     }
 
     .empty-description {
-      font-size: 0.9375rem;
-      color: #94a3b8;
-      margin: 0 0 1.5rem 0;
+      font-size: 0.875rem;
+      color: var(--text-faint);
+      margin: 0 0 var(--space-5) 0;
     }
 
     @media (max-width: 768px) {
       .page-container {
-        padding: 1rem;
+        padding: var(--space-4);
       }
 
       .page-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 1rem;
+        gap: var(--space-4);
       }
 
       .accounts-grid {
@@ -304,8 +320,8 @@ export class AccountsComponent {
         // Recargar la lista de cuentas
         this.accountService.getAccounts().subscribe();
       },
-      error: (error) => {
-        console.error('Error al crear la cuenta:', error);
+      error: () => {
+        console.error('Error al crear la cuenta');
         // Aquí podrías mostrar un mensaje de error al usuario
       }
     });

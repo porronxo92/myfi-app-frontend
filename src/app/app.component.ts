@@ -39,10 +39,8 @@ export class AppComponent implements OnInit {
       const isAuthenticated = this.authService.isAuthenticated();
       
       if (isAuthenticated) {
-        console.log('✅ Usuario autenticado - Iniciando monitoreo de inactividad');
         this.inactivityService.startMonitoring();
       } else {
-        console.log('🚫 Usuario no autenticado - Deteniendo monitoreo de inactividad');
         this.inactivityService.stopMonitoring();
       }
     });
@@ -50,6 +48,5 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     // El monitoreo se inicia automáticamente mediante el effect cuando hay autenticación
-    console.log('🚀 Aplicación iniciada - Sistema de seguridad activo');
   }
 }

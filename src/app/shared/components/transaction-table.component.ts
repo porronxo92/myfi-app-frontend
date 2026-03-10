@@ -265,6 +265,10 @@ const DEFAULT_ICON = 'receipt';
     </div>
   `,
   styles: [`
+    /* ========================================
+       TRANSACTION TABLE - INSTITUTIONAL
+       ======================================== */
+    
     .table-container {
       overflow-x: auto;
     }
@@ -274,239 +278,275 @@ const DEFAULT_ICON = 'receipt';
       border-collapse: collapse;
     }
 
+    /* Table Header */
     .transactions-table thead {
-      background: #f8fafc;
+      background: var(--bg-elevated);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .transactions-table th {
-      padding: 0.875rem 1rem;
+      padding: var(--space-3) var(--space-4);
       text-align: left;
-      font-size: 0.8125rem;
+      font-size: 0.6875rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 2px solid #e2e8f0;
+      letter-spacing: 0.05em;
+      border-bottom: var(--border-default);
+      white-space: nowrap;
     }
 
     .transactions-table th.text-right {
       text-align: right;
     }
 
+    /* Table Rows */
     .transaction-row {
-      border-bottom: 1px solid #f1f5f9;
-      transition: background 0.2s;
+      border-bottom: var(--border-subtle);
+      transition: background var(--transition-fast);
     }
 
     .transaction-row:hover {
-      background: #f8fafc;
+      background: var(--bg-hover);
     }
 
     .transaction-row.clickable {
       cursor: pointer;
     }
 
-    .transactions-table td {
-      padding: 1rem;
-      font-size: 0.9375rem;
+    /* Alternating row colors - subtle */
+    .transaction-row:nth-child(even) {
+      background: rgba(255, 255, 255, 0.01);
+    }
+    
+    .transaction-row:nth-child(even):hover {
+      background: var(--bg-hover);
     }
 
+    .transactions-table td {
+      padding: var(--space-3) var(--space-4);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+
+    /* Date Cell */
     .date-cell {
       display: flex;
       flex-direction: column;
-      gap: 0.125rem;
+      gap: 2px;
     }
 
     .date {
+      font-family: var(--font-data);
       font-weight: 500;
-      color: #0f172a;
+      color: var(--text-secondary);
+      font-size: 0.8125rem;
     }
 
     .time {
-      font-size: 0.8125rem;
-      color: #94a3b8;
+      font-family: var(--font-data);
+      font-size: 0.75rem;
+      color: var(--text-faint);
     }
 
+    /* Concept Cell */
     .concept-cell {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--space-3);
     }
 
     .category-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      background: #f1f5f9;
+      background: var(--bg-elevated);
     }
 
     .category-icon mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      color: #64748b;
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
     }
 
     .category-icon.income {
-      background: #dcfce7;
+      background: rgba(34, 160, 107, 0.12);
     }
 
     .category-icon.income mat-icon {
-      color: #16a34a;
+      color: var(--color-positive);
     }
 
     .category-icon.expense {
-      background: #fee2e2;
+      background: rgba(202, 53, 33, 0.12);
     }
 
     .category-icon.expense mat-icon {
-      color: #dc2626;
+      color: var(--color-negative);
     }
 
     .description {
-      color: #0f172a;
+      color: var(--text-primary);
       font-weight: 500;
+      font-size: 0.875rem;
     }
 
+    /* Category Badge */
     .category-badge {
       display: inline-block;
-      padding: 0.375rem 0.75rem;
-      border-radius: 6px;
-      font-size: 0.8125rem;
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
       font-weight: 500;
       white-space: nowrap;
+      letter-spacing: 0.02em;
     }
 
+    /* Amount Column - Critical for finance */
     .amount {
+      font-family: var(--font-data);
       font-weight: 600;
-      font-size: 1rem;
+      font-size: 0.875rem;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
     }
 
     .amount.income {
-      color: #16a34a;
+      color: var(--color-positive);
     }
 
     .amount.expense {
-      color: #dc2626;
+      color: var(--color-negative);
     }
 
     .text-right {
       text-align: right;
     }
 
+    /* Empty State */
     .empty-state {
       text-align: center;
-      padding: 4rem 2rem;
-      color: #94a3b8;
+      padding: var(--space-12) var(--space-6);
+      color: var(--text-muted);
     }
 
     .empty-icon {
-      font-size: 64px;
-      width: 64px;
-      height: 64px;
-      margin: 0 auto 1.5rem;
-      color: #cbd5e1;
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin: 0 auto var(--space-4);
+      color: var(--text-faint);
+      opacity: 0.6;
     }
 
     .empty-text {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: #64748b;
-      margin: 0 0 0.5rem 0;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin: 0 0 var(--space-2) 0;
     }
 
     .empty-subtext {
-      font-size: 0.9375rem;
-      color: #94a3b8;
+      font-size: 0.8125rem;
+      color: var(--text-faint);
       margin: 0;
     }
 
+    /* Pagination */
     .pagination {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: 1.5rem;
-      margin-top: 1.5rem;
-      border-top: 1px solid #e2e8f0;
+      padding-top: var(--space-4);
+      margin-top: var(--space-4);
+      border-top: var(--border-subtle);
     }
 
     .pagination-info {
-      font-size: 0.875rem;
-      color: #64748b;
+      font-family: var(--font-data);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
     }
 
     .pagination-controls {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--space-3);
     }
 
     .page-indicator {
-      font-size: 0.875rem;
-      color: #0f172a;
+      font-family: var(--font-data);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
       font-weight: 500;
     }
 
     .btn-page {
-      width: 36px;
-      height: 36px;
-      border: 1px solid #e2e8f0;
-      background: white;
-      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      border: var(--border-subtle);
+      background: transparent;
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #64748b;
+      color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all var(--transition-fast);
       padding: 0;
     }
 
     .btn-page mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
     }
 
     .btn-page:hover:not(:disabled) {
-      border-color: #3b82f6;
-      color: #3b82f6;
-      background: #eff6ff;
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+      background: var(--color-accent-subtle);
     }
 
     .btn-page:disabled {
-      opacity: 0.4;
+      opacity: 0.35;
       cursor: not-allowed;
     }
 
+    /* Responsive */
     @media (max-width: 768px) {
       .transactions-table {
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
       }
 
       .transactions-table th,
       .transactions-table td {
-        padding: 0.75rem 0.5rem;
+        padding: var(--space-2) var(--space-3);
       }
 
       .category-icon {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
       }
 
       .category-icon mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
       }
 
       .pagination {
         flex-direction: column;
-        gap: 1rem;
+        gap: var(--space-3);
       }
     }
   `]

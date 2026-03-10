@@ -300,12 +300,7 @@ import { InactivityTimeoutService } from '../../core/services/inactivity-timeout
 export class InactivityWarningModalComponent {
   
   constructor(public timeoutService: InactivityTimeoutService) {
-    // Log cuando se muestra/oculta el modal
-    effect(() => {
-      if (this.timeoutService.showWarning()) {
-        console.log('⚠️ Mostrando modal de advertencia de inactividad');
-      }
-    });
+    // Modal visibility controlled by service
   }
 
   /**

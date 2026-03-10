@@ -148,190 +148,243 @@ import { Account } from '../../core/models/account.model';
     </div>
   `,
   styles: [`
+    /* ========================================
+       MODAL - INSTITUTIONAL DESIGN
+       ======================================== */
+    
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(11, 17, 32, 0.85);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      padding: 1rem;
+      padding: var(--space-4);
+      animation: fadeIn 0.15s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .modal-content {
-      background: white;
-      border-radius: 16px;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
       width: 100%;
-      max-width: 500px;
+      max-width: 480px;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      animation: slideUp 0.2s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { 
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.5rem;
-      border-bottom: 1px solid #e5e7eb;
+      padding: var(--space-5);
+      border-bottom: var(--border-subtle);
     }
 
     .modal-title {
       margin: 0;
-      font-size: 1.25rem;
+      font-size: 0.9375rem;
       font-weight: 600;
-      color: #111827;
+      color: var(--text-primary);
+      letter-spacing: var(--tracking-wide);
     }
 
     .close-button {
       background: none;
       border: none;
-      color: #6b7280;
+      color: var(--text-muted);
       cursor: pointer;
-      padding: 0.5rem;
+      padding: var(--space-2);
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 6px;
-      transition: all 0.2s;
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
     }
 
     .close-button:hover {
-      background: #f3f4f6;
-      color: #111827;
+      background: var(--bg-hover);
+      color: var(--text-primary);
     }
 
+    .close-button svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Loading State */
     .loading-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 3rem;
-      color: #6b7280;
+      padding: var(--space-12);
+      color: var(--text-muted);
     }
 
     .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #e5e7eb;
-      border-top-color: #3b82f6;
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--bg-hover);
+      border-top-color: var(--color-accent);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
-      margin-bottom: 1rem;
+      margin-bottom: var(--space-4);
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
+    /* Modal Body */
     .modal-body {
-      padding: 1.5rem;
+      padding: var(--space-5);
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: var(--space-5);
     }
 
+    /* Form Group */
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--space-2);
     }
 
     .form-label {
-      font-size: 0.875rem;
+      font-size: 0.6875rem;
       font-weight: 600;
-      color: #374151;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .form-input,
     .form-select {
-      padding: 0.75rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
+      padding: var(--space-3);
+      background: var(--bg-elevated);
+      border: var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
       font-size: 0.875rem;
-      transition: all 0.2s;
+      transition: all var(--transition-fast);
     }
 
     .form-input:focus,
     .form-select:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 2px var(--color-accent-subtle);
+    }
+
+    .form-input[type="number"] {
+      font-family: var(--font-data);
     }
 
     .form-input[readonly] {
-      background-color: #f9fafb;
+      background: var(--bg-hover);
       cursor: not-allowed;
+      color: var(--text-muted);
+    }
+
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394A3B8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right var(--space-3) center;
+      padding-right: var(--space-10);
+      cursor: pointer;
     }
 
     .error-message {
       font-size: 0.75rem;
-      color: #ef4444;
-      margin-top: -0.25rem;
+      color: var(--color-negative);
+      margin-top: var(--space-1);
     }
 
+    /* Type Buttons */
     .type-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
+      gap: var(--space-3);
     }
 
     .type-btn {
-      padding: 0.75rem;
-      border: 2px solid #d1d5db;
-      background: white;
-      color: #6b7280;
-      border-radius: 8px;
-      font-size: 0.875rem;
+      padding: var(--space-3);
+      border: var(--border-default);
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all var(--transition-fast);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
+      gap: var(--space-2);
     }
 
     .type-btn:hover {
-      background: #f9fafb;
-      border-color: #9ca3af;
+      background: var(--bg-hover);
+      border-color: var(--color-slate-500);
+      color: var(--text-primary);
     }
 
     .type-btn.active.income {
-      background: #d1fae5;
-      border-color: #10b981;
-      color: #065f46;
+      background: rgba(34, 160, 107, 0.12);
+      border-color: var(--color-positive);
+      color: var(--color-positive);
     }
 
     .type-btn.active.expense {
-      background: #fee2e2;
-      border-color: #ef4444;
-      color: #991b1b;
+      background: rgba(202, 53, 33, 0.12);
+      border-color: var(--color-negative);
+      color: var(--color-negative);
     }
 
+    /* Modal Footer */
     .modal-footer {
       display: flex;
       justify-content: flex-end;
-      gap: 0.75rem;
-      padding: 1.5rem;
-      border-top: 1px solid #e5e7eb;
+      gap: var(--space-3);
+      padding: var(--space-5);
+      border-top: var(--border-subtle);
+      background: var(--bg-elevated);
     }
 
     .btn {
-      padding: 0.625rem 1.25rem;
-      border-radius: 8px;
-      font-size: 0.875rem;
+      padding: var(--space-3) var(--space-5);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all var(--transition-fast);
       border: none;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--space-2);
     }
 
     .btn:disabled {
@@ -340,32 +393,35 @@ import { Account } from '../../core/models/account.model';
     }
 
     .btn-secondary {
-      background: #f3f4f6;
-      color: #374151;
+      background: transparent;
+      color: var(--text-muted);
+      border: var(--border-subtle);
     }
 
     .btn-secondary:hover:not(:disabled) {
-      background: #e5e7eb;
+      background: var(--bg-hover);
+      color: var(--text-primary);
     }
 
     .btn-primary {
-      background: #3b82f6;
-      color: white;
+      background: var(--color-accent);
+      color: var(--color-slate-950);
     }
 
     .btn-primary:hover:not(:disabled) {
-      background: #2563eb;
+      background: var(--color-accent-hover);
     }
 
     .btn-spinner {
       width: 14px;
       height: 14px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
+      border: 2px solid rgba(11, 17, 32, 0.2);
+      border-top-color: var(--color-slate-950);
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
     }
 
+    /* Responsive */
     @media (max-width: 640px) {
       .modal-content {
         max-width: 100%;
@@ -434,7 +490,7 @@ export class EditTransactionModalComponent implements OnInit {
       next: (categories) => {
         this.categories.set(categories);
       },
-      error: (err) => console.error('Error loading categories:', err)
+      error: () => console.error('Error loading categories')
     });
 
     this.accountService.getAccounts().subscribe({
@@ -442,8 +498,8 @@ export class EditTransactionModalComponent implements OnInit {
         this.accounts.set(accounts);
         this.loading.set(false);
       },
-      error: (err) => {
-        console.error('Error loading accounts:', err);
+      error: () => {
+        console.error('Error loading accounts');
         this.loading.set(false);
       }
     });
@@ -474,16 +530,13 @@ export class EditTransactionModalComponent implements OnInit {
       type: formValue.type
     };
 
-    console.log('📝 Actualizando transacción:', this.transaction.id, updatedTransaction);
-
     this.transactionService.updateTransaction(this.transaction.id, updatedTransaction).subscribe({
       next: (transaction) => {
-        console.log('✅ Transacción actualizada exitosamente:', transaction);
         this.saving.set(false);
         this.transactionUpdated.emit(transaction);
       },
-      error: (err) => {
-        console.error('❌ Error al actualizar transacción:', err);
+      error: () => {
+        console.error('Error al actualizar transacción');
         alert('Error al actualizar la transacción. Por favor, intenta de nuevo.');
         this.saving.set(false);
       }

@@ -154,54 +154,57 @@ import { TransactionFilters } from '../transactions.component';
   `,
   styles: [`
     .sidebar-filters {
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: var(--border-subtle);
+      padding: var(--space-5);
     }
 
     .sidebar-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid #f1f5f9;
+      margin-bottom: var(--space-5);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--color-slate-600);
     }
 
     .sidebar-header h3 {
-      font-size: 1.125rem;
-      font-weight: 700;
-      color: #0f172a;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-primary);
       margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .btn-reset {
-      padding: 0.5rem 1rem;
-      background: #fee2e2;
-      color: #ef4444;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.8125rem;
+      padding: var(--space-2) var(--space-3);
+      background: transparent;
+      color: var(--color-negative);
+      border: 1px solid var(--color-negative);
+      border-radius: var(--radius-md);
+      font-size: 0.6875rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 100ms ease;
     }
 
     .btn-reset:hover {
-      background: #fecaca;
+      background: var(--color-negative);
+      color: white;
     }
 
     .filter-group {
-      margin-bottom: 1.5rem;
+      margin-bottom: var(--space-5);
     }
 
     .filter-group label {
       display: block;
-      font-size: 0.8125rem;
+      font-size: 0.6875rem;
       font-weight: 600;
-      color: #64748b;
-      margin-bottom: 0.5rem;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -209,19 +212,30 @@ import { TransactionFilters } from '../transactions.component';
     .filter-input,
     .filter-select {
       width: 100%;
-      padding: 0.625rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      font-size: 0.875rem;
-      transition: all 0.2s;
+      padding: var(--space-3);
+      background: var(--bg-elevated);
+      border: var(--border-subtle);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+      font-family: var(--font-ui);
+      color: var(--text-primary);
+      transition: border-color 100ms ease;
       box-sizing: border-box;
+    }
+
+    .filter-input::placeholder {
+      color: var(--text-muted);
     }
 
     .filter-input:focus,
     .filter-select:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: var(--color-accent);
+    }
+
+    .filter-select option {
+      background: var(--bg-card);
+      color: var(--text-primary);
     }
 
     .date-inputs,
@@ -229,7 +243,7 @@ import { TransactionFilters } from '../transactions.component';
     .period-selects {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--space-2);
     }
 
     .period-select {
@@ -238,87 +252,99 @@ import { TransactionFilters } from '../transactions.component';
 
     .date-separator,
     .amount-separator {
-      color: #94a3b8;
-      font-weight: 600;
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 0.75rem;
     }
 
     .type-buttons {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--space-2);
     }
 
     .type-btn {
       flex: 1;
-      padding: 0.625rem;
-      border: 1px solid #e2e8f0;
-      background: white;
-      color: #64748b;
-      border-radius: 6px;
-      font-size: 0.8125rem;
+      padding: var(--space-3);
+      border: var(--border-subtle);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      border-radius: var(--radius-md);
+      font-size: 0.75rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 100ms ease;
     }
 
     .type-btn:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
+      border-color: var(--color-slate-500);
+      color: var(--text-primary);
     }
 
     .type-btn.active {
-      background: #3b82f6;
-      color: white;
-      border-color: #3b82f6;
+      background: var(--color-accent);
+      color: var(--color-slate-900);
+      border-color: var(--color-accent);
     }
 
     .type-btn.income.active {
-      background: #10b981;
-      border-color: #10b981;
+      background: var(--color-positive);
+      border-color: var(--color-positive);
+      color: white;
     }
 
     .type-btn.expense.active {
-      background: #ef4444;
-      border-color: #ef4444;
+      background: var(--color-negative);
+      border-color: var(--color-negative);
+      color: white;
     }
 
     .category-list {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--space-1);
       max-height: 200px;
       overflow-y: auto;
-      padding: 0.5rem;
-      background: #f8fafc;
-      border-radius: 6px;
+      padding: var(--space-2);
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
+    }
+
+    .category-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .category-list::-webkit-scrollbar-thumb {
+      background: var(--color-slate-500);
+      border-radius: 2px;
     }
 
     .category-checkbox {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem;
-      border-radius: 4px;
+      gap: var(--space-2);
+      padding: var(--space-2);
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 100ms ease;
     }
 
     .category-checkbox:hover {
-      background: white;
+      background: var(--bg-card);
     }
 
     .category-checkbox input[type="checkbox"] {
       cursor: pointer;
+      accent-color: var(--color-accent);
     }
 
     .category-checkbox span {
-      font-size: 0.875rem;
-      color: #0f172a;
-      margin-left: 1rem;
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
     }
 
     @media (max-width: 1024px) {
       .sidebar-filters {
-        margin-bottom: 1.5rem;
+        margin-bottom: var(--space-5);
       }
     }
   `]

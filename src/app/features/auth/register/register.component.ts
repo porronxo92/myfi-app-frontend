@@ -18,12 +18,12 @@ import { ThemeService } from '../../../core/services/theme.service';
           <div class="logo-container">
             <svg class="logo-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="48" height="48" rx="12" fill="url(#gradient1)"/>
-              <path d="M24 14v20M14 24h20" stroke="white" stroke-width="3" stroke-linecap="round"/>
-              <circle cx="24" cy="24" r="8" stroke="white" stroke-width="2" fill="none"/>
+              <path d="M24 14v20M14 24h20" stroke="#0F172A" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="24" cy="24" r="8" stroke="#0F172A" stroke-width="2" fill="none"/>
               <defs>
                 <linearGradient id="gradient1" x1="0" y1="0" x2="48" y2="48">
-                  <stop offset="0%" stop-color="#3b82f6"/>
-                  <stop offset="100%" stop-color="#2563eb"/>
+                  <stop offset="0%" stop-color="#B5924C"/>
+                  <stop offset="100%" stop-color="#8A6F3A"/>
                 </linearGradient>
               </defs>
             </svg>
@@ -49,15 +49,15 @@ import { ThemeService } from '../../../core/services/theme.service';
       </div>
 
       <!-- Columna derecha: Formulario -->
-      <div class="form-section" [class.dark-mode]="themeService.isDarkMode()">
+      <div class="form-section">
         <!-- Theme Toggle Button -->
         <button 
           type="button" 
           class="theme-toggle" 
-          (click)="themeService.toggleTheme()"
-          [attr.aria-label]="themeService.isDarkMode() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+          (click)="themeService.toggle()"
+          [attr.aria-label]="themeService.getToggleAriaLabel()"
         >
-          <svg *ngIf="!themeService.isDarkMode()" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg *ngIf="themeService.isDark()" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="5"></circle>
             <line x1="12" y1="1" x2="12" y2="3"></line>
             <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -68,7 +68,7 @@ import { ThemeService } from '../../../core/services/theme.service';
             <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
           </svg>
-          <svg *ngIf="themeService.isDarkMode()" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg *ngIf="themeService.isLight()" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
         </button>
@@ -219,7 +219,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 
     /* ===== COLUMNA IZQUIERDA: BRANDING ===== */
     .branding-section {
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -249,19 +249,22 @@ import { ThemeService } from '../../../core/services/theme.service';
     .logo-icon {
       width: 80px;
       height: 80px;
-      filter: drop-shadow(0 10px 25px rgba(59, 130, 246, 0.2));
+      filter: drop-shadow(0 10px 25px rgba(181, 146, 76, 0.3));
     }
 
     .brand-name {
       font-size: 2.5rem;
-      font-weight: 700;
-      color: #0f172a;
+      font-weight: 800;
+      background: linear-gradient(135deg, #B5924C 0%, #D4B978 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       letter-spacing: -0.02em;
     }
 
     .brand-tagline {
       font-size: 1.125rem;
-      color: #475569;
+      color: #94A3B8;
       text-align: center;
       max-width: 400px;
       line-height: 1.6;
@@ -278,25 +281,28 @@ import { ThemeService } from '../../../core/services/theme.service';
     .shape-1 {
       width: 300px;
       height: 300px;
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      background: linear-gradient(135deg, #B5924C 0%, #8A6F3A 100%);
       top: -100px;
       right: -100px;
+      opacity: 0.15;
     }
 
     .shape-2 {
       width: 200px;
       height: 200px;
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      background: linear-gradient(135deg, #334155 0%, #475569 100%);
       bottom: 20%;
       left: -80px;
+      opacity: 0.3;
     }
 
     .shape-3 {
       width: 150px;
       height: 150px;
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      background: linear-gradient(135deg, #B5924C 0%, #D4B978 100%);
       top: 40%;
       left: 10%;
+      opacity: 0.1;
     }
 
     .branding-footer {
@@ -304,12 +310,12 @@ import { ThemeService } from '../../../core/services/theme.service';
       justify-content: center;
       gap: 2rem;
       padding-top: 2rem;
-      border-top: 1px solid #cbd5e1;
+      border-top: 1px solid #334155;
       z-index: 2;
     }
 
     .branding-footer a {
-      color: #64748b;
+      color: #64748B;
       text-decoration: none;
       font-size: 0.875rem;
       font-weight: 500;
@@ -317,12 +323,12 @@ import { ThemeService } from '../../../core/services/theme.service';
     }
 
     .branding-footer a:hover {
-      color: #3b82f6;
+      color: #B5924C;
     }
 
     /* ===== COLUMNA DERECHA: FORMULARIO ===== */
     .form-section {
-      background: white;
+      background: var(--bg-card);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -338,21 +344,21 @@ import { ThemeService } from '../../../core/services/theme.service';
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
+      background: var(--bg-elevated);
+      border: var(--border-default);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       transition: all 0.3s;
-      color: #475569;
+      color: var(--text-muted);
       z-index: 10;
     }
 
     .theme-toggle:hover {
-      background: #e2e8f0;
-      border-color: #cbd5e1;
-      color: #3b82f6;
+      background: var(--bg-hover);
+      border-color: var(--color-accent);
+      color: var(--color-accent);
       transform: rotate(15deg);
     }
 
@@ -372,13 +378,13 @@ import { ThemeService } from '../../../core/services/theme.service';
     .form-title {
       font-size: 2rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--text-primary);
       margin-bottom: 0.5rem;
     }
 
     .form-subtitle {
       font-size: 0.9375rem;
-      color: #64748b;
+      color: var(--text-muted);
     }
 
     .register-form {
@@ -396,7 +402,7 @@ import { ThemeService } from '../../../core/services/theme.service';
     .form-label {
       font-size: 0.875rem;
       font-weight: 600;
-      color: #0f172a;
+      color: var(--text-secondary);
     }
 
     .input-wrapper {
@@ -407,21 +413,22 @@ import { ThemeService } from '../../../core/services/theme.service';
       width: 100%;
       padding: 0.75rem 1rem;
       font-size: 0.9375rem;
-      color: #0f172a;
-      background: white;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
+      color: var(--text-primary);
+      background: var(--input-bg);
+      border: var(--input-border);
+      border-radius: 12px;
       transition: all 0.2s;
+      box-shadow: var(--input-shadow);
     }
 
     .form-input:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px var(--color-accent-subtle);
     }
 
     .form-input::placeholder {
-      color: #94a3b8;
+      color: var(--text-faint);
     }
 
     .form-input.input-error {
@@ -439,7 +446,7 @@ import { ThemeService } from '../../../core/services/theme.service';
       transform: translateY(-50%);
       background: none;
       border: none;
-      color: #64748b;
+      color: var(--text-faint);
       cursor: pointer;
       padding: 4px;
       display: flex;
@@ -449,7 +456,7 @@ import { ThemeService } from '../../../core/services/theme.service';
     }
 
     .password-toggle:hover {
-      color: #3b82f6;
+      color: var(--color-accent);
     }
 
     .error-message {
@@ -459,7 +466,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 
     .password-hint {
       font-size: 0.8125rem;
-      color: #64748b;
+      color: var(--text-muted);
       margin: 0;
     }
 
@@ -468,10 +475,10 @@ import { ThemeService } from '../../../core/services/theme.service';
       align-items: center;
       gap: 0.75rem;
       padding: 0.875rem 1rem;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      border-radius: 8px;
-      color: #dc2626;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 12px;
+      color: #EF4444;
       font-size: 0.875rem;
     }
 
@@ -484,10 +491,10 @@ import { ThemeService } from '../../../core/services/theme.service';
       align-items: center;
       gap: 0.75rem;
       padding: 0.875rem 1rem;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-radius: 8px;
-      color: #15803d;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 12px;
+      color: #10B981;
       font-size: 0.875rem;
     }
 
@@ -500,8 +507,8 @@ import { ThemeService } from '../../../core/services/theme.service';
       padding: 0.875rem;
       font-size: 0.9375rem;
       font-weight: 600;
-      color: white;
-      background: #3b82f6;
+      color: #0F172A;
+      background: linear-gradient(135deg, #B5924C 0%, #9A7B3D 100%);
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -510,16 +517,19 @@ import { ThemeService } from '../../../core/services/theme.service';
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(181, 146, 76, 0.25);
     }
 
     .submit-button:hover:not(:disabled) {
-      background: #2563eb;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(181, 146, 76, 0.35);
     }
 
     .submit-button:disabled {
-      background: #94a3b8;
+      background: var(--color-slate-600);
+      box-shadow: none;
       cursor: not-allowed;
+      opacity: 0.6;
     }
 
     .loading-state {
@@ -540,18 +550,18 @@ import { ThemeService } from '../../../core/services/theme.service';
     .signin-text {
       text-align: center;
       font-size: 0.875rem;
-      color: #64748b;
+      color: var(--text-muted);
     }
 
     .signin-link {
-      color: #3b82f6;
+      color: var(--color-accent);
       text-decoration: none;
       font-weight: 600;
       transition: color 0.2s;
     }
 
     .signin-link:hover {
-      color: #2563eb;
+      color: var(--color-accent-hover);
     }
 
     /* ===== RESPONSIVE ===== */
@@ -625,19 +635,18 @@ export class RegisterComponent {
 
     this.authService.register(formData).subscribe({
       next: (user) => {
-        console.log('✅ Registro exitoso', user);
         this.successMessage.set('¡Cuenta creada! Redirigiendo al login...');
         this.loading.set(false);
         
         // Redirigir al login después de 2 segundos
         setTimeout(() => {
           this.router.navigate(['/login'], {
-            queryParams: { registered: 'true', email: user.email }
+            queryParams: { registered: 'true' }
           });
         }, 2000);
       },
       error: (error) => {
-        console.error('❌ Error en registro', error);
+        console.error('Error en registro');
         this.errorMessage.set(error.message);
         this.loading.set(false);
       }
