@@ -81,12 +81,7 @@ import { AccountCardComponent } from '../../shared/components/account-card.compo
             </svg>
             <h3 class="empty-title">No tienes cuentas registradas</h3>
             <p class="empty-description">Añade tu primera cuenta para empezar a gestionar tus finanzas</p>
-            <button class="btn-primary" (click)="addAccount()">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 4v16m8-8H4"/>
-              </svg>
-              Añadir primera cuenta
-            </button>
+            
           </div>
         </div>
       </div>

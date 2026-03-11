@@ -4,7 +4,7 @@ function getBackendUrl(): string {
   const protocol = window.location.protocol; // 'http:' o 'https:'
   
   // Siempre usar puerto 8080 para el backend
-  const backendPort = 8080;
+  const backendPort = 8000;
   
   return `${protocol}//${hostname}:${backendPort}`;
 }

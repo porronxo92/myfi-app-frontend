@@ -1,12 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MaskIbanPipe } from '../../../shared/pipes/mask-iban.pipe';
 
 @Component({
   selector: 'app-account-header',
   standalone: true,
-  imports: [CommonModule, RouterModule, MaskIbanPipe],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="account-header">
       <!-- Logo y título -->
