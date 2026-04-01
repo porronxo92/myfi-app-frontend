@@ -13,6 +13,11 @@ import { environment } from '../../../environments/environment';
 import { AIQuotaService } from './ai-quota.service';
 import { LoggerService } from './logger.service';
 
+// ============================================
+// INTERFACES
+// ============================================
+
+/** Mensaje interno para UI y persistencia */
 export interface ChatMessage {
   id: string;
   sender: 'user' | 'agent';
@@ -21,13 +26,34 @@ export interface ChatMessage {
   isTyping?: boolean;
   error?: boolean;
   supportingData?: any;
+  proposedAction?: ProposedAction;
 }
 
+/** Formato de mensaje para enviar al API */
+export interface ChatHistoryMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+/** Request al endpoint /api/insights/chat */
+export interface ChatRequest {
+  message: string;
+  conversation_history: ChatHistoryMessage[];
+}
+
+/** Acción propuesta por el agente (requiere confirmación) */
+export interface ProposedAction {
+  type: 'create_transaction' | 'create_category';
+  description: string;
+  endpoint: string;
+  data: Record<string, any>;
+}
+
+/** Respuesta del endpoint /api/insights/chat */
 export interface ChatResponse {
-  response: string;
-  context_used: string[];
+  message: string;
+  proposed_action: ProposedAction | null;
   suggested_questions: string[];
-  supporting_data?: any;
   timestamp: string;
 }
 
@@ -43,11 +69,15 @@ export class ChatbotService {
   // BehaviorSubjects privados
   private _messages$ = new BehaviorSubject<ChatMessage[]>([]);
   private _isTyping$ = new BehaviorSubject<boolean>(false);
+  private _pendingAction$ = new BehaviorSubject<ProposedAction | null>(null);
+  private _actionInProgress$ = new BehaviorSubject<boolean>(false);
   private conversationId: string = this.generateConversationId();
 
   // Observables públicos (read-only)
   public readonly messages$ = this._messages$.asObservable();
   public readonly isTyping$ = this._isTyping$.asObservable();
+  public readonly pendingAction$ = this._pendingAction$.asObservable();
+  public readonly actionInProgress$ = this._actionInProgress$.asObservable();
 
   // Exponer estado de cuota
   public readonly isQuotaExceeded$ = this.aiQuotaService.isQuotaExceeded;
@@ -56,16 +86,48 @@ export class ChatbotService {
   constructor(private http: HttpClient) {
     // Restaurar historial de sesión si existe
     this.restoreHistory();
-    
+
     // Mensaje de bienvenida
     if (this._messages$.value.length === 0) {
       this.addWelcomeMessage();
     }
   }
 
-  // Enviar mensaje al agente
+  // ============================================
+  // CONVERSATION HISTORY
+  // ============================================
+
+  /**
+   * Convierte los mensajes internos al formato API para conversation_history
+   * Mapea sender 'user'|'agent' a role 'user'|'assistant'
+   * Limita a los últimos 50 mensajes, excluye typing/error
+   */
+  private buildConversationHistory(): ChatHistoryMessage[] {
+    const messages = this._messages$.value;
+
+    return messages
+      .filter(msg => !msg.isTyping && !msg.error)
+      .slice(-50)
+      .map(msg => ({
+        role: (msg.sender === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+        content: msg.text
+      }));
+  }
+
+  // ============================================
+  // SEND MESSAGE
+  // ============================================
+
+  /** Enviar mensaje al agente */
   async sendMessage(userMessage: string): Promise<void> {
-    if (!userMessage.trim()) return;
+    // Limpiar acción pendiente si había una (usuario continúa conversación)
+    if (this._pendingAction$.value) {
+      this.clearPendingAction();
+    }
+
+    // Truncar y validar mensaje
+    const trimmedMessage = userMessage.trim().substring(0, 2000);
+    if (!trimmedMessage) return;
 
     // Verificar si se puede hacer la petición
     if (!this.aiQuotaService.canMakeAIRequest()) {
@@ -94,7 +156,7 @@ export class ChatbotService {
     const userMsg: ChatMessage = {
       id: this.generateMessageId(),
       sender: 'user',
-      text: userMessage.trim(),
+      text: trimmedMessage,
       timestamp: new Date()
     };
 
@@ -104,24 +166,35 @@ export class ChatbotService {
     this._isTyping$.next(true);
 
     try {
+      // Construir request con historial de conversación
+      const request: ChatRequest = {
+        message: trimmedMessage,
+        conversation_history: this.buildConversationHistory()
+      };
+
       // Llamar al endpoint del chat
       const response = await this.http.post<ChatResponse>(
         this.apiUrl,
-        { message: userMessage }
+        request
       ).toPromise();
 
       if (!response) throw new Error('No response from server');
 
-      // Agregar respuesta del agente
+      // Agregar respuesta del agente con proposed_action adjunta
       const agentMsg: ChatMessage = {
         id: this.generateMessageId(),
         sender: 'agent',
-        text: response.response,
+        text: response.message,
         timestamp: new Date(),
-        supportingData: response.supporting_data
+        proposedAction: response.proposed_action || undefined
       };
 
       this.addMessage(agentMsg);
+
+      // Si hay acción propuesta, establecerla como pendiente
+      if (response.proposed_action) {
+        this._pendingAction$.next(response.proposed_action);
+      }
 
       // Guardar sugerencias para mostrar después
       if (response.suggested_questions && response.suggested_questions.length > 0) {
@@ -153,6 +226,95 @@ export class ChatbotService {
       this.addMessage(errorMsg);
     } finally {
       this._isTyping$.next(false);
+    }
+  }
+
+  // ============================================
+  // ACTION EXECUTION
+  // ============================================
+
+  /** Ejecutar la acción pendiente tras confirmación del usuario */
+  async executeAction(): Promise<{ success: boolean; message: string }> {
+    const action = this._pendingAction$.value;
+    if (!action) {
+      return { success: false, message: 'No hay acción pendiente' };
+    }
+
+    this._actionInProgress$.next(true);
+
+    try {
+      // Parsear endpoint para obtener método y path
+      const [method, path] = action.endpoint.split(' ');
+      const url = `${environment.apiUrl}${path.replace('/api', '')}`;
+
+      if (method === 'POST') {
+        await this.http.post(url, action.data).toPromise();
+      } else if (method === 'PUT') {
+        await this.http.put(url, action.data).toPromise();
+      } else {
+        throw new Error(`Método HTTP no soportado: ${method}`);
+      }
+
+      // Mensaje de éxito
+      const successMsg: ChatMessage = {
+        id: this.generateMessageId(),
+        sender: 'agent',
+        text: this.getSuccessMessage(action.type),
+        timestamp: new Date()
+      };
+      this.addMessage(successMsg);
+
+      this.clearPendingAction();
+      return { success: true, message: 'Acción ejecutada correctamente' };
+
+    } catch (error: any) {
+      this.logger.error('Error executing action', error);
+
+      const errorMsg: ChatMessage = {
+        id: this.generateMessageId(),
+        sender: 'agent',
+        text: `❌ Error al ejecutar la acción: ${error.error?.detail || error.message || 'Error desconocido'}`,
+        timestamp: new Date(),
+        error: true
+      };
+      this.addMessage(errorMsg);
+
+      this.clearPendingAction();
+      return { success: false, message: error.message };
+
+    } finally {
+      this._actionInProgress$.next(false);
+    }
+  }
+
+  /** Cancelar la acción pendiente */
+  cancelAction(): void {
+    if (this._pendingAction$.value) {
+      const cancelMsg: ChatMessage = {
+        id: this.generateMessageId(),
+        sender: 'agent',
+        text: 'Entendido, no se ha realizado ninguna acción. ¿Hay algo más en lo que pueda ayudarte?',
+        timestamp: new Date()
+      };
+      this.addMessage(cancelMsg);
+    }
+    this.clearPendingAction();
+  }
+
+  /** Limpiar estado de acción pendiente */
+  clearPendingAction(): void {
+    this._pendingAction$.next(null);
+  }
+
+  /** Obtener mensaje de éxito según tipo de acción */
+  private getSuccessMessage(actionType: string): string {
+    switch (actionType) {
+      case 'create_transaction':
+        return '✅ ¡Transacción creada correctamente! He registrado el movimiento en tu cuenta.';
+      case 'create_category':
+        return '✅ ¡Categoría creada correctamente! Ya puedes usarla para clasificar tus transacciones.';
+      default:
+        return '✅ ¡Acción completada correctamente!';
     }
   }
 

@@ -1,3 +1,16 @@
+<!-- Action Confirmation Dialog -->
+<app-confirm-dialog
+  *ngIf="pendingAction$ | async as action"
+  [title]="getActionTitle(action)"
+  [message]="action.description"
+  submessage="¿Deseas ejecutar esta acción?"
+  confirmText="Ejecutar"
+  cancelText="Cancelar"
+  type="warning"
+  (confirm)="confirmAction()"
+  (cancel)="cancelAction()"
+></app-confirm-dialog>
+
 <!-- Financial Chatbot Template -->
 <div class="chatbot-container">
   
@@ -103,23 +116,29 @@
         (keypress)="onKeyPress($event)"
         placeholder="Escribe tu pregunta..."
         rows="1"
-        [disabled]="(isTyping$ | async) || false"
+        [maxlength]="MAX_MESSAGE_LENGTH"
+        [disabled]="(isTyping$ | async) || (actionInProgress$ | async) || false"
         class="message-input"></textarea>
-      
-      <button 
+
+      <button
         class="btn-send"
         (click)="sendMessage()"
-        [disabled]="!userInput.trim() || (isTyping$ | async)"
+        [disabled]="!userInput.trim() || (isTyping$ | async) || (actionInProgress$ | async)"
         title="Enviar mensaje">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
         </svg>
       </button>
     </div>
-    
-    <p class="input-hint">
-      Presiona Enter para enviar, Shift+Enter para nueva línea
-    </p>
+
+    <div class="input-footer">
+      <p class="input-hint">
+        Presiona Enter para enviar, Shift+Enter para nueva línea
+      </p>
+      <span class="char-count" [class.warning]="userInput.length > 1800">
+        {{ userInput.length }}/{{ MAX_MESSAGE_LENGTH }}
+      </span>
+    </div>
   </div>
 
 </div>

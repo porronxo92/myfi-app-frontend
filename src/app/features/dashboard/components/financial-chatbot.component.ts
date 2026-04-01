@@ -17,12 +17,13 @@ import { Component, OnInit, OnDestroy, Output, EventEmitter, ViewChild, ElementR
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, Observable } from 'rxjs';
-import { ChatbotService, ChatMessage } from '../../../core/services/chatbot.service';
+import { ChatbotService, ChatMessage, ProposedAction } from '../../../core/services/chatbot.service';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog.component';
 
 @Component({
   selector: 'app-financial-chatbot',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
   templateUrl: './financial-chatbot.component.html',
   styleUrls: ['./financial-chatbot.component.scss']
 })
@@ -32,18 +33,25 @@ export class FinancialChatbotComponent implements OnInit, OnDestroy, AfterViewCh
 
   private destroy$ = new Subject<void>();
   private shouldScroll = false;
-  
+
   messages: ChatMessage[] = [];
   isTyping$!: Observable<boolean>;
+  pendingAction$!: Observable<ProposedAction | null>;
+  actionInProgress$!: Observable<boolean>;
   userInput = '';
   suggestedQuestions: string[] = [];
-  
+
+  /** Límite de caracteres para el mensaje */
+  readonly MAX_MESSAGE_LENGTH = 2000;
+
   constructor(private chatbotService: ChatbotService) {}
 
   ngOnInit(): void {
-    // Initialize isTyping$ observable
+    // Initialize observables
     this.isTyping$ = this.chatbotService.isTyping$;
-    
+    this.pendingAction$ = this.chatbotService.pendingAction$;
+    this.actionInProgress$ = this.chatbotService.actionInProgress$;
+
     // Subscribe to messages
     this.chatbotService.messages$
       .pipe(takeUntil(this.destroy$))
@@ -111,6 +119,38 @@ export class FinancialChatbotComponent implements OnInit, OnDestroy, AfterViewCh
    */
   closeChatbot(): void {
     this.close.emit();
+  }
+
+  // ============================================
+  // ACTION HANDLING
+  // ============================================
+
+  /**
+   * Confirmar y ejecutar la acción propuesta
+   */
+  confirmAction(): void {
+    this.chatbotService.executeAction();
+  }
+
+  /**
+   * Cancelar la acción propuesta
+   */
+  cancelAction(): void {
+    this.chatbotService.cancelAction();
+  }
+
+  /**
+   * Obtener título del diálogo según tipo de acción
+   */
+  getActionTitle(action: ProposedAction): string {
+    switch (action.type) {
+      case 'create_transaction':
+        return 'Confirmar Transacción';
+      case 'create_category':
+        return 'Confirmar Categoría';
+      default:
+        return 'Confirmar Acción';
+    }
   }
 
   /**
