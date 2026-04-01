@@ -99,8 +99,7 @@ export class DashboardStateService {
     private analyticsService: AnalyticsService,
     private insightsService: InsightsService
   ) {
-    // Cargar datos iniciales
-    this.loadDashboardData();
+    // No auto-cargamos aquí; el componente llama a loadDashboardData() en ngOnInit
   }
 
   // Getters
@@ -160,134 +159,120 @@ export class DashboardStateService {
   async loadDashboardData(): Promise<void> {
     this._loading$.next(true);
     this._error$.next(null);
-    
+
     try {
       const filters = this._filters$.value;
       const { year, month, accountId } = filters;
-      
+
       // Convertir year/month a period string para endpoints mensuales
       const period = this.buildPeriodString(year, month);
       const previousPeriod = this.getPreviousPeriod(period);
-      
-      // Peticiones en paralelo (19 llamadas: 4 anuales + 15 mensuales)
+
+      // === FASE 1: datos de analytics (sin IA) — todos en paralelo ===
       const [
-        // === DATOS ANUALES (para Summary Cards - solo afectados por año y cuenta) ===
         annualBalance,
         annualIncome,
         annualExpenses,
         annualSavingsRate,
-        
-        // === DATOS MENSUALES (para gráficos y detalles) ===
         summary,
         currentData,
         previousData,
-        insights,
         categories,
         trends,
         topSpending,
         anomalies,
         recurringExpenses,
         savingsPotential,
-        financialHealth,
-        recommendations,
         savingsRate,
-        
-        // === NUEVOS - Datos para Charts Grid ===
-        monthlyCategoryBreakdown,  // Desglose income + expenses del mes
-        yearlyMonthlyTrend          // Tendencia de 12 meses del año
+        monthlyCategoryBreakdown,
+        yearlyMonthlyTrend
       ] = await Promise.all([
-        // Datos anuales - INDEPENDIENTES del mes
         firstValueFrom(this.analyticsService.getAnnualBalance(year, accountId)),
         firstValueFrom(this.analyticsService.getAnnualIncome(year, accountId)),
         firstValueFrom(this.analyticsService.getAnnualExpenses(year, accountId)),
         firstValueFrom(this.analyticsService.getAnnualSavingsRate(year, accountId)),
-        
-        // Datos mensuales - DEPENDIENTES de año + mes
-        // 1. Resumen del período actual
         firstValueFrom(this.analyticsService.getMonthlySummary(period, accountId)),
-        
-        // 2. Datos actuales completos
         firstValueFrom(this.analyticsService.getMonthlySummary(period, accountId)),
-        
-        // 3. Datos del período anterior para comparación
         firstValueFrom(this.analyticsService.getMonthlySummary(previousPeriod, accountId)),
-        
-        // 4. Insights generados por IA
-        firstValueFrom(this.insightsService.generateInsights(5, accountId)),
-        
-        // 5. Desglose por categorías (legacy)
         firstValueFrom(this.analyticsService.getCategoryBreakdown('expense', period, accountId)),
-        
-        // 6. Tendencias mensuales (legacy)
         firstValueFrom(this.analyticsService.getTrends(6, accountId)),
-        
-        // 7. Top gastos
         firstValueFrom(this.analyticsService.getTopMerchants(period, 10, accountId)),
-        
-        // 8. Anomalías detectadas
         firstValueFrom(this.analyticsService.getAnomalies(2.0, accountId)),
-        
-        // 9. Gastos recurrentes
         firstValueFrom(this.analyticsService.getRecurringExpenses(accountId)),
-        
-        // 10. Potencial de ahorro
         firstValueFrom(this.analyticsService.getSavingsPotential(accountId)),
-        
-        // 11. Salud financiera (score)
-        firstValueFrom(this.insightsService.getFinancialHealth(accountId)),
-        
-        // 12. Recomendaciones personalizadas
-        firstValueFrom(this.insightsService.getRecommendations(accountId)),
-        
-        // 13. Tasa de ahorro
         firstValueFrom(this.analyticsService.getSavingsRate(period, accountId)),
-        
-        // === NUEVOS - Charts Grid ===
-        // 14. Desglose income + expenses del mes seleccionado
         firstValueFrom(this.analyticsService.getCategoryBreakdownByMonth(year, month, accountId)),
-        
-        // 15. Tendencia mensual del año completo
         firstValueFrom(this.analyticsService.getMonthlyTrendByYear(year, accountId))
       ]);
 
-      // Calcular tendencias comparativas
       const trendData = this.calculateTrends(currentData, previousData);
 
-      const dashboardData: DashboardData = {
-        // Datos anuales para Summary Cards
+      // Publicar datos sin IA inmediatamente para que el dashboard sea interactivo
+      this._data$.next({
         annualSummary: {
           balance: annualBalance,
           income: annualIncome,
           expenses: annualExpenses,
           savingsRate: annualSavingsRate
         },
-        
-        // Datos mensuales para gráficos
         summary: summary as FinancialSummary,
         trends: trendData,
-        insights: insights as any[],
-        categoryBreakdown: categories,          // DEPRECATED
-        monthlyTrend: trends,                    // DEPRECATED
+        insights: [],
+        categoryBreakdown: categories,
+        monthlyTrend: trends,
         topSpending: topSpending as any[],
         anomalies: anomalies as any[],
         recurringExpenses: recurringExpenses as any[],
         savingsPotential,
-        financialHealth,
-        recommendations: recommendations as any[],
+        financialHealth: null,
+        recommendations: [],
         savingsRate,
-        
-        // NUEVOS - Charts Grid
         monthlyCategoryBreakdown,
         yearlyMonthlyTrend
-      };
+      });
 
-      this._data$.next(dashboardData);
-      
     } catch (error: any) {
       this.logger.error('Error loading dashboard data');
       this._error$.next(error.message || 'Error al cargar datos del dashboard');
     } finally {
       this._loading$.next(false);
+    }
+
+    // === FASE 2: datos de IA — en secuencia para no disparar el rate limiter ===
+    this.loadAIInsightsSequentially();
+  }
+
+  /**
+   * Carga los 3 endpoints de IA de forma secuencial con un pequeño retardo entre
+   * cada llamada para evitar disparar el rate limiter del backend (429).
+   * Los fallos son no-fatales: el dashboard ya es funcional sin estos datos.
+   */
+  private async loadAIInsightsSequentially(): Promise<void> {
+    const { accountId } = this._filters$.value;
+
+    const fetchWithDelay = (fn: () => Promise<any>, delayMs: number): Promise<any> =>
+      new Promise(resolve => setTimeout(() => fn().then(resolve).catch(() => resolve(null)), delayMs));
+
+    const financialHealth = await fetchWithDelay(
+      () => firstValueFrom(this.insightsService.getFinancialHealth(accountId)), 0
+    );
+
+    const recommendations = await fetchWithDelay(
+      () => firstValueFrom(this.insightsService.getRecommendations(accountId)), 800
+    );
+
+    const insights = await fetchWithDelay(
+      () => firstValueFrom(this.insightsService.generateInsights(5, accountId)), 800
+    );
+
+    const currentData = this._data$.value;
+    if (currentData) {
+      this._data$.next({
+        ...currentData,
+        insights: (insights as any[]) ?? [],
+        financialHealth,
+        recommendations: (recommendations as any[]) ?? []
+      });
     }
   }
 
