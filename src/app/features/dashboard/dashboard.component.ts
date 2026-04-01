@@ -8,6 +8,7 @@ import { TransactionService } from '../../core/services/transaction.service';
 import { CategoryService } from '../../core/services/category.service';
 import { DashboardStateService } from '../../core/services/dashboard-state.service';
 import { ChatbotService } from '../../core/services/chatbot.service';
+import { AIQuotaService } from '../../core/services/ai-quota.service';
 import { NavbarComponent } from '../../shared/components/navbar.component';
 import { FooterComponent } from '../../shared/components/footer.component';
 import { FinancialChatbotComponent } from './components/financial-chatbot.component';
@@ -35,6 +36,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private categoryService = inject(CategoryService);
   private dashboardState = inject(DashboardStateService);
   private chatbotService = inject(ChatbotService);
+  private aiQuotaService = inject(AIQuotaService);
+
+  // Quota warning signals (exposed to template)
+  quotaExceeded = this.aiQuotaService.isQuotaExceeded;
+  quotaInfo = this.aiQuotaService.quotaInfo;
+  isRateLimited = this.aiQuotaService.isRateLimited;
+  quotaState = this.aiQuotaService.quotaState;
   private router = inject(Router);
   private destroy$ = new Subject<void>();
   
