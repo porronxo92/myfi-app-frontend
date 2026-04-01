@@ -26,10 +26,10 @@
 
   <!-- Error State -->
   <div *ngIf="error() && !isLoading()" class="health-error">
-    <div class="error-icon">⚠️</div>
-    <h3>Error al generar el informe</h3>
+    <div class="error-icon">{{ quotaExceeded() ? '⏱️' : '⚠️' }}</div>
+    <h3>{{ quotaExceeded() ? 'Límite de IA alcanzado' : 'Error al generar el informe' }}</h3>
     <p>{{ error() }}</p>
-    <button class="btn-retry" (click)="requestHealthReport()">Reintentar</button>
+    <button *ngIf="!quotaExceeded()" class="btn-retry" (click)="requestHealthReport()">Reintentar</button>
   </div>
 
   <!-- Success State -->

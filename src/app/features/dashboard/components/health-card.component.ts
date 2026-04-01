@@ -5,9 +5,10 @@
  * Componente que muestra el análisis de salud financiera generado por IA.
  */
 
-import { Component, Input, OnInit, OnChanges, SimpleChanges, signal } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HealthService, HealthReport } from '../../../core/services/health.service';
+import { AIQuotaService } from '../../../core/services/ai-quota.service';
 
 @Component({
   selector: 'app-health-card',
@@ -24,7 +25,11 @@ export class HealthCardComponent implements OnInit, OnChanges {
   isLoading = signal(false);
   error = signal<string | null>(null);
   reportRequested = signal(false); // Indica si el usuario ha solicitado el reporte
-  
+
+  // Quota state (exposed to template)
+  private aiQuotaService = inject(AIQuotaService);
+  quotaExceeded = this.aiQuotaService.isQuotaExceeded;
+
   // Almacenar el año anterior para detectar cambios reales
   private previousYear: number | undefined;
 
@@ -62,6 +67,14 @@ export class HealthCardComponent implements OnInit, OnChanges {
       return;
     }
 
+    // Guard: si la cuota está agotada, mostrar el mensaje directamente sin llamar al API
+    if (!this.aiQuotaService.canMakeAIRequest()) {
+      const info = this.aiQuotaService.quotaInfo();
+      this.error.set(info?.message || 'Has alcanzado el límite de consultas de IA. Por favor, intenta más tarde.');
+      this.reportRequested.set(true);
+      return;
+    }
+
     this.reportRequested.set(true);
     this.loadHealthReport();
   }
@@ -76,9 +89,13 @@ export class HealthCardComponent implements OnInit, OnChanges {
         this.healthReport.set(report);
         this.isLoading.set(false);
       },
-      error: () => {
-        console.error('Error loading health report');
-        this.error.set('No se pudo generar el informe de salud financiera');
+      error: (err: any) => {
+        // Leer el mensaje del backend: primero el enriquecido por el interceptor,
+        // luego el campo detail.message del JSON original, o un fallback genérico
+        const message = err?.error?._userMessage
+          || err?.error?.detail?.message
+          || 'No se pudo generar el informe de salud financiera';
+        this.error.set(message);
         this.isLoading.set(false);
       }
     });

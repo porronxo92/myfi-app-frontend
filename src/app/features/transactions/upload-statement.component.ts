@@ -8,6 +8,7 @@ import { AccountService } from '../../core/services/account.service';
 import { CategoryService } from '../../core/services/category.service';
 import { TransactionService } from '../../core/services/transaction.service';
 import { LoggerService } from '../../core/services/logger.service';
+import { AIQuotaService } from '../../core/services/ai-quota.service';
 import { UploadResponse, ProcessedTransaction, CreateTransactionDto, UploadStep } from '../../core/models/upload.model';
 import { Account } from '../../core/models/account.model';
 import { Category } from '../../core/models/category.model';
@@ -73,6 +74,17 @@ import { FormsModule } from '@angular/forms';
           <app-file-upload-zone
             (fileSelected)="onFileSelected($event)"
           ></app-file-upload-zone>
+
+          <!-- Error banner (quota exceeded or upload failure) -->
+          <div class="upload-error-banner" *ngIf="uploadError()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div class="upload-error-text">
+              <strong>No se pudo procesar el extracto</strong>
+              <span>{{ uploadError() }}</span>
+            </div>
+          </div>
 
           <div class="step-actions" *ngIf="selectedFile()">
             <button class="btn btn-secondary" (click)="cancelUpload()">
@@ -608,6 +620,37 @@ import { FormsModule } from '@angular/forms';
       justify-content: center;
       gap: var(--space-4);
       margin-top: var(--space-6);
+    }
+
+    /* Upload Error Banner */
+    .upload-error-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      background: rgba(202, 53, 33, 0.06);
+      border: 1px solid rgba(202, 53, 33, 0.25);
+      border-left: 3px solid var(--color-negative);
+      border-radius: var(--radius-md);
+      padding: var(--space-4) var(--space-5);
+      margin-top: var(--space-5);
+      color: var(--color-negative);
+    }
+
+    .upload-error-text {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .upload-error-text strong {
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+
+    .upload-error-text span {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
     }
 
     /* Processing Step */
@@ -1502,6 +1545,9 @@ export class UploadStatementComponent implements OnInit {
   editingDescription = signal<ProcessedTransaction | null>(null);
   tempDescription = signal<string>('');
 
+  // Error de carga/IA (reemplaza el alert genérico)
+  uploadError = signal<string | null>(null);
+
   // Computed signals
   transactions = computed(() => {
     const response = this.uploadResponse();
@@ -1543,6 +1589,7 @@ export class UploadStatementComponent implements OnInit {
   });
 
   private logger = inject(LoggerService);
+  private aiQuotaService = inject(AIQuotaService);
 
   constructor(
     private router: Router,
@@ -1569,12 +1616,23 @@ export class UploadStatementComponent implements OnInit {
 
   onFileSelected(file: File): void {
     this.selectedFile.set(file);
+    this.uploadError.set(null);
   }
 
   startProcessing(): void {
     const file = this.selectedFile();
     if (!file) return;
 
+    // Guard: verificar cuota de IA antes de subir el archivo
+    if (!this.aiQuotaService.canMakeAIRequest()) {
+      const info = this.aiQuotaService.quotaInfo();
+      this.uploadError.set(
+        info?.message || 'Has alcanzado el límite de consultas de IA. Por favor, intenta más tarde.'
+      );
+      return;
+    }
+
+    this.uploadError.set(null);
     this.currentStep.set('processing');
 
     this.uploadService.uploadStatement(file).subscribe({
@@ -1584,7 +1642,10 @@ export class UploadStatementComponent implements OnInit {
       },
       error: (error: any) => {
         this.logger.error('Upload failed');
-        alert('Error al procesar el extracto: ' + (error.message || 'Error desconocido'));
+        const message = error?.error?._userMessage
+          || error?.error?.detail?.message
+          || 'No se pudo procesar el extracto. Por favor, inténtalo de nuevo.';
+        this.uploadError.set(message);
         this.currentStep.set('upload');
       }
     });
