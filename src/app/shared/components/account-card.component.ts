@@ -32,19 +32,31 @@ import { MaskIbanPipe } from '../pipes/mask-iban.pipe';
     >
       <div class="card-header">
         <div class="bank-icon">
-          <img 
-            [src]="bankLogo" 
+          <img
+            [src]="bankLogo"
             [alt]="bankName"
             (error)="onImageError($event)"
           />
         </div>
-        <span 
-          class="account-status" 
-          [class.active]="isActive" 
-          [class.inactive]="!isActive"
-        >
-          {{ isActive ? 'Activa' : 'Inactiva' }}
-        </span>
+        <div class="header-right">
+          <span
+            class="account-status"
+            [class.active]="isActive"
+            [class.inactive]="!isActive"
+          >
+            {{ isActive ? 'Activa' : 'Inactiva' }}
+          </span>
+          <button
+            *ngIf="showDeleteButton"
+            class="delete-button"
+            (click)="onDeleteClick($event)"
+            title="Eliminar cuenta"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div class="card-body">
@@ -107,6 +119,12 @@ import { MaskIbanPipe } from '../pipes/mask-iban.pipe';
       margin-bottom: var(--space-4);
     }
 
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
     .bank-icon {
       width: 40px;
       height: 40px;
@@ -141,6 +159,24 @@ import { MaskIbanPipe } from '../pipes/mask-iban.pipe';
       background: rgba(34, 160, 107, 0.1);
       color: var(--color-positive);
       border-color: rgba(34, 160, 107, 0.2);
+    }
+
+    .delete-button {
+      background: transparent;
+      border: none;
+      padding: var(--space-2);
+      cursor: pointer;
+      color: var(--text-faint);
+      border-radius: var(--radius-sm);
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .delete-button:hover {
+      background: rgba(202, 53, 33, 0.1);
+      color: var(--color-negative);
     }
 
     /* Body */
@@ -255,11 +291,18 @@ export class AccountCardComponent {
   @Input() transactionCount: number = 0;
   @Input() isActive: boolean = true;
   @Input() showTransactionCount: boolean = true;
-  
+  @Input() showDeleteButton: boolean = false;
+
   @Output() cardClick = new EventEmitter<void>();
+  @Output() deleteClick = new EventEmitter<void>();
 
   onImageError(event: any): void {
     event.target.src = 'assets/bank_logo/default.svg';
+  }
+
+  onDeleteClick(event: Event): void {
+    event.stopPropagation(); // Prevenir que se active el cardClick
+    this.deleteClick.emit();
   }
 
   getAccountTypeLabel(type: string): string {

@@ -6,21 +6,35 @@ import { NavbarComponent } from '../../shared/components/navbar.component';
 import { FooterComponent } from '../../shared/components/footer.component';
 import { AddAccountModalComponent } from '../../shared/components/add-account-modal.component';
 import { AccountCardComponent } from '../../shared/components/account-card.component';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog.component';
 
 @Component({
   selector: 'app-accounts',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent, AddAccountModalComponent, AccountCardComponent],
+  imports: [CommonModule, NavbarComponent, FooterComponent, AddAccountModalComponent, AccountCardComponent, ConfirmDialogComponent],
   template: `
     <div class="accounts-page">
       <app-navbar></app-navbar>
 
       <!-- Modal de añadir cuenta -->
-      <app-add-account-modal 
+      <app-add-account-modal
         *ngIf="showModal()"
         (closeModal)="closeModal()"
         (accountCreated)="handleAccountCreated($event)"
       ></app-add-account-modal>
+
+      <!-- Modal de confirmación de eliminación -->
+      <app-confirm-dialog
+        *ngIf="showDeleteConfirm()"
+        title="Eliminar cuenta"
+        message="¿Estás seguro de que deseas eliminar esta cuenta?"
+        [submessage]="accountToDelete()?.name || ''"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        type="danger"
+        (confirm)="confirmDelete()"
+        (cancel)="cancelDelete()"
+      ></app-confirm-dialog>
 
       <div class="page-container">
         <div class="page-header">
@@ -58,7 +72,9 @@ import { AccountCardComponent } from '../../shared/components/account-card.compo
             [transactionCount]="account.transaction_count || 0"
             [isActive]="account.is_active"
             [showTransactionCount]="true"
+            [showDeleteButton]="true"
             (cardClick)="navigateToAccount(account.id)"
+            (deleteClick)="openDeleteConfirm(account)"
           ></app-account-card>
 
           <!-- Add Account Card (al final) -->
@@ -290,6 +306,8 @@ export class AccountsComponent {
   hasError = computed(() => this.accountService.error() !== null);
   errorMessage = this.accountService.error;
   showModal = signal(false);
+  showDeleteConfirm = signal(false);
+  accountToDelete = signal<any>(null);
 
   ngOnInit(): void {
     this.accountService.getAccounts().subscribe();
@@ -344,5 +362,33 @@ export class AccountsComponent {
 
   trackByAccountId(index: number, account: any): string {
     return account.id;
+  }
+
+  openDeleteConfirm(account: any): void {
+    this.accountToDelete.set(account);
+    this.showDeleteConfirm.set(true);
+  }
+
+  confirmDelete(): void {
+    const account = this.accountToDelete();
+    if (account) {
+      this.accountService.deleteAccount(account.id).subscribe({
+        next: () => {
+          this.showDeleteConfirm.set(false);
+          this.accountToDelete.set(null);
+        },
+        error: (error) => {
+          console.error('Error al eliminar la cuenta:', error);
+          this.showDeleteConfirm.set(false);
+          this.accountToDelete.set(null);
+          // Aquí podrías mostrar un mensaje de error al usuario
+        }
+      });
+    }
+  }
+
+  cancelDelete(): void {
+    this.showDeleteConfirm.set(false);
+    this.accountToDelete.set(null);
   }
 }
