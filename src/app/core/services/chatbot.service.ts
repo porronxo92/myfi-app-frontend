@@ -1,15 +1,17 @@
 /**
  * Chatbot Service
  * ===============
- * 
+ *
  * Servicio para gestionar la interacción con el agente conversacional financiero.
  * Mantiene el historial de conversación y se comunica con el endpoint del chat.
  */
 
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AIQuotaService } from './ai-quota.service';
+import { LoggerService } from './logger.service';
 
 export interface ChatMessage {
   id: string;
@@ -33,9 +35,11 @@ export interface ChatResponse {
   providedIn: 'root'
 })
 export class ChatbotService {
-  
+
   private apiUrl = `${environment.apiUrl}/insights/chat`;
-  
+  private aiQuotaService = inject(AIQuotaService);
+  private logger = inject(LoggerService);
+
   // BehaviorSubjects privados
   private _messages$ = new BehaviorSubject<ChatMessage[]>([]);
   private _isTyping$ = new BehaviorSubject<boolean>(false);
@@ -44,6 +48,10 @@ export class ChatbotService {
   // Observables públicos (read-only)
   public readonly messages$ = this._messages$.asObservable();
   public readonly isTyping$ = this._isTyping$.asObservable();
+
+  // Exponer estado de cuota
+  public readonly isQuotaExceeded$ = this.aiQuotaService.isQuotaExceeded;
+  public readonly quotaInfo$ = this.aiQuotaService.quotaInfo;
 
   constructor(private http: HttpClient) {
     // Restaurar historial de sesión si existe
@@ -59,6 +67,29 @@ export class ChatbotService {
   async sendMessage(userMessage: string): Promise<void> {
     if (!userMessage.trim()) return;
 
+    // Verificar si se puede hacer la petición
+    if (!this.aiQuotaService.canMakeAIRequest()) {
+      const quotaInfo = this.aiQuotaService.getQuotaDisplayInfo();
+      let errorText: string;
+
+      if (this.aiQuotaService.isQuotaExceeded()) {
+        errorText = `⚠️ Has alcanzado el límite de ${quotaInfo?.limit || 20} consultas de IA este mes. ` +
+                    `Tu cuota se renovará el ${quotaInfo?.resetDate || 'próximo mes'}.`;
+      } else {
+        errorText = '⏳ Demasiadas peticiones. Por favor, espera unos segundos antes de intentarlo de nuevo.';
+      }
+
+      const errorMsg: ChatMessage = {
+        id: this.generateMessageId(),
+        sender: 'agent',
+        text: errorText,
+        timestamp: new Date(),
+        error: true
+      };
+      this.addMessage(errorMsg);
+      return;
+    }
+
     // Agregar mensaje del usuario
     const userMsg: ChatMessage = {
       id: this.generateMessageId(),
@@ -66,9 +97,9 @@ export class ChatbotService {
       text: userMessage.trim(),
       timestamp: new Date()
     };
-    
+
     this.addMessage(userMsg);
-    
+
     // Mostrar indicador de "escribiendo..."
     this._isTyping$.next(true);
 
@@ -89,25 +120,36 @@ export class ChatbotService {
         timestamp: new Date(),
         supportingData: response.supporting_data
       };
-      
+
       this.addMessage(agentMsg);
-      
+
       // Guardar sugerencias para mostrar después
       if (response.suggested_questions && response.suggested_questions.length > 0) {
         this.storeSuggestions(response.suggested_questions);
       }
-      
+
     } catch (error: any) {
-      console.error('Error sending message');
-      
+      this.logger.error('Error sending message', error);
+
+      let errorText: string;
+
+      // Verificar si es un error de cuota (enriquecido por el interceptor)
+      if (error instanceof HttpErrorResponse && error.status === 429) {
+        errorText = error.error?._userMessage ||
+                    'Has alcanzado el límite de consultas. Por favor, intenta más tarde.';
+      } else {
+        errorText = 'Lo siento, tuve problemas para procesar tu pregunta. ¿Podrías intentarlo de nuevo?';
+      }
+
       // Mensaje de error
       const errorMsg: ChatMessage = {
         id: this.generateMessageId(),
         sender: 'agent',
-        text: 'Lo siento, tuve problemas para procesar tu pregunta. ¿Podrías intentarlo de nuevo?',
-        timestamp: new Date()
+        text: errorText,
+        timestamp: new Date(),
+        error: true
       };
-      
+
       this.addMessage(errorMsg);
     } finally {
       this._isTyping$.next(false);
@@ -151,7 +193,7 @@ export class ChatbotService {
         JSON.stringify(recentMessages)
       );
     } catch (e) {
-      console.error('Error saving chat history');
+      this.logger.error('Error saving chat history');
     }
   }
 
@@ -167,7 +209,7 @@ export class ChatbotService {
         this._messages$.next(messages);
       }
     } catch (e) {
-      console.error('Error restoring chat history');
+      this.logger.error('Error restoring chat history');
     }
   }
 
