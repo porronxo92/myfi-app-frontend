@@ -1,4 +1,4 @@
-import { Injectable, signal, effect, computed } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 
 export type Theme = 'dark' | 'light';
 
@@ -7,7 +7,7 @@ const DEFAULT_THEME: Theme = 'dark';
 
 /**
  * ThemeService - Institutional Theme System
- * 
+ *
  * Manages light/dark theme switching with:
  * - localStorage persistence
  * - DOM data-theme attribute updates
@@ -18,10 +18,10 @@ const DEFAULT_THEME: Theme = 'dark';
 })
 export class ThemeService {
   private readonly THEME_KEY = STORAGE_KEY;
-  
+
   /** Current theme signal - reactive */
   readonly currentTheme = signal<Theme>(this.getStoredTheme());
-  
+
   /** Legacy compatibility */
   readonly isDarkMode = computed(() => this.currentTheme() === 'dark');
 
@@ -34,13 +34,6 @@ export class ThemeService {
   constructor() {
     // Apply theme immediately on construction
     this.applyTheme(this.currentTheme());
-    
-    // Sync DOM attribute whenever theme changes
-    effect(() => {
-      const theme = this.currentTheme();
-      this.applyTheme(theme);
-      this.persistTheme(theme);
-    });
   }
 
   /**
@@ -58,6 +51,8 @@ export class ThemeService {
   toggle(): void {
     const newTheme: Theme = this.currentTheme() === 'dark' ? 'light' : 'dark';
     this.currentTheme.set(newTheme);
+    this.applyTheme(newTheme);
+    this.persistTheme(newTheme);
   }
 
   /** Legacy compatibility */
@@ -70,6 +65,8 @@ export class ThemeService {
    */
   setTheme(theme: Theme): void {
     this.currentTheme.set(theme);
+    this.applyTheme(theme);
+    this.persistTheme(theme);
   }
 
   /** Legacy compatibility */
