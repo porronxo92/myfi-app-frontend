@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BudgetService } from '../../core/services/budget.service';
 import { CategoryService } from '../../core/services/category.service';
+import { LoggerService } from '../../core/services/logger.service';
 import { Budget, BudgetProgress, MONTH_NAMES, BudgetItemCreate } from '../../core/models/budget.model';
 import { Category } from '../../core/models/category.model';
 import { NavbarComponent } from '../../shared/components/navbar.component';
@@ -36,6 +37,7 @@ export class BudgetComponent implements OnInit {
   private budgetService = inject(BudgetService);
   private categoryService = inject(CategoryService);
   private router = inject(Router);
+  private logger = inject(LoggerService);
 
   // Expose Math for template
   Math = Math;
@@ -111,7 +113,7 @@ export class BudgetComponent implements OnInit {
         }
       },
       error: () => {
-        console.error('Error loading current budget');
+        this.logger.error('Error loading current budget');
       }
     });
   }
@@ -119,7 +121,7 @@ export class BudgetComponent implements OnInit {
   loadBudgetProgress(budgetId: string): void {
     this.budgetService.getBudgetProgress(budgetId).subscribe({
       error: () => {
-        console.error('Error loading budget progress');
+        this.logger.error('Error loading budget progress');
       }
     });
   }
@@ -296,7 +298,7 @@ export class BudgetComponent implements OnInit {
         this.resetForm();
       },
       error: (err) => {
-        console.error('Error creating budget');
+        this.logger.error('Error creating budget');
         alert(err.error?.detail || 'Error al crear presupuesto');
       }
     });
@@ -315,7 +317,7 @@ export class BudgetComponent implements OnInit {
         this.resetForm();
       },
       error: (err) => {
-        console.error('Error updating budget');
+        this.logger.error('Error updating budget');
         alert(err.error?.detail || 'Error al actualizar presupuesto');
       }
     });
@@ -385,7 +387,7 @@ export class BudgetComponent implements OnInit {
           this.loadBudgets();
         },
         error: () => {
-          console.error('Error deleting budget');
+          this.logger.error('Error deleting budget');
         }
       });
     }
@@ -422,7 +424,7 @@ export class BudgetComponent implements OnInit {
         this.loadBudgets();
       },
       error: () => {
-        console.error('Error copying budget');
+        this.logger.error('Error copying budget');
         alert('Error al copiar presupuesto');
       }
     });

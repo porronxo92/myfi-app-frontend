@@ -6,10 +6,11 @@
  * Coordina la carga de datos de múltiples endpoints en paralelo.
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { AnalyticsService } from './analytics.service';
 import { InsightsService } from './insights.service';
+import { LoggerService } from './logger.service';
 
 export interface DashboardFilters {
   year: number;              // Año seleccionado
@@ -91,6 +92,8 @@ export class DashboardStateService {
   public readonly data$ = this._data$.asObservable();
   public readonly loading$ = this._loading$.asObservable();
   public readonly error$ = this._error$.asObservable();
+
+  private logger = inject(LoggerService);
 
   constructor(
     private analyticsService: AnalyticsService,
@@ -281,7 +284,7 @@ export class DashboardStateService {
       this._data$.next(dashboardData);
       
     } catch (error: any) {
-      console.error('Error loading dashboard data');
+      this.logger.error('Error loading dashboard data');
       this._error$.next(error.message || 'Error al cargar datos del dashboard');
     } finally {
       this._loading$.next(false);
@@ -368,7 +371,7 @@ export class DashboardStateService {
         const filters = JSON.parse(savedFilters);
         this._filters$.next(filters);
       } catch (e) {
-        console.error('Error restoring filters');
+        this.logger.error('Error restoring filters');
       }
     }
   }

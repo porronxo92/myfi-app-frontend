@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserProfileService, UserProfile, UpdateUserProfile, ChangePasswordRequest } from '../../core/services/user-profile.service';
 import { AuthService } from '../../core/services/auth.service';
+import { LoggerService } from '../../core/services/logger.service';
 import { SafeImagePipe } from '../../shared/pipes/safe-image.pipe';
 
 @Component({
@@ -15,6 +16,7 @@ import { SafeImagePipe } from '../../shared/pipes/safe-image.pipe';
 })
 export class AccountSettingsComponent implements OnInit {
   router = inject(Router);
+  private logger = inject(LoggerService);
   
   userProfile = signal<UserProfile | null>(null);
   loading = signal<boolean>(false);
@@ -65,7 +67,7 @@ export class AccountSettingsComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        console.error('Error al cargar perfil');
+        this.logger.error('Error al cargar perfil');
         this.errorMessage.set('Error al cargar los datos del perfil');
         this.loading.set(false);
       }
@@ -135,13 +137,13 @@ export class AccountSettingsComponent implements OnInit {
           this.autoHideMessage();
         },
         error: () => {
-          console.error('Error al actualizar foto');
+          this.logger.error('Error al actualizar foto');
           this.errorMessage.set('Error al actualizar la foto de perfil');
           this.loading.set(false);
         }
       });
     }).catch(() => {
-      console.error('Error al comprimir imagen');
+      this.logger.error('Error al comprimir imagen');
       this.errorMessage.set('Error al procesar la imagen');
       this.loading.set(false);
     });
@@ -230,7 +232,7 @@ export class AccountSettingsComponent implements OnInit {
         this.autoHideMessage();
       },
       error: () => {
-        console.error('Error al eliminar foto');
+        this.logger.error('Error al eliminar foto');
         this.errorMessage.set('Error al eliminar la foto de perfil');
         this.loading.set(false);
       }
@@ -257,7 +259,7 @@ export class AccountSettingsComponent implements OnInit {
         this.autoHideMessage();
       },
       error: () => {
-        console.error('Error al actualizar perfil');
+        this.logger.error('Error al actualizar perfil');
         this.errorMessage.set('Error al actualizar el perfil');
         this.loading.set(false);
       }
@@ -293,7 +295,7 @@ export class AccountSettingsComponent implements OnInit {
         this.autoHideMessage();
       },
       error: () => {
-        console.error('Error al cambiar contraseña');
+        this.logger.error('Error al cambiar contraseña');
         this.errorMessage.set('Error al cambiar la contraseña');
         this.loading.set(false);
       }

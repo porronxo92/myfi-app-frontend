@@ -5,6 +5,7 @@ import { AccountService } from '../../core/services/account.service';
 import { TransactionService } from '../../core/services/transaction.service';
 import { CategoryService } from '../../core/services/category.service';
 import { AccountDetailService } from './services/account-detail.service';
+import { LoggerService } from '../../core/services/logger.service';
 import { MaskIbanPipe } from '../../shared/pipes/mask-iban.pipe';
 import { NavbarComponent } from '../../shared/components/navbar.component';
 import { AccountHeaderComponent } from './components/account-header.component';
@@ -184,6 +185,7 @@ export class AccountDetailComponent implements OnInit {
   private transactionService = inject(TransactionService);
   private categoryService = inject(CategoryService);
   private accountDetailService = inject(AccountDetailService);
+  private logger = inject(LoggerService);
 
   accountId: string = '';
 
@@ -245,14 +247,14 @@ export class AccountDetailComponent implements OnInit {
       account_id: this.accountId
     }).subscribe({
       next: () => {},
-      error: () => console.error('Error cargando transacciones')
+      error: () => this.logger.error('Error cargando transacciones')
     });
 
     // Cargar todas las categorías disponibles (globales + del usuario)
     if (this.categoryService.categories().length === 0) {
       this.categoryService.getAllAvailableCategories().subscribe({
         next: () => {},
-        error: () => console.error('Error cargando categorías')
+        error: () => this.logger.error('Error cargando categorías')
       });
     }
   }

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Category, CreateCategoryDto } from '../models/category.model';
+import { LoggerService } from './logger.service';
 
 interface PaginatedResponse<T> {
   items: T[];
@@ -17,6 +18,7 @@ interface PaginatedResponse<T> {
 })
 export class CategoryService {
   private http = inject(HttpClient);
+  private logger = inject(LoggerService);
   private apiUrl = `${environment.apiUrl}/categories`;
 
   // State signals
@@ -43,7 +45,7 @@ export class CategoryService {
         error: () => {
           this.error.set('Error al cargar las categorías');
           this.loading.set(false);
-          console.error('Error loading categories');
+          this.logger.error('Error loading categories');
         }
       })
     );
@@ -80,7 +82,7 @@ export class CategoryService {
         error: () => {
           this.error.set('Error al cargar las categorías');
           this.loading.set(false);
-          console.error('Error loading categories');
+          this.logger.error('Error loading categories');
         }
       })
     );

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NavbarComponent } from '../../shared/components/navbar.component';
@@ -7,6 +7,7 @@ import { UploadService } from '../../core/services/upload.service';
 import { AccountService } from '../../core/services/account.service';
 import { CategoryService } from '../../core/services/category.service';
 import { TransactionService } from '../../core/services/transaction.service';
+import { LoggerService } from '../../core/services/logger.service';
 import { UploadResponse, ProcessedTransaction, CreateTransactionDto, UploadStep } from '../../core/models/upload.model';
 import { Account } from '../../core/models/account.model';
 import { Category } from '../../core/models/category.model';
@@ -1541,6 +1542,8 @@ export class UploadStatementComponent implements OnInit {
     return accountId !== null && accountId !== undefined && this.selectedCount() > 0;
   });
 
+  private logger = inject(LoggerService);
+
   constructor(
     private router: Router,
     private uploadService: UploadService,
@@ -1559,7 +1562,7 @@ export class UploadStatementComponent implements OnInit {
         this.accounts.set(accounts);
       },
       error: () => {
-        console.error('Error loading accounts');
+        this.logger.error('Error loading accounts');
       }
     });
   }
@@ -1580,7 +1583,7 @@ export class UploadStatementComponent implements OnInit {
         this.currentStep.set('review');
       },
       error: (error: any) => {
-        console.error('Upload failed');
+        this.logger.error('Upload failed');
         alert('Error al procesar el extracto: ' + (error.message || 'Error desconocido'));
         this.currentStep.set('upload');
       }
@@ -1645,7 +1648,7 @@ export class UploadStatementComponent implements OnInit {
           saveNext(index + 1);
         },
         error: (error: any) => {
-          console.error('Error guardando transacción');
+          this.logger.error('Error guardando transacción');
           // Continuar con la siguiente aunque falle
           saveNext(index + 1);
         }
@@ -1748,7 +1751,7 @@ export class UploadStatementComponent implements OnInit {
         this.loadingCategories.set(false);
       },
       error: (err: any) => {
-        console.error('Error loading categories');
+        this.logger.error('Error loading categories');
         this.categoriesError.set('Error al cargar las categorías. Por favor, intenta de nuevo.');
         this.loadingCategories.set(false);
       }

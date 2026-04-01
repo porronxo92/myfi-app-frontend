@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { LoggerService } from './logger.service';
 import {
   Budget,
   BudgetListItem,
@@ -20,6 +21,7 @@ import {
 })
 export class BudgetService {
   private http = inject(HttpClient);
+  private logger = inject(LoggerService);
   private apiUrl = `${environment.apiUrl}/budgets`;
 
   // State signals
@@ -55,7 +57,7 @@ export class BudgetService {
         error: () => {
           this.error.set('Error al cargar presupuestos');
           this.loading.set(false);
-          console.error('Error fetching budgets');
+          this.logger.error('Error fetching budgets');
         }
       })
     );
@@ -77,7 +79,7 @@ export class BudgetService {
         error: () => {
           this.error.set('Error al cargar presupuesto actual');
           this.loading.set(false);
-          console.error('Error fetching current budget');
+          this.logger.error('Error fetching current budget');
         }
       })
     );
@@ -97,7 +99,7 @@ export class BudgetService {
         error: () => {
           this.error.set('Error al cargar presupuesto');
           this.loading.set(false);
-          console.error('Error fetching budget');
+          this.logger.error('Error fetching budget');
         }
       })
     );
@@ -122,7 +124,7 @@ export class BudgetService {
           this.currentProgress.set(progress);
         },
         error: () => {
-          console.error('Error fetching budget progress');
+          this.logger.error('Error fetching budget progress');
         }
       })
     );
@@ -150,7 +152,7 @@ export class BudgetService {
         error: () => {
           this.error.set('Error al crear presupuesto');
           this.loading.set(false);
-          console.error('Error creating budget');
+          this.logger.error('Error creating budget');
         }
       })
     );
@@ -175,7 +177,7 @@ export class BudgetService {
         error: () => {
           this.error.set('Error al copiar presupuesto');
           this.loading.set(false);
-          console.error('Error copying budget');
+          this.logger.error('Error copying budget');
         }
       })
     );
@@ -204,7 +206,7 @@ export class BudgetService {
         error: () => {
           this.error.set('Error al actualizar presupuesto');
           this.loading.set(false);
-          console.error('Error updating budget');
+          this.logger.error('Error updating budget');
         }
       })
     );
@@ -232,7 +234,7 @@ export class BudgetService {
         error: () => {
           this.error.set('Error al eliminar presupuesto');
           this.loading.set(false);
-          console.error('Error deleting budget');
+          this.logger.error('Error deleting budget');
         }
       })
     );

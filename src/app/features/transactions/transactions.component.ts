@@ -6,6 +6,7 @@ import { FooterComponent } from '../../shared/components/footer.component';
 import { TransactionService } from '../../core/services/transaction.service';
 import { CategoryService } from '../../core/services/category.service';
 import { AccountService } from '../../core/services/account.service';
+import { LoggerService } from '../../core/services/logger.service';
 import { Transaction } from '../../core/models/transaction.model';
 import { Category } from '../../core/models/category.model';
 import { Account } from '../../core/models/account.model';
@@ -275,6 +276,7 @@ export class TransactionsComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private accountService = inject(AccountService);
   private router = inject(Router);
+  private logger = inject(LoggerService);
 
   // State
   loading = signal<boolean>(true);
@@ -585,7 +587,7 @@ export class TransactionsComponent implements OnInit {
       error: (err) => {
         this.error.set('Error al cargar las transacciones');
         this.loading.set(false);
-        console.error('Error loading transactions');
+        this.logger.error('Error loading transactions');
       }
     });
 
@@ -595,7 +597,7 @@ export class TransactionsComponent implements OnInit {
         this.categories.set(categories);
       },
       error: () => {
-        console.error('Error loading categories');
+        this.logger.error('Error loading categories');
       }
     });
 
@@ -605,7 +607,7 @@ export class TransactionsComponent implements OnInit {
         this.accounts.set(accounts);
       },
       error: () => {
-        console.error('Error loading accounts');
+        this.logger.error('Error loading accounts');
       }
     });
   }
@@ -708,7 +710,7 @@ export class TransactionsComponent implements OnInit {
         this.loadData();
       },
       error: () => {
-        console.error('Error al eliminar transacción');
+        this.logger.error('Error al eliminar transacción');
         alert('Error al eliminar la transacción');
         this.showConfirmDelete.set(false);
         this.transactionToDelete.set(null);
