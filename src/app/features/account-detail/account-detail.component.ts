@@ -248,9 +248,9 @@ export class AccountDetailComponent implements OnInit {
       error: () => console.error('Error cargando transacciones')
     });
 
-    // Cargar categorías para los filtros (solo categorías con transacciones)
+    // Cargar todas las categorías disponibles (globales + del usuario)
     if (this.categoryService.categories().length === 0) {
-      this.categoryService.getCategories().subscribe({
+      this.categoryService.getAllAvailableCategories().subscribe({
         next: () => {},
         error: () => console.error('Error cargando categorías')
       });

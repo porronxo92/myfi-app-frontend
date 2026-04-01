@@ -125,7 +125,7 @@ export class BudgetComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.categoryService.getCategories().subscribe();
+    this.categoryService.getAllAvailableCategories().subscribe();
   }
 
   loadBudgets(): void {

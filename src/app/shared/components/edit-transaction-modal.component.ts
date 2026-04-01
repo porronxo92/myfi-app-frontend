@@ -486,7 +486,7 @@ export class EditTransactionModalComponent implements OnInit {
     this.loading.set(true);
 
     // Cargar categorías y cuentas en paralelo
-    this.categoryService.getCategories().subscribe({
+    this.categoryService.getAllAvailableCategories().subscribe({
       next: (categories) => {
         this.categories.set(categories);
       },

@@ -726,7 +726,7 @@ export class ManageCategoriesModalComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.categoryService.getCategories().subscribe();
+    this.categoryService.getAllAvailableCategories().subscribe();
   }
 
   startCreate(): void {

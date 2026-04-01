@@ -589,8 +589,8 @@ export class TransactionsComponent implements OnInit {
       }
     });
 
-    // Cargar categorías (solo las que tienen transacciones)
-    this.categoryService.getCategories().subscribe({
+    // Cargar todas las categorías disponibles (globales + del usuario)
+    this.categoryService.getAllAvailableCategories().subscribe({
       next: (categories) => {
         this.categories.set(categories);
       },
