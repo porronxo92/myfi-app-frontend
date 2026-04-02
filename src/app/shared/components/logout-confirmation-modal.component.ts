@@ -42,7 +42,7 @@ import { CommonModule } from '@angular/common';
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(11, 17, 32, 0.85);
+      background: var(--overlay-bg);
       display: flex;
       align-items: center;
       justify-content: center;

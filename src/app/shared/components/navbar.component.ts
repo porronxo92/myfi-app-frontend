@@ -520,7 +520,7 @@ import { SafeImagePipe } from '../pipes/safe-image.pipe';
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(11, 17, 32, 0.8);
+      background: var(--overlay-bg);
       z-index: 98;
       opacity: 0;
       visibility: hidden;

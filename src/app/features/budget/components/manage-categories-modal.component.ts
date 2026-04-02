@@ -213,7 +213,7 @@ type ViewMode = 'list' | 'create' | 'edit';
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(11, 17, 32, 0.85);
+      background: var(--overlay-bg);
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -655,7 +655,7 @@ type ViewMode = 'list' | 'create' | 'edit';
     .btn-spinner {
       width: 14px;
       height: 14px;
-      border: 2px solid rgba(11, 17, 32, 0.3);
+      border: 2px solid var(--border-subtle);
       border-top-color: var(--color-slate-950);
       border-radius: 50%;
       animation: spin 0.6s linear infinite;

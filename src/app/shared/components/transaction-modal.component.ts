@@ -263,7 +263,7 @@ const TRANSFER_INCOME_CATEGORY_ID = '94c7e01f-ee86-4684-9bb8-37e8a4d378e0'; // I
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(11, 17, 32, 0.85);
+      background: var(--overlay-bg);
       display: flex;
       align-items: center;
       justify-content: center;

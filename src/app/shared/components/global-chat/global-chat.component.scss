@@ -74,7 +74,7 @@ $z-panel: 2000;
   position: fixed;
   inset: 0;
   z-index: $z-backdrop;
-  background: rgba(11, 17, 32, 0.3);
+  background: var(--overlay-bg);
   animation: fadeIn 0.2s ease-out;
 }
 

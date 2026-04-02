@@ -266,7 +266,7 @@ export interface TransactionFilters {
         display: block;
         position: fixed;
         inset: 0;
-        background: rgba(11, 17, 32, 0.5);
+        background: var(--overlay-bg);
         z-index: 99;
         animation: fadeIn 0.2s ease-out;
       }
