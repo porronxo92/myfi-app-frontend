@@ -82,8 +82,8 @@ import { CommonModule } from '@angular/common';
 
     .btn svg {
       flex-shrink: 0;
-      width: 1rem;
-      height: 1rem;
+      width: 1.125rem;
+      height: 1.125rem;
     }
 
     .btn-secondary {
@@ -107,14 +107,46 @@ import { CommonModule } from '@angular/common';
       background: var(--color-accent-hover);
     }
 
+    /* Tablet and below - stack vertically */
     @media (max-width: 768px) {
       .page-header {
         flex-direction: column;
         align-items: stretch;
+        gap: var(--space-4);
+        margin-bottom: var(--space-5);
       }
 
       .header-actions {
-        justify-content: flex-start;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+        padding: var(--space-3) var(--space-4);
+      }
+    }
+
+    /* Small mobile - compact buttons */
+    @media (max-width: 480px) {
+      .page-title {
+        font-size: 1.125rem;
+      }
+
+      .page-subtitle {
+        font-size: 0.75rem;
+      }
+
+      .btn {
+        font-size: 0.75rem;
+        padding: var(--space-2) var(--space-3);
+        gap: var(--space-2);
+      }
+
+      .btn svg {
+        width: 1rem;
+        height: 1rem;
       }
     }
   `]
