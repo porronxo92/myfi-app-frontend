@@ -1,6 +1,7 @@
 import { Component, OnInit, effect } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
+import { ThemeService } from './core/services/theme.service';
 import { InactivityTimeoutService } from './core/services/inactivity-timeout.service';
 import { InactivityWarningModalComponent } from './shared/components/inactivity-warning-modal.component';
 import { GlobalChatComponent } from './shared/components/global-chat/global-chat.component';
@@ -37,8 +38,12 @@ export class AppComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private inactivityService: InactivityTimeoutService
+    private inactivityService: InactivityTimeoutService,
+    private themeService: ThemeService
   ) {
+    // Inicializar el tema al arrancar la aplicación
+    this.themeService.init();
+
     // Monitorear cambios en el estado de autenticación
     effect(() => {
       const isAuthenticated = this.authService.isAuthenticated();

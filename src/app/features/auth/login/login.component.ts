@@ -193,7 +193,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 
     /* ===== COLUMNA IZQUIERDA: BRANDING ===== */
     .branding-section {
-      
+      background: var(--bg-surface);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -238,7 +238,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 
     .brand-tagline {
       font-size: 1.125rem;
-      color: #94A3B8;
+      color: var(--text-muted);
       text-align: center;
       max-width: 400px;
       line-height: 1.6;
@@ -284,12 +284,12 @@ import { ThemeService } from '../../../core/services/theme.service';
       justify-content: center;
       gap: 2rem;
       padding-top: 2rem;
-      border-top: 1px solid #334155;
+      border-top: var(--border-subtle);
       z-index: 2;
     }
 
     .branding-footer a {
-      color: #64748B;
+      color: var(--text-muted);
       text-decoration: none;
       font-size: 0.875rem;
       font-weight: 500;
@@ -297,7 +297,7 @@ import { ThemeService } from '../../../core/services/theme.service';
     }
 
     .branding-footer a:hover {
-      color: #B5924C;
+      color: var(--color-accent);
     }
 
     /* ===== COLUMNA DERECHA: FORMULARIO ===== */
@@ -406,11 +406,11 @@ import { ThemeService } from '../../../core/services/theme.service';
     }
 
     .form-input.input-error {
-      border-color: #ef4444;
+      border-color: var(--color-negative);
     }
 
     .form-input.input-error:focus {
-      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
     }
 
     .password-toggle {
@@ -435,7 +435,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 
     .error-message {
       font-size: 0.8125rem;
-      color: #ef4444;
+      color: var(--color-negative);
     }
 
     .form-options {
@@ -455,7 +455,7 @@ import { ThemeService } from '../../../core/services/theme.service';
       width: 16px;
       height: 16px;
       cursor: pointer;
-      accent-color: #3b82f6;
+      accent-color: var(--color-accent);
     }
 
     .checkbox-text {
@@ -484,7 +484,7 @@ import { ThemeService } from '../../../core/services/theme.service';
       background: rgba(239, 68, 68, 0.1);
       border: 1px solid rgba(239, 68, 68, 0.3);
       border-radius: 12px;
-      color: #EF4444;
+      color: var(--color-negative);
       font-size: 0.875rem;
     }
 
