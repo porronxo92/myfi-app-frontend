@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { InactivityTimeoutService } from './core/services/inactivity-timeout.service';
 import { InactivityWarningModalComponent } from './shared/components/inactivity-warning-modal.component';
+import { GlobalChatComponent } from './shared/components/global-chat/global-chat.component';
 
 /**
  * Componente principal de la aplicación
@@ -17,13 +18,17 @@ import { InactivityWarningModalComponent } from './shared/components/inactivity-
   standalone: true,
   imports: [
     RouterOutlet,
-    InactivityWarningModalComponent
+    InactivityWarningModalComponent,
+    GlobalChatComponent
   ],
   template: `
     <router-outlet></router-outlet>
-    
+
     <!-- Modal de advertencia de timeout por inactividad -->
     <app-inactivity-warning-modal />
+
+    <!-- Chat global flotante (disponible en todas las páginas) -->
+    <app-global-chat />
   `,
   styles: []
 })

@@ -1,0 +1,174 @@
+<!-- Global Chat Component -->
+<!-- Solo se renderiza si el usuario está autenticado -->
+
+@if (isAuthenticated()) {
+
+  <!-- ================================ -->
+  <!-- FAB Button (siempre visible)    -->
+  <!-- ================================ -->
+  <button
+    class="chat-fab"
+    [class.open]="isOpen()"
+    (click)="toggleChat()"
+    [attr.aria-label]="isOpen() ? 'Cerrar chat' : 'Abrir asistente financiero'"
+    aria-haspopup="dialog"
+  >
+    @if (isOpen()) {
+      <!-- X icon -->
+      <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    } @else {
+      <!-- Chat icon -->
+      <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+      </svg>
+    }
+  </button>
+
+
+  <!-- ================================ -->
+  <!-- Chat Panel (cuando está abierto) -->
+  <!-- ================================ -->
+  @if (isOpen()) {
+    <!-- Backdrop semi-transparente -->
+    <div class="chat-backdrop" (click)="closeChat()"></div>
+
+    <!-- Panel lateral -->
+    <aside class="chat-panel" role="dialog" aria-modal="true" aria-labelledby="chat-title">
+
+      <!-- Header -->
+      <header class="chat-header">
+        <div class="header-avatar">
+          <img src="assets/avatar/mify_avatar.png" alt="Mify" loading="lazy">
+        </div>
+        <div class="header-info">
+          <h3 id="chat-title">Mify</h3>
+          <span class="header-status">
+            <span class="status-dot"></span>
+            En línea
+          </span>
+        </div>
+        <button class="btn-close" (click)="closeChat()" aria-label="Cerrar chat">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </header>
+
+
+      <!-- Messages Area -->
+      <div class="chat-messages" #messagesContainer>
+        @for (msg of messages; track trackByMessageId($index, msg)) {
+          <div
+            class="message-row"
+            [class.user]="msg.sender === 'user'"
+            [class.error]="msg.error"
+          >
+            <!-- Avatar -->
+            <div class="message-avatar">
+              @if (msg.sender === 'agent') {
+                <img src="assets/avatar/mify_avatar.png" alt="Mify">
+              } @else {
+                @if (user()?.profile_picture) {
+                  <img [src]="user()!.profile_picture | safeImage" alt="Tú">
+                } @else {
+                  <span class="avatar-fallback">
+                    {{ (user()?.full_name || user()?.email || 'U')[0].toUpperCase() }}
+                  </span>
+                }
+              }
+            </div>
+
+            <!-- Message Bubble -->
+            <div class="message-bubble">
+              <p class="message-text">{{ msg.text }}</p>
+              <time class="message-time">{{ formatTime(msg.timestamp) }}</time>
+            </div>
+          </div>
+        }
+
+        <!-- Typing Indicator -->
+        @if (isTyping$ | async) {
+          <div class="message-row">
+            <div class="message-avatar">
+              <img src="assets/avatar/mify_avatar.png" alt="Mify">
+            </div>
+            <div class="typing-indicator">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        }
+      </div>
+
+
+      <!-- Suggested Questions (solo cuando hay pocos mensajes) -->
+      @if (messages.length <= 1) {
+        <div class="chat-suggestions">
+          <p class="suggestions-label">Preguntas sugeridas:</p>
+          <div class="suggestions-list">
+            @for (question of suggestedQuestions.slice(0, 3); track question) {
+              <button class="suggestion-chip" (click)="sendMessage(question)">
+                {{ question }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+
+      <!-- Input Area -->
+      <footer class="chat-input">
+        <div class="input-wrapper">
+          <textarea
+            [(ngModel)]="userInput"
+            (keydown.enter)="onEnter($any($event))"
+            placeholder="Escribe tu pregunta..."
+            [maxlength]="MAX_MESSAGE_LENGTH"
+            [disabled]="!!(isTyping$ | async) || !!(actionInProgress$ | async)"
+            rows="1"
+          ></textarea>
+          <button
+            class="btn-send"
+            (click)="sendMessage()"
+            [disabled]="!userInput.trim() || !!(isTyping$ | async) || !!(actionInProgress$ | async)"
+            aria-label="Enviar mensaje"
+          >
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            </svg>
+          </button>
+        </div>
+        <div class="input-footer">
+          <span class="input-hint">Enter para enviar</span>
+          <span class="char-count" [class.warning]="userInput.length > 1800">
+            {{ userInput.length }}/{{ MAX_MESSAGE_LENGTH }}
+          </span>
+        </div>
+      </footer>
+
+    </aside>
+  }
+
+
+  <!-- ================================ -->
+  <!-- Action Confirmation Dialog       -->
+  <!-- ================================ -->
+  @if (pendingAction$ | async; as action) {
+    <app-confirm-dialog
+      [title]="getActionTitle(action)"
+      [message]="action.description"
+      submessage="¿Deseas ejecutar esta acción?"
+      confirmText="Ejecutar"
+      cancelText="Cancelar"
+      type="warning"
+      (confirm)="confirmAction()"
+      (cancel)="cancelAction()"
+    ></app-confirm-dialog>
+  }
+
+}

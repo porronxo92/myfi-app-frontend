@@ -7,11 +7,9 @@ import { AccountService } from '../../core/services/account.service';
 import { TransactionService } from '../../core/services/transaction.service';
 import { CategoryService } from '../../core/services/category.service';
 import { DashboardStateService } from '../../core/services/dashboard-state.service';
-import { ChatbotService } from '../../core/services/chatbot.service';
 import { AIQuotaService } from '../../core/services/ai-quota.service';
 import { NavbarComponent } from '../../shared/components/navbar.component';
 import { FooterComponent } from '../../shared/components/footer.component';
-import { FinancialChatbotComponent } from './components/financial-chatbot.component';
 import { HealthCardComponent } from './components/health-card.component';
 import { ChartsSectionComponent } from './components/charts-section.component';
 
@@ -22,7 +20,6 @@ import { ChartsSectionComponent } from './components/charts-section.component';
     CommonModule,
     NavbarComponent,
     FooterComponent,
-    FinancialChatbotComponent,
     HealthCardComponent,
     ChartsSectionComponent
   ],
@@ -35,7 +32,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private transactionService = inject(TransactionService);
   private categoryService = inject(CategoryService);
   private dashboardState = inject(DashboardStateService);
-  private chatbotService = inject(ChatbotService);
   private aiQuotaService = inject(AIQuotaService);
 
   // Quota warning signals (exposed to template)
@@ -57,9 +53,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   dashboardLoading$ = this.dashboardState.loading$;
   dashboardError$ = this.dashboardState.error$;
   dashboardFilters$ = this.dashboardState.filters$;
-
-  // Chatbot state
-  isChatbotOpen = signal(false);
 
   // Loading & Error states
   isLoading = computed(() => 
@@ -250,20 +243,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onRefresh(): void {
     this.loadData();
     this.loadDashboardAnalytics();
-  }
-
-  /**
-   * Toggle chatbot sidebar
-   */
-  toggleChatbot(): void {
-    this.isChatbotOpen.set(!this.isChatbotOpen());
-  }
-
-  /**
-   * Close chatbot
-   */
-  closeChatbot(): void {
-    this.isChatbotOpen.set(false);
   }
 
   /**
