@@ -293,6 +293,29 @@
 }
 
 /* ========================================
+   RESPONSIVE BREAKPOINTS
+   ======================================== */
+
+$breakpoint-xs: 375px;   // Móviles pequeños
+$breakpoint-sm: 480px;   // Móviles grandes
+$breakpoint-md: 768px;   // Tablets
+$breakpoint-lg: 1024px;  // Tablets landscape / Desktop pequeño
+$breakpoint-xl: 1200px;  // Desktop
+
+// Mixins para mobile-first
+@mixin mobile-only {
+  @media (max-width: #{$breakpoint-md - 1px}) { @content; }
+}
+
+@mixin tablet-up {
+  @media (min-width: $breakpoint-md) { @content; }
+}
+
+@mixin desktop-up {
+  @media (min-width: $breakpoint-lg) { @content; }
+}
+
+/* ========================================
    GLOBAL RESET & BASE STYLES
    ======================================== */
 
@@ -502,11 +525,13 @@ html, body {
     font-size: 0.9375rem;
   }
   
-  /* Icon Only Button */
+  /* Icon Only Button - Touch-friendly (44px minimum per WCAG) */
   &.btn-icon {
     padding: var(--space-2);
-    width: 36px;
-    height: 36px;
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
   }
 }
 

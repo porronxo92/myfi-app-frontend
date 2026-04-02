@@ -708,27 +708,57 @@ import { FormsModule } from '@angular/forms';
       font-size: 0.8125rem;
     }
 
-    /* Review Layout */
+    /* Review Layout - Mobile First */
     .review-step {
       padding: 0;
       overflow: hidden;
     }
 
     .review-layout {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      min-height: auto;
+    }
+
+    @media (min-width: 1024px) {
+      .review-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        min-height: 600px;
+      }
     }
 
     /* Sidebar */
     .summary-sidebar {
       background: var(--bg-elevated);
-      padding: var(--space-5);
-      border-right: var(--border-subtle);
+      padding: var(--space-4);
+      border-bottom: var(--border-subtle);
       display: flex;
       flex-direction: column;
       gap: var(--space-4);
-      overflow-y: auto;
+      overflow-y: visible;
+      order: 2; /* Below content on mobile */
+    }
+
+    @media (min-width: 1024px) {
+      .summary-sidebar {
+        padding: var(--space-5);
+        border-bottom: none;
+        border-right: var(--border-subtle);
+        overflow-y: auto;
+        order: 0; /* Reset order on desktop */
+      }
+    }
+
+    /* Main review content */
+    .review-main {
+      order: 1; /* Above sidebar on mobile */
+    }
+
+    @media (min-width: 1024px) {
+      .review-main {
+        order: 0;
+      }
     }
 
     .summary-card,
@@ -1503,18 +1533,6 @@ import { FormsModule } from '@angular/forms';
 
     .category-option-name {
       font-weight: 500;
-    }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-      .review-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .summary-sidebar {
-        border-right: none;
-        border-bottom: var(--border-subtle);
-      }
     }
   `]
 })

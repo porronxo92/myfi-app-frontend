@@ -807,6 +807,56 @@
   }
 }
 
+// Mobile card layout for portfolio table
+@media (max-width: 767px) {
+  .positions-table {
+    thead { display: none; }
+
+    tbody .position-row {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+      border: var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      margin-bottom: var(--space-3);
+
+      td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--space-2) 0;
+        border: none;
+        text-align: left !important;
+
+        &::before {
+          content: attr(data-label);
+          font-size: 0.6875rem;
+          font-weight: 600;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          flex-shrink: 0;
+          margin-right: var(--space-3);
+        }
+
+        // Asset cell takes full width
+        &:first-child {
+          &::before { display: none; }
+          border-bottom: var(--border-subtle);
+          padding-bottom: var(--space-3);
+          margin-bottom: var(--space-2);
+        }
+      }
+
+      // Hide less important columns on mobile
+      td:nth-child(5), // Cantidad
+      td:nth-child(6)  // Precio compra
+      { display: none; }
+    }
+  }
+}
+
 // ============================================
 // 8. INSIGHTS SECTION
 // ============================================

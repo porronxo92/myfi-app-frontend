@@ -338,7 +338,7 @@ export class ChatbotService {
     const welcomeMsg: ChatMessage = {
       id: this.generateMessageId(),
       sender: 'agent',
-      text: '¡Hola! 👋 Soy tu asistente financiero personal. Puedo ayudarte a entender tus finanzas, analizar gastos y darte recomendaciones. ¿En qué puedo ayudarte hoy?',
+      text: '¡Hola! 👋 Soy Mify, tu asistente financiero personal. Puedo ayudarte a entender tus finanzas, analizar gastos y darte recomendaciones. ¿En qué puedo ayudarte hoy?',
       timestamp: new Date()
     };
     

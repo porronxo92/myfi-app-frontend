@@ -150,7 +150,7 @@
                   </td>
 
                   <!-- Precio Actual / Variación Diaria -->
-                  <td class="text-right">
+                  <td class="text-right" data-label="Precio">
                     <div class="price-variation">
                       <strong class="current-price">{{ formatCurrency(position.currentPrice) }}</strong>
                       <span class="daily-change" [ngClass]="getValueClass(position.changePercent)">
@@ -160,7 +160,7 @@
                   </td>
 
                   <!-- Mi Posición (EDITABLE) -->
-                  <td class="text-right">
+                  <td class="text-right" data-label="Posición">
                     @if (editingPosition() === position.id) {
                       <!-- Modo Edición -->
                       <div class="position-edit">
@@ -212,12 +212,12 @@
                   </td>
 
                   <!-- Valor Actual -->
-                  <td class="text-right">
+                  <td class="text-right" data-label="Valor">
                     <strong class="current-value">{{ formatCurrency(position.totalValue) }}</strong>
                   </td>
 
                   <!-- P&G No Realizadas -->
-                  <td class="text-right">
+                  <td class="text-right" data-label="P&G">
                     <div class="unrealized-pnl" [ngClass]="getValueClass(position.totalGainLoss)">
                       <strong class="pnl-amount">{{ formatCurrency(position.totalGainLoss) }}</strong>
                       <span class="pnl-percent">{{ formatPercent(position.totalGainLossPercent) }}</span>
@@ -225,12 +225,12 @@
                   </td>
 
                   <!-- % de la Cartera -->
-                  <td class="text-right">
+                  <td class="text-right" data-label="% Cartera">
                     <strong class="weight-percent">{{ calculatePortfolioWeight(position) }}%</strong>
                   </td>
 
                   <!-- Acciones -->
-                  <td class="text-center">
+                  <td class="text-center" data-label="Acciones">
                     <div class="action-buttons">
                       <button class="btn-sell" (click)="openSellModal(position)" title="Vender Posición">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">

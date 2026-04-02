@@ -304,9 +304,18 @@
   
   .summary-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--space-4);
-    
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+
+    @media (min-width: 480px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+    }
+
     .summary-card {
       background: var(--bg-card);
       border-radius: var(--radius-lg);
@@ -1144,11 +1153,7 @@
       grid-template-columns: 1fr;
     }
   }
-  
-  .hero-section .summary-cards {
-    grid-template-columns: 1fr;
-  }
-  
+
   .health-section .health-card .health-header {
     flex-direction: column;
     align-items: flex-start;

@@ -85,8 +85,25 @@ export interface TransactionFilters {
 
         <!-- Contenido con Layout Grid -->
         <div class="content-grid" *ngIf="!loading() && !error()">
+          <!-- Mobile Filter Toggle Button -->
+          <button class="btn-filters-mobile" (click)="toggleMobileFilters()">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+            </svg>
+            Filtros
+            <span class="filter-count" *ngIf="activeFilterCount() > 0">{{ activeFilterCount() }}</span>
+          </button>
+
+          <!-- Mobile Backdrop -->
+          <div class="mobile-backdrop" *ngIf="showMobileFilters()" (click)="closeMobileFilters()"></div>
+
           <!-- Sidebar Izquierdo: Filtros (25%) -->
-          <aside class="sidebar-filters">
+          <aside class="sidebar-filters" [class.open]="showMobileFilters()">
+            <button class="btn-close-filters" (click)="closeMobileFilters()">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
             <app-transaction-filters
               [categories]="categories()"
               [accounts]="accounts()"
@@ -164,7 +181,7 @@ export interface TransactionFilters {
           (transactionUpdated)="onTransactionUpdated($event)"
         ></app-edit-transaction-modal>
       </main>
-      
+
       <app-footer></app-footer>
     </div>
   `,
@@ -177,45 +194,166 @@ export interface TransactionFilters {
     .main-content {
       max-width: 1600px;
       margin: 0 auto;
-      padding: var(--space-6);
+      padding: var(--space-4);
+    }
+
+    @media (min-width: 768px) {
+      .main-content {
+        padding: var(--space-6);
+      }
     }
 
     .content-grid {
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      gap: var(--space-6);
-      align-items: start;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
     }
 
+    @media (min-width: 1024px) {
+      .content-grid {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: var(--space-6);
+        align-items: start;
+      }
+    }
+
+    /* Mobile filter toggle button */
+    .btn-filters-mobile {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      background: var(--bg-card);
+      border: var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 100ms ease;
+    }
+
+    .btn-filters-mobile:hover {
+      background: var(--bg-elevated);
+      border-color: var(--color-accent);
+    }
+
+    .btn-filters-mobile .filter-count {
+      background: var(--color-accent);
+      color: var(--color-slate-950);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      min-width: 18px;
+      text-align: center;
+    }
+
+    @media (min-width: 1024px) {
+      .btn-filters-mobile {
+        display: none;
+      }
+    }
+
+    /* Mobile backdrop */
+    .mobile-backdrop {
+      display: none;
+    }
+
+    @media (max-width: 1023px) {
+      .mobile-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(11, 17, 32, 0.5);
+        z-index: 99;
+        animation: fadeIn 0.2s ease-out;
+      }
+    }
+
+    /* Sidebar filters */
     .sidebar-filters {
       position: sticky;
       top: var(--space-6);
     }
 
+    @media (max-width: 1023px) {
+      .sidebar-filters {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 320px;
+        max-width: 85vw;
+        background: var(--bg-surface);
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+        padding: var(--space-4);
+        padding-top: var(--space-12);
+      }
+
+      .sidebar-filters.open {
+        transform: translateX(0);
+      }
+    }
+
+    /* Close filters button (mobile only) */
+    .btn-close-filters {
+      display: none;
+    }
+
+    @media (max-width: 1023px) {
+      .btn-close-filters {
+        display: flex;
+        position: absolute;
+        top: var(--space-4);
+        right: var(--space-4);
+        padding: var(--space-2);
+        background: var(--bg-hover);
+        border: none;
+        border-radius: var(--radius-md);
+        color: var(--text-muted);
+        cursor: pointer;
+      }
+
+      .btn-close-filters:hover {
+        background: var(--bg-active);
+        color: var(--text-primary);
+      }
+    }
+
     .main-content-area {
       display: flex;
       flex-direction: column;
-      gap: var(--space-5);
+      gap: var(--space-4);
+    }
+
+    @media (min-width: 768px) {
+      .main-content-area {
+        gap: var(--space-5);
+      }
     }
 
     .kpis-and-chart-container {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
     }
 
-    @media (max-width: 1024px) {
-      .content-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .sidebar-filters {
-        position: static;
-      }
-
+    @media (min-width: 768px) {
       .kpis-and-chart-container {
-        grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: var(--space-5);
       }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .loading-container,
@@ -310,7 +448,22 @@ export class TransactionsComponent implements OnInit {
   showEditModal = signal<boolean>(false);
   transactionToEdit = signal<Transaction | null>(null);
 
+  // Mobile filters state
+  showMobileFilters = signal<boolean>(false);
+
   // Computed
+  activeFilterCount = computed(() => {
+    const filters = this.activeFilters();
+    let count = 0;
+    if (filters.search) count++;
+    if (filters.type) count++;
+    if (filters.categoryIds && filters.categoryIds.length > 0) count++;
+    if (filters.accountId) count++;
+    if (filters.amountMin !== undefined) count++;
+    if (filters.amountMax !== undefined) count++;
+    return count;
+  });
+
   filteredTransactions = computed(() => {
     let filtered = this.transactions();
     const filters = this.activeFilters();
@@ -614,12 +767,13 @@ export class TransactionsComponent implements OnInit {
 
   handleFiltersChange(filters: TransactionFilters): void {
     this.currentPage.set(1); // Reset a la primera página
-    
+    this.closeMobileFilters(); // Close mobile sidebar after applying
+
     // Detectar si cambió el periodo (mes o año)
     const monthChanged = filters.selectedMonth !== undefined && filters.selectedMonth !== this.selectedMonth();
     const yearChanged = filters.selectedYear !== undefined && filters.selectedYear !== this.selectedYear();
     const periodChanged = monthChanged || yearChanged;
-    
+
     // Si cambió el periodo, actualizar y recargar desde backend
     if (periodChanged) {
       if (filters.selectedMonth !== undefined) {
@@ -628,11 +782,11 @@ export class TransactionsComponent implements OnInit {
       if (filters.selectedYear !== undefined) {
         this.selectedYear.set(filters.selectedYear);
       }
-      
+
       // Recargar transacciones con el nuevo periodo
       this.loadData(filters.selectedMonth, filters.selectedYear);
     }
-    
+
     // Actualizar filtros (sin recargar transacciones)
     this.activeFilters.set(filters);
   }
@@ -722,7 +876,16 @@ export class TransactionsComponent implements OnInit {
     this.showConfirmDelete.set(false);
     this.transactionToDelete.set(null);
   }
-  
+
+  // Mobile filters
+  toggleMobileFilters(): void {
+    this.showMobileFilters.set(!this.showMobileFilters());
+  }
+
+  closeMobileFilters(): void {
+    this.showMobileFilters.set(false);
+  }
+
   closeEditModal(): void {
     this.showEditModal.set(false);
     this.transactionToEdit.set(null);
