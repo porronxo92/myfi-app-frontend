@@ -9,7 +9,10 @@ import {
   RegisterRequest,
   TokenResponse,
   RefreshTokenRequest,
-  AuthState
+  AuthState,
+  ForgotPasswordResponse,
+  ResetPasswordResponse,
+  VerifyTokenResponse
 } from '../models/user.model';
 import { environment } from '../../../environments/environment';
 import { SecurityConfigService } from './security-config.service';
@@ -111,6 +114,47 @@ export class AuthService {
     return this.http.post<User>(
       `${environment.apiUrl}/users/`,
       data
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * FORGOT PASSWORD - Solicitar reset de contraseña
+   * POST /api/users/forgot-password
+   *
+   * NOTA: El backend siempre retorna éxito para no revelar si el email existe
+   */
+  forgotPassword(email: string): Observable<ForgotPasswordResponse> {
+    return this.http.post<ForgotPasswordResponse>(
+      `${environment.apiUrl}/users/forgot-password`,
+      { email }
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * VERIFY RESET TOKEN - Verificar validez del token de reset
+   * GET /api/users/verify-reset-token?token=xxx
+   */
+  verifyResetToken(token: string): Observable<VerifyTokenResponse> {
+    return this.http.get<VerifyTokenResponse>(
+      `${environment.apiUrl}/users/verify-reset-token`,
+      { params: { token } }
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * RESET PASSWORD - Establecer nueva contraseña con token
+   * POST /api/users/reset-password
+   */
+  resetPassword(token: string, newPassword: string): Observable<ResetPasswordResponse> {
+    return this.http.post<ResetPasswordResponse>(
+      `${environment.apiUrl}/users/reset-password`,
+      { token, new_password: newPassword }
     ).pipe(
       catchError(this.handleError)
     );

@@ -64,17 +64,30 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
 /**
  * Determina si un endpoint es público (no requiere autenticación)
- * 
+ *
  * CRÍTICO: Usar endsWith() para evitar falsos positivos
+ * Para endpoints con query params, usar includes()
  */
 function isPublicEndpoint(url: string): boolean {
-  const publicPaths = [
+  const publicPathsExact = [
     '/api/users/login',
     '/api/users/register',
     '/api/users/refresh',
+    '/api/users/forgot-password',
+    '/api/users/reset-password',
     '/health'
   ];
 
+  // Endpoints que pueden tener query params
+  const publicPathsContains = [
+    '/api/users/verify-reset-token'
+  ];
+
   // Verificar si la URL termina exactamente en alguno de estos paths
-  return publicPaths.some(path => url.endsWith(path));
+  const isExactMatch = publicPathsExact.some(path => url.endsWith(path));
+
+  // Verificar si la URL contiene alguno de estos paths (para query params)
+  const isContainsMatch = publicPathsContains.some(path => url.includes(path));
+
+  return isExactMatch || isContainsMatch;
 }
