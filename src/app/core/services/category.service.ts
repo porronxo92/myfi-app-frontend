@@ -92,7 +92,7 @@ export class CategoryService {
     return this.http.post<Category>(this.apiUrl, category, {
       withCredentials: true
     }).pipe(
-      tap(() => this.getCategories().subscribe())
+      tap(() => this.getAllAvailableCategories().subscribe())
     );
   }
 
@@ -100,7 +100,7 @@ export class CategoryService {
     return this.http.put<Category>(`${this.apiUrl}/${id}`, category, {
       withCredentials: true
     }).pipe(
-      tap(() => this.getCategories().subscribe())
+      tap(() => this.getAllAvailableCategories().subscribe())
     );
   }
 
@@ -108,7 +108,7 @@ export class CategoryService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, {
       withCredentials: true
     }).pipe(
-      tap(() => this.getCategories().subscribe())
+      tap(() => this.getAllAvailableCategories().subscribe())
     );
   }
 

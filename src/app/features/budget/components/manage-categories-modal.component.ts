@@ -789,20 +789,28 @@ export class ManageCategoriesModalComponent implements OnInit {
   }
 
   confirmDelete(category: Category): void {
-    const confirmed = confirm(
-      `¿Estás seguro de eliminar la categoría "${category.name}"?\n\n` +
-      `Esta acción no se puede deshacer.`
-    );
+    const message = category.transaction_count && category.transaction_count > 0
+      ? `¿Estás seguro de eliminar la categoría "${category.name}"?\n\n` +
+        `Esta categoría tiene ${category.transaction_count} transacción(es) asociada(s).\n` +
+        `Las transacciones no se eliminarán, pero quedarán sin categoría.\n\n` +
+        `Esta acción no se puede deshacer.`
+      : `¿Estás seguro de eliminar la categoría "${category.name}"?\n\n` +
+        `Esta acción no se puede deshacer.`;
+
+    const confirmed = confirm(message);
 
     if (!confirmed) return;
 
     this.categoryService.deleteCategory(category.id).subscribe({
       next: () => {
         this.categoriesUpdated.emit();
+        alert(`Categoría "${category.name}" eliminada correctamente.`);
       },
-      error: () => {
-        console.error('Error al eliminar categoría');
-        alert('Error al eliminar la categoría. Puede que tenga transacciones asociadas.');
+      error: (error) => {
+        console.error('Error al eliminar categoría:', error);
+        const errorMessage = error?.error?.detail || error?.message ||
+          'Error al eliminar la categoría. Puede que tenga transacciones asociadas o sea una categoría del sistema.';
+        alert(errorMessage);
       }
     });
   }
