@@ -83,7 +83,7 @@
 
             <!-- Message Bubble -->
             <div class="message-bubble">
-              <p class="message-text">{{ msg.text }}</p>
+              <div class="message-text" [innerHTML]="msg.text | markdown"></div>
               <time class="message-time">{{ formatTime(msg.timestamp) }}</time>
             </div>
           </div>

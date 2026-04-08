@@ -30,6 +30,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ChatbotService, ChatMessage, ProposedAction } from '../../../core/services/chatbot.service';
 import { ConfirmDialogComponent } from '../confirm-dialog.component';
 import { SafeImagePipe } from '../../pipes/safe-image.pipe';
+import { MarkdownPipe } from '../../pipes/markdown.pipe';
 
 @Component({
   selector: 'app-global-chat',
@@ -38,7 +39,8 @@ import { SafeImagePipe } from '../../pipes/safe-image.pipe';
     CommonModule,
     FormsModule,
     ConfirmDialogComponent,
-    SafeImagePipe
+    SafeImagePipe,
+    MarkdownPipe
   ],
   templateUrl: './global-chat.component.html',
   styleUrls: ['./global-chat.component.scss']

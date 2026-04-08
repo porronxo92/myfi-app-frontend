@@ -299,6 +299,38 @@ $z-panel: 2000;
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
+
+  // Estilos para markdown renderizado
+  strong {
+    font-weight: 700;
+  }
+
+  em {
+    font-style: italic;
+  }
+
+  code {
+    font-family: var(--font-data);
+    font-size: 0.8125rem;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+    padding: 0.1em 0.35em;
+  }
+
+  ul {
+    margin: 0.4rem 0;
+    padding-left: 1.25rem;
+    list-style: disc;
+
+    li {
+      margin-bottom: 0.25rem;
+      line-height: 1.4;
+    }
+  }
+
+  br + br {
+    display: none; // Evitar doble salto tras listas
+  }
 }
 
 .message-time {
