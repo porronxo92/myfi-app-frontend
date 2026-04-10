@@ -29,16 +29,9 @@ export interface ChatMessage {
   proposedAction?: ProposedAction;
 }
 
-/** Formato de mensaje para enviar al API */
-export interface ChatHistoryMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
 /** Request al endpoint /api/insights/chat */
 export interface ChatRequest {
   message: string;
-  conversation_history: ChatHistoryMessage[];
 }
 
 /** Acción propuesta por el agente (requiere confirmación) */
@@ -94,27 +87,6 @@ export class ChatbotService {
   }
 
   // ============================================
-  // CONVERSATION HISTORY
-  // ============================================
-
-  /**
-   * Convierte los mensajes internos al formato API para conversation_history
-   * Mapea sender 'user'|'agent' a role 'user'|'assistant'
-   * Limita a los últimos 50 mensajes, excluye typing/error
-   */
-  private buildConversationHistory(): ChatHistoryMessage[] {
-    const messages = this._messages$.value;
-
-    return messages
-      .filter(msg => !msg.isTyping && !msg.error)
-      .slice(-50)
-      .map(msg => ({
-        role: (msg.sender === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
-        content: msg.text
-      }));
-  }
-
-  // ============================================
   // SEND MESSAGE
   // ============================================
 
@@ -166,10 +138,9 @@ export class ChatbotService {
     this._isTyping$.next(true);
 
     try {
-      // Construir request con historial de conversación
+      // Construir request (el historial lo gestiona el servidor)
       const request: ChatRequest = {
-        message: trimmedMessage,
-        conversation_history: this.buildConversationHistory()
+        message: trimmedMessage
       };
 
       // Llamar al endpoint del chat
@@ -207,9 +178,13 @@ export class ChatbotService {
       let errorText: string;
 
       // Verificar si es un error de cuota (enriquecido por el interceptor)
-      if (error instanceof HttpErrorResponse && error.status === 429) {
+      if (error instanceof HttpErrorResponse && error.status === 422) {
+        errorText = 'El mensaje es demasiado largo (máx. 2000 caracteres).';
+      } else if (error instanceof HttpErrorResponse && error.status === 429) {
         errorText = error.error?._userMessage ||
                     'Has alcanzado el límite de consultas. Por favor, intenta más tarde.';
+      } else if (error instanceof HttpErrorResponse && error.status === 500) {
+        errorText = 'Error interno del servidor. Por favor, inténtalo de nuevo.';
       } else {
         errorText = 'Lo siento, tuve problemas para procesar tu pregunta. ¿Podrías intentarlo de nuevo?';
       }
