@@ -65,13 +65,15 @@ export interface EnrichedPosition extends UserPosition {
  * Resumen del portfolio completo
  */
 export interface PortfolioSummary {
-  totalValue: number; // Suma de todos los totalValue
+  totalValue: number; // investedValue + cashBalance
   totalInvested: number; // Suma de (averagePrice * shares)
   totalGainLoss: number; // totalValue - totalInvested
   totalGainLossPercent: number; // (totalGainLoss / totalInvested) * 100
   dayChange: number; // Cambio total del día
   dayChangePercent: number;
   positionsCount: number;
+  cashBalance: number; // Efectivo no invertido
+  investedValue: number; // Valor solo de posiciones (sin cash)
 }
 
 /**

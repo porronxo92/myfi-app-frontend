@@ -122,7 +122,9 @@ export class InvestmentService {
             totalGainLossPercent: 0,
             dayChange: 0,
             dayChangePercent: 0,
-            positionsCount: 0
+            positionsCount: 0,
+            cashBalance: 0,
+            investedValue: 0
           },
           insights: []
         });
@@ -174,6 +176,13 @@ export class InvestmentService {
    */
   deletePosition(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  /**
+   * Actualizar el balance de efectivo no invertido del usuario
+   */
+  updateCashBalance(cashBalance: number): Observable<{ cashBalance: number }> {
+    return this.http.put<{ cashBalance: number }>(`${this.apiUrl}/cash`, { cashBalance });
   }
 }
 

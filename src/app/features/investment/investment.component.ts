@@ -36,7 +36,9 @@ export class InvestmentComponent implements OnInit {
     totalGainLossPercent: 0,
     dayChange: 0,
     dayChangePercent: 0,
-    positionsCount: 0
+    positionsCount: 0,
+    cashBalance: 0,
+    investedValue: 0
   });
   insights = signal<InvestmentInsight[]>([]);
   loading = signal<boolean>(true);
@@ -44,9 +46,14 @@ export class InvestmentComponent implements OnInit {
   searchResults = signal<StockSearchResult[]>([]);
   searchLoading = signal<boolean>(false);
   showSearchResults = signal<boolean>(false);
-  
+
   // Tab filter for active/sold positions
   selectedTab = signal<'active' | 'sold'>('active');
+
+  // State para edición de cash balance
+  editingCash = signal<boolean>(false);
+  cashEditValue = signal<number>(0);
+  savingCash = signal<boolean>(false);
 
   // Modal state para agregar inversión
   showAddModal = signal<boolean>(false);
@@ -506,9 +513,60 @@ export class InvestmentComponent implements OnInit {
   calculatePortfolioWeight(position: EnrichedPosition): string {
     const totalValue = this.summary().totalValue;
     if (!totalValue || totalValue === 0) return '0.00';
-    
+
     const weight = (position.totalValue / totalValue) * 100;
     return weight.toFixed(2);
+  }
+
+  /**
+   * Calcular el peso del cash en la cartera (%)
+   */
+  calculateCashWeight(): string {
+    const totalValue = this.summary().totalValue;
+    const cash = this.summary().cashBalance;
+    if (!totalValue || totalValue === 0) return '0.00';
+    return ((cash / totalValue) * 100).toFixed(2);
+  }
+
+  /**
+   * Iniciar edición del cash balance
+   */
+  startEditCash(): void {
+    this.cashEditValue.set(this.summary().cashBalance);
+    this.editingCash.set(true);
+  }
+
+  /**
+   * Cancelar edición del cash
+   */
+  cancelEditCash(): void {
+    this.editingCash.set(false);
+    this.cashEditValue.set(0);
+  }
+
+  /**
+   * Guardar cambios de cash balance
+   */
+  saveCashBalance(): void {
+    const newCash = this.cashEditValue();
+    if (newCash < 0) {
+      alert('El efectivo no puede ser negativo');
+      return;
+    }
+
+    this.savingCash.set(true);
+    this.investmentService.updateCashBalance(newCash).subscribe({
+      next: () => {
+        this.editingCash.set(false);
+        this.savingCash.set(false);
+        this.loadPositions();
+      },
+      error: () => {
+        console.error('Error updating cash balance');
+        alert('Error al actualizar el efectivo');
+        this.savingCash.set(false);
+      }
+    });
   }
 
   /**
