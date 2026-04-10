@@ -1,15 +1,46 @@
-# Compiled output
+# ============================================
+# COMPILED OUTPUT
+# ============================================
 /dist
 /tmp
 /out-tsc
 /bazel-out
 
-# Node
+# ============================================
+# NODE
+# ============================================
 /node_modules
 npm-debug.log
 yarn-error.log
+*.log
+logs/
 
+# ============================================
+# ANGULAR CACHE (dev server & build cache)
+# ============================================
+/.angular/
+finanzas-app/
+
+# ============================================
+# TYPESCRIPT BUILD INFO
+# ============================================
+*.tsbuildinfo
+
+# ============================================
+# COVERAGE & TESTS
+# ============================================
+/coverage
+
+# ============================================
+# BACKUP FILES
+# ============================================
+*.backup
+*.bak
+*.orig
+
+# ============================================
 # IDEs
+# ============================================
 .idea/
 .project
 .classpath
@@ -24,17 +55,22 @@ yarn-error.log
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-.history/*
+.history/
 
-# Miscellaneous
-/.angular/cache
+# ============================================
+# MISCELLANEOUS
+# ============================================
 .sass-cache/
 /connect.lock
-/coverage
 /libpeerconnection.log
 testem.log
 /typings
 
-# System files
+# ============================================
+# SYSTEM FILES
+# ============================================
 .DS_Store
+.DS_Store?
 Thumbs.db
+ehthumbs.db
+desktop.ini
