@@ -1,0 +1,449 @@
+<app-navbar></app-navbar>
+
+<main class="mortgage-page">
+  <div class="page-container">
+
+    <!-- Header -->
+    <header class="page-header">
+      <div class="header-content">
+        <div class="header-text">
+          <h1 class="page-title">
+            <svg class="title-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            Calculadora Hipotecaria
+          </h1>
+          <p class="page-subtitle">Descubre el precio maximo de vivienda que puedes permitirte</p>
+        </div>
+        <button class="btn-refresh" (click)="refreshAll()" [disabled]="loadingProfile() || loadingCapacity()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Actualizar
+        </button>
+      </div>
+    </header>
+
+    <!-- Perfil Financiero -->
+    <section class="section-profile">
+      @if (loadingProfile()) {
+        <div class="card loading-card">
+          <div class="spinner"></div>
+          <p>Analizando tu perfil financiero...</p>
+        </div>
+      } @else if (errorProfile()) {
+        <div class="card error-card">
+          <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <p>{{ errorProfile() }}</p>
+          <button class="btn-retry" (click)="loadFinancialProfile()">Reintentar</button>
+        </div>
+      } @else if (financialProfile()) {
+        <div class="profile-card">
+          <div class="profile-header">
+            <h2 class="card-title">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+              Tu Perfil Financiero
+            </h2>
+            <div class="health-badge" [class]="getHealthStatusClass(financialProfile()!.health_status)">
+              {{ getHealthStatusLabel(financialProfile()!.health_status) }}
+            </div>
+          </div>
+
+          <div class="profile-grid">
+            <div class="metric-card">
+              <span class="metric-label">Ingresos mensuales</span>
+              <span class="metric-value">{{ formatCurrency(financialProfile()!.monthly_income, financialProfile()!.currency) }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Gastos fijos</span>
+              <span class="metric-value">{{ formatCurrency(financialProfile()!.fixed_expenses, financialProfile()!.currency) }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Gastos variables</span>
+              <span class="metric-value">{{ formatCurrency(financialProfile()!.variable_expenses, financialProfile()!.currency) }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Pagos de deuda</span>
+              <span class="metric-value">{{ formatCurrency(financialProfile()!.debt_payments, financialProfile()!.currency) }}</span>
+            </div>
+            <div class="metric-card highlight">
+              <span class="metric-label">Ingreso disponible</span>
+              <span class="metric-value accent">{{ formatCurrency(financialProfile()!.disposable_income, financialProfile()!.currency) }}/mes</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Tasa de ahorro</span>
+              <span class="metric-value positive">{{ formatPercent(financialProfile()!.savings_rate_percentage) }}</span>
+            </div>
+          </div>
+
+          <div class="profile-footer">
+            <span class="analysis-note">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Basado en {{ financialProfile()!.analysis_period_months }} meses de historial
+            </span>
+          </div>
+        </div>
+      }
+    </section>
+
+    <!-- Configuracion de Hipoteca -->
+    <section class="section-config">
+      <div class="config-card">
+        <h2 class="card-title">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Configuracion de Hipoteca
+        </h2>
+
+        <form [formGroup]="configForm" (ngSubmit)="recalculate()" class="config-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="interest_rate">Tipo de interes anual (%)</label>
+              <input type="number" id="interest_rate" formControlName="interest_rate" step="0.1" min="0" max="20">
+            </div>
+            <div class="form-group">
+              <label for="years">Plazo (anos)</label>
+              <input type="number" id="years" formControlName="years" min="5" max="40">
+            </div>
+            <div class="form-group">
+              <label for="down_payment_ratio">Entrada (%)</label>
+              <input type="number" id="down_payment_ratio" formControlName="down_payment_ratio" min="0" max="50">
+            </div>
+          </div>
+          <button type="submit" class="btn-primary" [disabled]="configForm.invalid || loadingCapacity()">
+            @if (loadingCapacity()) {
+              <div class="spinner-small"></div>
+              Calculando...
+            } @else {
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              </svg>
+              Calcular Capacidad
+            }
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Resultados -->
+    @if (loadingCapacity()) {
+      <section class="section-results">
+        <div class="card loading-card">
+          <div class="spinner"></div>
+          <p>Calculando tu capacidad hipotecaria...</p>
+        </div>
+      </section>
+    } @else if (errorCapacity()) {
+      <section class="section-results">
+        <div class="card error-card">
+          <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <p>{{ errorCapacity() }}</p>
+          <button class="btn-retry" (click)="loadMortgageCapacity()">Reintentar</button>
+        </div>
+      </section>
+    } @else if (hasInsufficientData()) {
+      <section class="section-results">
+        <div class="card info-card">
+          <svg class="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <h3>Datos insuficientes</h3>
+          <p>Necesitas al menos 3 meses de transacciones registradas para calcular tu capacidad hipotecaria.</p>
+          <p class="info-hint">Continua registrando tus movimientos financieros y vuelve pronto.</p>
+        </div>
+      </section>
+    } @else if (mortgageResult()) {
+      <section class="section-results">
+
+        <!-- Resultado Principal -->
+        <div class="main-result-card">
+          <div class="result-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+          </div>
+          <div class="result-content">
+            <span class="result-label">Precio Maximo de Vivienda</span>
+            <span class="result-value">{{ formatCurrency(mortgageResult()!.max_price, mortgageResult()!.currency) }}</span>
+            <div class="result-details">
+              <span class="detail-item">
+                <span class="detail-label">Prestamo:</span>
+                <span class="detail-value">{{ formatCurrency(mortgageResult()!.loan_amount, mortgageResult()!.currency) }}</span>
+              </span>
+              <span class="detail-separator">|</span>
+              <span class="detail-item">
+                <span class="detail-label">Cuota:</span>
+                <span class="detail-value">{{ formatCurrency(mortgageResult()!.monthly_payment, mortgageResult()!.currency) }}/mes</span>
+              </span>
+              <span class="detail-separator">|</span>
+              <span class="detail-item">
+                <span class="detail-label">Entrada:</span>
+                <span class="detail-value">{{ formatCurrency(mortgageResult()!.required_down_payment, mortgageResult()!.currency) }}</span>
+              </span>
+            </div>
+          </div>
+          <div class="risk-badge" [class]="getRiskClass(mortgageResult()!.risk_score)">
+            <span class="risk-label">Riesgo</span>
+            <span class="risk-value">{{ getRiskLabel(mortgageResult()!.risk_score) }}</span>
+          </div>
+        </div>
+
+        <!-- Escenarios -->
+        <div class="scenarios-section">
+          <h2 class="section-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            Escenarios de Compra
+          </h2>
+          <p class="section-subtitle">Elige el nivel de riesgo que mejor se adapte a tu situacion</p>
+
+          <div class="scenarios-grid">
+            @for (scenario of ['conservative', 'balanced', 'aggressive']; track scenario) {
+              <div
+                class="scenario-card"
+                [class.selected]="selectedScenario() === scenario"
+                [class]="'scenario-' + scenario"
+                (click)="selectScenario($any(scenario))">
+
+                <div class="scenario-header">
+                  <div class="scenario-icon" [class]="'icon-' + getScenarioIcon($any(scenario))">
+                    @if (scenario === 'conservative') {
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                      </svg>
+                    } @else if (scenario === 'balanced') {
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                      </svg>
+                    } @else {
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                      </svg>
+                    }
+                  </div>
+                  <span class="scenario-name">{{ getScenarioLabel($any(scenario)) }}</span>
+                  @if (selectedScenario() === scenario) {
+                    <span class="selected-badge">Seleccionado</span>
+                  }
+                </div>
+
+                <div class="scenario-price">
+                  {{ formatCurrency(getScenarioData($any(scenario))?.max_price, mortgageResult()!.currency) }}
+                </div>
+
+                <div class="scenario-details">
+                  <div class="detail-row">
+                    <span>Cuota mensual</span>
+                    <span>{{ formatCurrency(getScenarioData($any(scenario))?.monthly_payment, mortgageResult()!.currency) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Prestamo</span>
+                    <span>{{ formatCurrency(getScenarioData($any(scenario))?.loan_amount, mortgageResult()!.currency) }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Entrada</span>
+                    <span>{{ formatCurrency(getScenarioData($any(scenario))?.required_down_payment, mortgageResult()!.currency) }}</span>
+                  </div>
+                  <div class="detail-row highlight">
+                    <span>Ratio deuda/ingresos</span>
+                    <span>{{ formatPercent((getScenarioData($any(scenario))?.debt_to_income_ratio ?? 0) * 100) }}</span>
+                  </div>
+                </div>
+
+                <p class="scenario-description">{{ getScenarioDescription($any(scenario)) }}</p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Detalles del Calculo -->
+        <details class="calculation-details">
+          <summary>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Ver detalles del calculo
+          </summary>
+          <div class="details-content">
+            <div class="details-grid">
+              <div class="detail-block">
+                <span class="block-label">Capacidad de ahorro mensual</span>
+                <span class="block-value">{{ formatCurrency(mortgageResult()!.calculation_details.savings_capacity, mortgageResult()!.currency) }}</span>
+              </div>
+              <div class="detail-block">
+                <span class="block-label">Cuota maxima por ahorro</span>
+                <span class="block-value">{{ formatCurrency(mortgageResult()!.calculation_details.max_quota_by_savings, mortgageResult()!.currency) }}</span>
+              </div>
+              <div class="detail-block">
+                <span class="block-label">Cuota maxima por ingresos</span>
+                <span class="block-value">{{ formatCurrency(mortgageResult()!.calculation_details.max_quota_by_income, mortgageResult()!.currency) }}</span>
+              </div>
+              <div class="detail-block highlight">
+                <span class="block-label">Cuota final recomendada</span>
+                <span class="block-value">{{ formatCurrency(mortgageResult()!.calculation_details.final_max_quota, mortgageResult()!.currency) }}</span>
+              </div>
+              <div class="detail-block">
+                <span class="block-label">Estabilidad de ingresos</span>
+                <span class="block-value">{{ formatPercent(mortgageResult()!.calculation_details.income_stability_score * 100) }}</span>
+              </div>
+              <div class="detail-block">
+                <span class="block-label">Ratio de deuda actual</span>
+                <span class="block-value">{{ formatPercent(mortgageResult()!.calculation_details.total_debt_ratio * 100) }}</span>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Analizador de Precio Objetivo -->
+      <section class="section-target">
+        <div class="target-card">
+          <h2 class="card-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Tienes un precio en mente?
+          </h2>
+          <p class="card-subtitle">Introduce el precio de una vivienda para ver si puedes permitirtela</p>
+
+          <form [formGroup]="targetForm" (ngSubmit)="analyzeTargetPrice()" class="target-form">
+            <div class="form-group large">
+              <label for="target_price">Precio de la vivienda</label>
+              <div class="input-with-symbol">
+                <span class="symbol">EUR</span>
+                <input type="number" id="target_price" formControlName="target_price" min="1" step="1000">
+              </div>
+            </div>
+            <button type="submit" class="btn-primary" [disabled]="targetForm.invalid || loadingTarget()">
+              @if (loadingTarget()) {
+                <div class="spinner-small"></div>
+                Analizando...
+              } @else {
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Analizar Precio
+              }
+            </button>
+          </form>
+
+          <!-- Resultado del Analisis -->
+          @if (errorTarget()) {
+            <div class="target-error">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+              <p>{{ errorTarget() }}</p>
+            </div>
+          } @else if (targetAnalysis()) {
+            <div class="target-result" [class.viable]="targetAnalysis()!.is_viable" [class.not-viable]="!targetAnalysis()!.is_viable">
+
+              <!-- Banner de Viabilidad -->
+              <div class="viability-banner">
+                <div class="banner-icon">
+                  @if (targetAnalysis()!.is_viable) {
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  } @else {
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  }
+                </div>
+                <div class="banner-content">
+                  <h3>{{ targetAnalysis()!.is_viable ? 'Objetivo viable' : 'Objetivo no viable' }}</h3>
+                  <p>{{ targetAnalysis()!.recommendation }}</p>
+                </div>
+              </div>
+
+              <!-- Metricas del Analisis -->
+              <div class="analysis-grid">
+                <div class="analysis-metric">
+                  <span class="metric-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </span>
+                  <span class="metric-label">Cuota mensual necesaria</span>
+                  <span class="metric-value">{{ formatCurrency(targetAnalysis()!.monthly_payment_needed, targetAnalysis()!.currency) }}</span>
+                </div>
+                <div class="analysis-metric">
+                  <span class="metric-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                    </svg>
+                  </span>
+                  <span class="metric-label">Entrada necesaria</span>
+                  <span class="metric-value">{{ formatCurrency(targetAnalysis()!.down_payment_needed, targetAnalysis()!.currency) }}</span>
+                </div>
+                <div class="analysis-metric">
+                  <span class="metric-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                  </span>
+                  <span class="metric-label">Ratio deuda/ingresos</span>
+                  <span class="metric-value">{{ formatPercent(targetAnalysis()!.resulting_debt_ratio * 100) }}</span>
+                </div>
+                <div class="analysis-metric" [class.positive]="targetAnalysis()!.gap > 0" [class.negative]="targetAnalysis()!.gap < 0">
+                  <span class="metric-icon">
+                    @if (targetAnalysis()!.gap > 0) {
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                      </svg>
+                    } @else {
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+                      </svg>
+                    }
+                  </span>
+                  <span class="metric-label">{{ targetAnalysis()!.gap >= 0 ? 'Margen disponible' : 'Deficit mensual' }}</span>
+                  <span class="metric-value">{{ formatCurrency(abs(targetAnalysis()!.gap), targetAnalysis()!.currency) }}/mes</span>
+                </div>
+              </div>
+
+              <!-- Comparacion -->
+              <div class="comparison-section">
+                <h4>Comparacion con tu capacidad</h4>
+                <div class="comparison-bar-container">
+                  <div class="comparison-info">
+                    <span>Tu maximo: {{ formatCurrency(targetAnalysis()!.comparison.max_affordable_price, targetAnalysis()!.currency) }}</span>
+                    <span>Objetivo: {{ formatPercent(targetAnalysis()!.comparison.percentage_of_max) }} de tu capacidad</span>
+                  </div>
+                  <div class="comparison-bar">
+                    <div
+                      class="bar-fill"
+                      [style.width.%]="min(targetAnalysis()!.comparison.percentage_of_max, 100)"
+                      [class.over-capacity]="targetAnalysis()!.comparison.percentage_of_max > 100">
+                    </div>
+                    @if (targetAnalysis()!.comparison.percentage_of_max > 100) {
+                      <div
+                        class="bar-overflow"
+                        [style.width.%]="min(targetAnalysis()!.comparison.percentage_of_max - 100, 50)">
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+  </div>
+</main>
+
+<app-footer></app-footer>

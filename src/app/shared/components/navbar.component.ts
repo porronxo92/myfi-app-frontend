@@ -24,6 +24,7 @@ import { SafeImagePipe } from '../pipes/safe-image.pipe';
             <a class="nav-link" [class.active]="isActive('/transactions')" (click)="navigateTo('/transactions')">Movimientos</a>
             <a class="nav-link" [class.active]="isActive('/budget')" (click)="navigateTo('/budget')">Presupuesto</a>
             <a class="nav-link" [class.active]="isActive('/investment')" (click)="navigateTo('/investment')">Inversión</a>
+            <a class="nav-link" [class.active]="isActive('/mortgage')" (click)="navigateTo('/mortgage')">Hipoteca</a>
           </div>
         </div>
 
@@ -105,6 +106,12 @@ import { SafeImagePipe } from '../pipes/safe-image.pipe';
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
           </svg>
           <span>Inversión</span>
+        </a>
+        <a class="nav-link-mobile" [class.active]="isActive('/mortgage')" (click)="navigateToMobile('/mortgage')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          <span>Hipoteca</span>
         </a>
         <a class="nav-link-mobile" [class.active]="isActive('/account-settings')" (click)="navigateToMobile('/account-settings')">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
