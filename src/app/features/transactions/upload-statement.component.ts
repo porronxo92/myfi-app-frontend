@@ -1693,48 +1693,38 @@ export class UploadStatementComponent implements OnInit {
     const selectedTransactions = this.transactions().filter(t => t.selected);
     const accountId = this.selectedAccountId()!;
 
-    let savedCount = 0;
+    // Convertir a DTOs para el bulk insert
+    const transactionDtos: CreateTransactionDto[] = selectedTransactions.map(transaction => ({
+      date: transaction.fecha,
+      amount: Math.abs(transaction.cantidad), // Siempre positivo
+      description: transaction.descripcion_nlp,
+      category_id: transaction.categoria, // El backend acepta nombre de categoría
+      type: transaction.tipo,
+      account_id: accountId
+    }));
 
-    // Guardar transacciones secuencialmente
-    const saveNext = (index: number) => {
-      if (index >= selectedTransactions.length) {
-        // Todas guardadas - mostrar éxito en el modal
+    // Usar bulk insert - una sola petición para todas las transacciones
+    this.transactionService.createBulkTransactions(transactionDtos).subscribe({
+      next: (response) => {
+        this.savingProgress.set(response.created);
         this.isSaving.set(false);
-        this.showSuccessInModal(savedCount);
+        
+        if (response.failed > 0) {
+          this.logger.warn(`${response.failed} transacciones fallaron al guardar`);
+        }
+        
+        this.showSuccessInModal(response.created);
         setTimeout(() => {
           this.closeConfirmModal();
           this.resetState();
         }, 2000);
-        return;
+      },
+      error: (error: any) => {
+        this.logger.error('Error guardando transacciones en bulk');
+        this.isSaving.set(false);
+        this.uploadError.set('Error al guardar las transacciones. Intenta de nuevo.');
       }
-
-      const transaction = selectedTransactions[index];
-      const dto: CreateTransactionDto = {
-        date: transaction.fecha,
-        amount: Math.abs(transaction.cantidad), // Siempre positivo
-        description: transaction.descripcion_nlp,
-        category_id: transaction.categoria, // El backend acepta nombre de categoría
-        type: transaction.tipo,
-        notes: '',
-        tags: [],
-        account_id: accountId
-      };
-
-      this.transactionService.createTransaction(dto).subscribe({
-        next: () => {
-          savedCount++;
-          this.savingProgress.set(savedCount);
-          saveNext(index + 1);
-        },
-        error: (error: any) => {
-          this.logger.error('Error guardando transacción');
-          // Continuar con la siguiente aunque falle
-          saveNext(index + 1);
-        }
-      });
-    };
-
-    saveNext(0);
+    });
   }
 
   toggleSelectAll(): void {

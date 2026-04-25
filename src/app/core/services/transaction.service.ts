@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Transaction, CreateTransactionDto } from '../models/transaction.model';
+import { Transaction, CreateTransactionDto, BulkTransactionResponse } from '../models/transaction.model';
 
 interface PaginatedResponse<T> {
   items: T[];
@@ -79,6 +79,16 @@ export class TransactionService {
 
   deleteTransaction(id: number | string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      tap(() => this.refreshTransactions())
+    );
+  }
+
+  /**
+   * Crea múltiples transacciones en una sola petición (bulk insert)
+   * Máximo 500 transacciones por petición
+   */
+  createBulkTransactions(transactions: CreateTransactionDto[]): Observable<BulkTransactionResponse> {
+    return this.http.post<BulkTransactionResponse>(`${this.apiUrl}/bulk`, { transactions }).pipe(
       tap(() => this.refreshTransactions())
     );
   }

@@ -28,3 +28,14 @@ export interface CreateTransactionDto {
   transaction_date?: string;
   date?: string;
 }
+
+export interface BulkTransactionError {
+  index: number;
+  error: string;
+}
+
+export interface BulkTransactionResponse {
+  created: number;
+  failed: number;
+  errors: BulkTransactionError[];
+}

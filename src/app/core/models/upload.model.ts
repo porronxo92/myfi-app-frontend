@@ -70,8 +70,8 @@ export interface CreateTransactionDto {
   description: string;
   category_id?: string;  // Puede ser UUID o nombre de categoría
   type: 'expense' | 'income';
-  notes: string;
-  tags: string[];
+  notes?: string;
+  tags?: string[];
   account_id: string;
 }
 
