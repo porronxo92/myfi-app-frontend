@@ -89,7 +89,12 @@ export class CategoryService {
   }
 
   createCategory(category: CreateCategoryDto): Observable<Category> {
-    return this.http.post<Category>(this.apiUrl, category, {
+    const payload = {
+      ...category,
+      type: category.type,
+      category_type: category.type
+    };
+    return this.http.post<Category>(this.apiUrl, payload, {
       withCredentials: true
     }).pipe(
       tap(() => this.getAllAvailableCategories().subscribe())
@@ -97,7 +102,13 @@ export class CategoryService {
   }
 
   updateCategory(id: string, category: Partial<Category>): Observable<Category> {
-    return this.http.put<Category>(`${this.apiUrl}/${id}`, category, {
+    const typeValue = category.type || category.category_type;
+    const payload = {
+      ...category,
+      type: typeValue,
+      category_type: typeValue
+    };
+    return this.http.put<Category>(`${this.apiUrl}/${id}`, payload, {
       withCredentials: true
     }).pipe(
       tap(() => this.getAllAvailableCategories().subscribe())
@@ -113,9 +124,9 @@ export class CategoryService {
   }
 
   private filterCategories(categories: Category[]): void {
-    const income = categories.filter(c => (c.type || c.category_type) === 'income');
-    const expense = categories.filter(c => (c.type || c.category_type) === 'expense');
-    
+    const resolveType = (c: Category) => c.type ?? c.category_type;
+    const income = categories.filter(c => resolveType(c) === 'income');
+    const expense = categories.filter(c => resolveType(c) === 'expense');
     this.incomeCategories.set(income);
     this.expenseCategories.set(expense);
   }

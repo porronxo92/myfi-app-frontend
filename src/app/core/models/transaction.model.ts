@@ -29,6 +29,21 @@ export interface CreateTransactionDto {
   date?: string;
 }
 
+export interface TransferDto {
+  from_account_id: string;
+  to_account_id: string;
+  amount: number;
+  description: string;
+  date: string;
+  notes?: string;
+  tags?: string[];
+}
+
+export interface TransferResponse {
+  expense_transaction: Transaction;
+  income_transaction: Transaction;
+}
+
 export interface BulkTransactionError {
   index: number;
   error: string;

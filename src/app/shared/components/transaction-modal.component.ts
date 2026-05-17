@@ -1,7 +1,6 @@
 import { Component, inject, signal, computed, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
 import { TransactionService } from '../../core/services/transaction.service';
 import { CategoryService } from '../../core/services/category.service';
 import { AccountService } from '../../core/services/account.service';
@@ -13,10 +12,6 @@ export interface TransactionModalConfig {
   preselectedAccountId?: string;
   accountName?: string;
 }
-
-// Category IDs for transfers
-const TRANSFER_EXPENSE_CATEGORY_ID = '88d52b3c-9d8f-4008-bb51-5adb398ac4de'; // Transferencia (expense)
-const TRANSFER_INCOME_CATEGORY_ID = '94c7e01f-ee86-4684-9bb8-37e8a4d378e0'; // Ingreso (income)
 
 @Component({
   selector: 'app-transaction-modal',
@@ -234,6 +229,12 @@ const TRANSFER_INCOME_CATEGORY_ID = '94c7e01f-ee86-4684-9bb8-37e8a4d378e0'; // I
             </div>
           </div>
 
+          <!-- Error Message -->
+          <div class="form-error-banner" *ngIf="errorMessage()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {{ errorMessage() }}
+          </div>
+
           <!-- Actions -->
           <div class="modal-footer">
             <button type="button" class="btn-secondary" (click)="onCancel()">
@@ -431,6 +432,19 @@ const TRANSFER_INCOME_CATEGORY_ID = '94c7e01f-ee86-4684-9bb8-37e8a4d378e0'; // I
       margin-top: var(--space-1);
     }
 
+    .form-error-banner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      margin: 0 var(--space-6) var(--space-2);
+      background: rgba(202, 53, 33, 0.08);
+      border: 1px solid var(--color-negative);
+      border-radius: var(--radius-md);
+      color: var(--color-negative);
+      font-size: 0.8125rem;
+    }
+
     /* Type Buttons */
     .type-buttons {
       display: grid;
@@ -612,6 +626,7 @@ export class TransactionModalComponent implements OnInit {
   tags = signal<string[]>([]);
   tagInput = '';
   submitting = signal(false);
+  errorMessage = signal<string | null>(null);
 
   // Computed
   modalTitle = computed(() => 
@@ -762,63 +777,42 @@ export class TransactionModalComponent implements OnInit {
     }
 
     this.submitting.set(true);
+    this.errorMessage.set(null);
 
     // Use getRawValue() to get disabled fields like account_id
     const formValue = this.form.getRawValue();
     
     if (this.config.mode === 'transfer' && formValue.transfer_account_id) {
-      // For transfers: Create TWO transactions
-      const amount = parseFloat(formValue.amount);
-      
-      // Transaction 1: Expense in origin account (money leaving)
-      const expensePayload: any = {
-        account_id: formValue.account_id,
-        type: 'expense',
-        category_id: TRANSFER_EXPENSE_CATEGORY_ID,
+      // Transferencia atómica — un solo endpoint crea ambas transacciones en el backend
+      const transferPayload: any = {
+        from_account_id: formValue.account_id,
+        to_account_id: formValue.transfer_account_id,
+        amount: Math.abs(parseFloat(formValue.amount)),
         description: formValue.description,
-        amount: amount,
-        date: formValue.date,
-        source: 'manual',
-        transfer_account_id: formValue.transfer_account_id // Link to destination account
+        date: formValue.date
       };
 
-      // Transaction 2: Income in destination account (money arriving)
-      const incomePayload: any = {
-        account_id: formValue.transfer_account_id,
-        type: 'income',
-        category_id: TRANSFER_INCOME_CATEGORY_ID,
-        description: formValue.description,
-        amount: amount,
-        date: formValue.date,
-        source: 'manual',
-        transfer_account_id: formValue.account_id // Link to origin account
-      };
-
-      // Add optional fields if present
       if (formValue.notes) {
-        expensePayload.notes = formValue.notes;
-        incomePayload.notes = formValue.notes;
+        transferPayload.notes = formValue.notes;
       }
 
       if (this.tags().length > 0) {
-        expensePayload.tags = this.tags();
-        incomePayload.tags = this.tags();
+        transferPayload.tags = this.tags();
       }
 
-      // Create both transactions simultaneously
-      forkJoin({
-        expense: this.transactionService.createTransaction(expensePayload),
-        income: this.transactionService.createTransaction(incomePayload)
-      }).subscribe({
+      this.transactionService.createTransfer(transferPayload).subscribe({
         next: (result) => {
           this.submitting.set(false);
           this.transactionCreated.emit(result);
           this.closeModal.emit();
         },
-        error: () => {
+        error: (err: any) => {
           this.submitting.set(false);
-          console.error('Error creating transfer transactions');
-          // TODO: Show error message to user
+          const detail = err?.error?.detail;
+          const msg = Array.isArray(detail)
+            ? detail.map((d: any) => d.msg ?? d).join(', ')
+            : (detail || 'Error al crear la transferencia. Inténtalo de nuevo.');
+          this.errorMessage.set(msg);
         }
       });
     } else {
@@ -828,7 +822,9 @@ export class TransactionModalComponent implements OnInit {
         type: formValue.type,
         category_id: formValue.category_id,
         description: formValue.description,
-        amount: parseFloat(formValue.amount),
+        amount: formValue.type === 'expense'
+          ? -Math.abs(parseFloat(formValue.amount))
+          : Math.abs(parseFloat(formValue.amount)),
         date: formValue.date,
         source: 'manual'
       };
@@ -849,10 +845,13 @@ export class TransactionModalComponent implements OnInit {
           this.transactionCreated.emit(result);
           this.closeModal.emit();
         },
-        error: () => {
+        error: (err: any) => {
           this.submitting.set(false);
-          console.error('Error creating transaction');
-          // TODO: Show error message to user
+          const detail = err?.error?.detail;
+          const msg = Array.isArray(detail)
+            ? detail.map((d: any) => d.msg ?? d).join(', ')
+            : (detail || 'Error al crear la transacción. Inténtalo de nuevo.');
+          this.errorMessage.set(msg);
         }
       });
     }

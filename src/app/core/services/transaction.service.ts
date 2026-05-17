@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Transaction, CreateTransactionDto, BulkTransactionResponse } from '../models/transaction.model';
+import { Transaction, CreateTransactionDto, BulkTransactionResponse, TransferDto, TransferResponse } from '../models/transaction.model';
 
 interface PaginatedResponse<T> {
   items: T[];
@@ -43,7 +43,7 @@ export class TransactionService {
     if (params?.account_id) httpParams = httpParams.set('account_id', params.account_id);
     if (params?.category_id) httpParams = httpParams.set('category_id', params.category_id.toString());
 
-    return this.http.get<PaginatedResponse<Transaction>>(this.apiUrl, { params: httpParams }).pipe(
+    return this.http.get<PaginatedResponse<Transaction>>(this.apiUrl, { params: httpParams, withCredentials: true }).pipe(
       map(response => response.items),
       tap({
         next: (transactions) => {
@@ -62,23 +62,29 @@ export class TransactionService {
   }
 
   getTransactionById(id: string): Observable<Transaction> {
-    return this.http.get<Transaction>(`${this.apiUrl}/${id}`);
+    return this.http.get<Transaction>(`${this.apiUrl}/${id}`, { withCredentials: true });
   }
 
   createTransaction(transaction: CreateTransactionDto): Observable<Transaction> {
-    return this.http.post<Transaction>(this.apiUrl, transaction).pipe(
+    return this.http.post<Transaction>(this.apiUrl, transaction, { withCredentials: true }).pipe(
+      tap(() => this.refreshTransactions())
+    );
+  }
+
+  createTransfer(transfer: TransferDto): Observable<TransferResponse> {
+    return this.http.post<TransferResponse>(`${this.apiUrl}/transfer`, transfer, { withCredentials: true }).pipe(
       tap(() => this.refreshTransactions())
     );
   }
 
   updateTransaction(id: string, transaction: Partial<Transaction>): Observable<Transaction> {
-    return this.http.put<Transaction>(`${this.apiUrl}/${id}`, transaction).pipe(
+    return this.http.put<Transaction>(`${this.apiUrl}/${id}`, transaction, { withCredentials: true }).pipe(
       tap(() => this.refreshTransactions())
     );
   }
 
   deleteTransaction(id: number | string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, { withCredentials: true }).pipe(
       tap(() => this.refreshTransactions())
     );
   }
@@ -88,7 +94,7 @@ export class TransactionService {
    * Máximo 500 transacciones por petición
    */
   createBulkTransactions(transactions: CreateTransactionDto[]): Observable<BulkTransactionResponse> {
-    return this.http.post<BulkTransactionResponse>(`${this.apiUrl}/bulk`, { transactions }).pipe(
+    return this.http.post<BulkTransactionResponse>(`${this.apiUrl}/bulk`, { transactions }, { withCredentials: true }).pipe(
       tap(() => this.refreshTransactions())
     );
   }

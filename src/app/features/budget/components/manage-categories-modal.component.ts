@@ -767,6 +767,7 @@ export class ManageCategoriesModalComponent implements OnInit {
     const formData = {
       name: this.form.value.name,
       type: this.form.value.type,
+      category_type: this.form.value.type,
       color: this.form.value.color
     };
 
